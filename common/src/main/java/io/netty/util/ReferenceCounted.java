@@ -17,17 +17,21 @@ package io.netty.util;
 
 /**
  * A reference-counted object that requires explicit deallocation.
+ * 需要显示释放的引用计数对象
  * <p>
  * When a new {@link ReferenceCounted} is instantiated, it starts with the reference count of {@code 1}.
  * {@link #retain()} increases the reference count, and {@link #release()} decreases the reference count.
  * If the reference count is decreased to {@code 0}, the object will be deallocated explicitly, and accessing
  * the deallocated object will usually result in an access violation.
  * </p>
+ * 实例化一个新的 ReferenceCounted，它以引用计数1开始的，通过retain 来进行应用增加，release引用计数减少。当应用计数到0时，对象将被显示释放。
+ * 访问一个释放的对象一般将会出现访问冲突
  * <p>
  * If an object that implements {@link ReferenceCounted} is a container of other objects that implement
  * {@link ReferenceCounted}, the contained objects will also be released via {@link #release()} when the container's
  * reference count becomes 0.
  * </p>
+ * 如果实现了ReferenceCounted 是一个包含其他实现了ReferenceCounted 对象的容器。 当容器的引用计数为0的时候，它包含的对象也将通过release()来进行释放
  */
 public interface ReferenceCounted {
     /**
@@ -49,6 +53,8 @@ public interface ReferenceCounted {
      * Records the current access location of this object for debugging purposes.
      * If this object is determined to be leaked, the information recorded by this operation will be provided to you
      * via {@link ResourceLeakDetector}.  This method is a shortcut to {@link #touch(Object) touch(null)}.
+     * 记录这个对象的当前访问位置用于调试
+     * 如果确定此对象泄露，此操作记录的信息将通过ResourceLeakDetector 提供给你
      */
     ReferenceCounted touch();
 
@@ -56,6 +62,8 @@ public interface ReferenceCounted {
      * Records the current access location of this object with an additional arbitrary information for debugging
      * purposes.  If this object is determined to be leaked, the information recorded by this operation will be
      * provided to you via {@link ResourceLeakDetector}.
+     *
+     *
      */
     ReferenceCounted touch(Object hint);
 
