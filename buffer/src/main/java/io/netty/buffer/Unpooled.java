@@ -30,7 +30,7 @@ import java.util.Arrays;
 /**
  * Creates a new {@link ByteBuf} by allocating new space or by wrapping
  * or copying existing byte arrays, byte buffers and a string.
- *
+ * 通过分配新空间或包装或复制现有字节数组、字节缓冲区和字符串，创建新的{@link ByteBuf}
  * <h3>Use static import</h3>
  * This classes is intended to be used with Java 5 static import statement:
  *
@@ -44,6 +44,7 @@ import java.util.Arrays;
  * </pre>
  *
  * <h3>Allocating a new buffer</h3>
+ * 分配新的缓冲区
  *
  * Three buffer types are provided out of the box.
  *
@@ -54,6 +55,7 @@ import java.util.Arrays;
  *
  * <h3>Creating a wrapped buffer</h3>
  *
+ *
  * Wrapped buffer is a buffer which is a view of one or more existing
  * byte arrays and byte buffers.  Any changes in the content of the original
  * array or buffer will be visible in the wrapped buffer.  Various wrapper
@@ -61,6 +63,8 @@ import java.util.Arrays;
  * You might want to take a look at the methods that accept varargs closely if
  * you want to create a buffer which is composed of more than one array to
  * reduce the number of memory copy.
+ * 包装缓冲区是一个缓冲区，它是一个或多个现有字节数组和字节缓冲区的视图。原始数组或缓冲区内容的任何更改都将在包装缓冲区中可见。提供了各种包装方法，它们的名称都是｛@code wrappedBuffer（）｝。
+ * 如果您想创建一个由多个数组组成的缓冲区，以减少内存副本的数量，那么您可能需要仔细查看接受varargs的方法。
  *
  * <h3>Creating a copied buffer</h3>
  *
@@ -69,6 +73,16 @@ import java.util.Arrays;
  * between the original data and the copied buffer.  Various copy methods are
  * provided and their name is all {@code copiedBuffer()}.  It is also convenient
  * to use this operation to merge multiple buffers into one buffer.
+ *
+ * 复制的缓冲区是一个或多个现有字节数组的深度副本，字节
+ *
+ * 缓冲区或字符串。
+ *
+ * 与包装缓冲区不同，原始数据和复制缓冲区之间没有共享数据。
+ *
+ * 提供了各种复制方法，它们的名称都是｛@code copiedBuffer（）｝。
+ *
+ * 使用此操作将多个缓冲区合并为一个缓冲区也很方便。
  */
 public final class Unpooled {
 
@@ -76,6 +90,7 @@ public final class Unpooled {
 
     /**
      * Big endian byte order.
+     *
      */
     public static final ByteOrder BIG_ENDIAN = ByteOrder.BIG_ENDIAN;
 

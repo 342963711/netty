@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
  * A NIO {@link ByteBuffer} based buffer. It is recommended to use
  * {@link UnpooledByteBufAllocator#directBuffer(int, int)}, {@link Unpooled#directBuffer(int)} and
  * {@link Unpooled#wrappedBuffer(ByteBuffer)} instead of calling the constructor explicitly.}
+ * ，Unsafe 比 UnpooledDirectByteBuf 多了一个memory 属性。
  */
 public class UnpooledUnsafeDirectByteBuf extends UnpooledDirectByteBuf {
 

@@ -26,17 +26,26 @@ import io.netty.util.internal.StringUtil;
 
 /**
  * Skeletal {@link ByteBufAllocator} implementation to extend.
+ * 实现ByteBufAllocator 的模板类
+ * @see UnpooledByteBufAllocator,PooledByteBufAllocator
  */
 public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
+    //默认初始化容量 256 byte
     static final int DEFAULT_INITIAL_CAPACITY = 256;
+
     static final int DEFAULT_MAX_CAPACITY = Integer.MAX_VALUE;
+
+    //默认最大组件
     static final int DEFAULT_MAX_COMPONENTS = 16;
+
+    //计算阈值1024*1024 4MB
     static final int CALCULATE_THRESHOLD = 1048576 * 4; // 4 MiB page
 
     static {
         ResourceLeakDetector.addExclusions(AbstractByteBufAllocator.class, "toLeakAwareBuffer");
     }
 
+    //内存泄露缓冲区
     protected static ByteBuf toLeakAwareBuffer(ByteBuf buf) {
         ResourceLeakTracker<ByteBuf> leak;
         switch (ResourceLeakDetector.getLevel()) {
@@ -81,11 +90,15 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         return buf;
     }
 
+    /**
+     *
+     */
     private final boolean directByDefault;
     private final ByteBuf emptyBuf;
 
     /**
      * Instance use heap buffers by default
+     * //内存缓冲区默认使用堆内存
      */
     protected AbstractByteBufAllocator() {
         this(false);
@@ -235,10 +248,12 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
 
     /**
      * Create a heap {@link ByteBuf} with the given initialCapacity and maxCapacity.
+     * 创建一个堆内存缓冲池
      */
     protected abstract ByteBuf newHeapBuffer(int initialCapacity, int maxCapacity);
 
     /**
+     * 创建一个直接内存缓冲池
      * Create a direct {@link ByteBuf} with the given initialCapacity and maxCapacity.
      */
     protected abstract ByteBuf newDirectBuffer(int initialCapacity, int maxCapacity);

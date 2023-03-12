@@ -36,6 +36,7 @@ package io.netty.util;
 public interface ReferenceCounted {
     /**
      * Returns the reference count of this object.  If {@code 0}, it means this object has been deallocated.
+     * 如果等于0，表示此对象已经被解除分配
      */
     int refCnt();
 

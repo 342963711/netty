@@ -53,6 +53,9 @@ import static io.netty.util.internal.StringUtil.isSurrogate;
 /**
  * A collection of utility methods that is related with handling {@link ByteBuf},
  * such as the generation of hex dump and swapping an integer's byte order.
+ *
+ * 处理与ByteBuf相关的工具方法类，
+ * 例如生成16进制转储，交换整数的字节顺序
  */
 public final class ByteBufUtil {
 
@@ -74,6 +77,7 @@ public final class ByteBufUtil {
     static final ByteBufAllocator DEFAULT_ALLOCATOR;
 
     static {
+        //分配器类型，如果是android,使用unpooled,默认使用pooled
         String allocType = SystemPropertyUtil.get(
                 "io.netty.allocator.type", PlatformDependent.isAndroid() ? "unpooled" : "pooled");
         allocType = allocType.toLowerCase(Locale.US).trim();

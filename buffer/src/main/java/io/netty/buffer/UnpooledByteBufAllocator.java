@@ -32,13 +32,14 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
 
     /**
      * Default instance which uses leak-detection for direct buffers.
+     * 对直接内存使用 泄露检测的默认实例
      */
     public static final UnpooledByteBufAllocator DEFAULT =
             new UnpooledByteBufAllocator(PlatformDependent.directBufferPreferred());
 
     /**
      * Create a new instance which uses leak-detection for direct buffers.
-     *
+     * 创建一个队直接内存使用泄露检测的新实例
      * @param preferDirect {@code true} if {@link #buffer(int)} should try to allocate a direct buffer rather than
      *                     a heap buffer
      */
@@ -69,6 +70,7 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
      *                            direct buffers when not explicit released.
      * @param tryNoCleaner {@code true} if we should try to use {@link PlatformDependent#allocateDirectNoCleaner(int)}
      *                            to allocate direct memory.
+     *                                 如果是true 的话，应该使用allocateDirectNoCleaner来进行分配内存
      */
     public UnpooledByteBufAllocator(boolean preferDirect, boolean disableLeakDetector, boolean tryNoCleaner) {
         super(preferDirect);
@@ -204,12 +206,18 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
         }
     }
 
+    /**
+     * @see InstrumentedUnpooledDirectByteBuf 基本一样。
+     * 父类是{@link UnpooledDirectByteBuf 的子类}
+     * 多了memoryAddress属性，基于unsafe的内存地址
+     */
     private static final class InstrumentedUnpooledUnsafeDirectByteBuf extends UnpooledUnsafeDirectByteBuf {
         InstrumentedUnpooledUnsafeDirectByteBuf(
                 UnpooledByteBufAllocator alloc, int initialCapacity, int maxCapacity) {
             super(alloc, initialCapacity, maxCapacity);
         }
 
+        //实现直接分配
         @Override
         protected ByteBuffer allocateDirect(int initialCapacity) {
             ByteBuffer buffer = super.allocateDirect(initialCapacity);
@@ -225,6 +233,10 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
         }
     }
 
+    /**
+     * 与
+     * @see InstrumentedUnpooledUnsafeDirectByteBuf 的方法实现基本花一样。细节差别需要在各自的父类中进行查看
+     */
     private static final class InstrumentedUnpooledDirectByteBuf extends UnpooledDirectByteBuf {
         InstrumentedUnpooledDirectByteBuf(
                 UnpooledByteBufAllocator alloc, int initialCapacity, int maxCapacity) {

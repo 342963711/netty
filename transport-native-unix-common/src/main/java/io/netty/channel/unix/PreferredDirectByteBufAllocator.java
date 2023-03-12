@@ -20,6 +20,11 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.util.internal.UnstableApi;
 
+/**
+ * 跟PreferHeapByteBufAllocator 类似，只是是相反的，所有的地方都实用直接缓冲区，除非显示使用了堆内存分配
+ * @see io.netty.channel.PreferHeapByteBufAllocator
+ * 这两个类都只是包装类，本身不提供能力
+ */
 @UnstableApi
 public final class PreferredDirectByteBufAllocator implements ByteBufAllocator {
     private ByteBufAllocator allocator;

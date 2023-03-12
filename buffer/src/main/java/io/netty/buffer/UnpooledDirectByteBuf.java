@@ -34,12 +34,14 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
  * A NIO {@link ByteBuffer} based buffer. It is recommended to use
  * {@link UnpooledByteBufAllocator#directBuffer(int, int)}, {@link Unpooled#directBuffer(int)} and
  * {@link Unpooled#wrappedBuffer(ByteBuffer)} instead of calling the constructor explicitly.
+ * 基于NIO的 ByteBuffer 来进行实现的
  */
 public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
 
     private final ByteBufAllocator alloc;
-
+    //对NIO buffer 的包装来进行实现的
     ByteBuffer buffer; // accessed by UnpooledUnsafeNoCleanerDirectByteBuf.reallocateDirect()
+    //共享buffer的内容
     private ByteBuffer tmpNioBuf;
     private int capacity;
     private boolean doNotFree;
@@ -99,6 +101,7 @@ public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
 
     /**
      * Allocate a new direct {@link ByteBuffer} with the given initialCapacity.
+     *
      */
     protected ByteBuffer allocateDirect(int initialCapacity) {
         return ByteBuffer.allocateDirect(initialCapacity);
@@ -426,6 +429,11 @@ public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
         buffer.putLong(index, value);
     }
 
+    /**
+     * 使用低位存储字节
+     * @param index
+     * @param value
+     */
     @Override
     protected void _setLongLE(int index, long value) {
         buffer.putLong(index, ByteBufUtil.swapLong(value));

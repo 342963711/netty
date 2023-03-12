@@ -76,6 +76,9 @@ final class PlatformDependent0 {
 
     private static final boolean UNALIGNED;
 
+    /**
+     * 对unsafe类的状态判断
+     */
     static {
         final ByteBuffer direct;
         Field addressField = null;

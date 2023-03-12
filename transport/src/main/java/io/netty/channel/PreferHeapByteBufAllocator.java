@@ -24,6 +24,7 @@ import io.netty.util.internal.UnstableApi;
 /**
  * Wraps another {@link ByteBufAllocator} and use heapbuffers everywhere except when a direct buffer is explicit
  * requested.
+ * 包装一个字节缓冲区分配器，并在任何地方都适用对缓冲区，除非显式请求直接缓冲区
  */
 @UnstableApi
 public final class PreferHeapByteBufAllocator implements ByteBufAllocator {

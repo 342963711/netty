@@ -18,6 +18,10 @@ package io.netty.buffer;
 /**
  * Implementations are responsible to allocate buffers. Implementations of this interface are expected to be
  * thread-safe.
+ * 实现负责分配缓冲区，这个接口的实现是需要线程安全的
+ * 主要分为两大类
+ * 一个是head,一个是direct 类型的缓冲区类型
+ * 另外还包含CompositeByteBuf 类型的缓冲区
  */
 public interface ByteBufAllocator {
 
@@ -123,6 +127,7 @@ public interface ByteBufAllocator {
 
     /**
      * Returns {@code true} if direct {@link ByteBuf}'s are pooled
+     * 如果直接内容是共享的话
      */
     boolean isDirectBufferPooled();
 

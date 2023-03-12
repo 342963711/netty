@@ -26,6 +26,10 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 
+/**
+ * 内存的除了UnpooledDirectByteBuf 非池化的另外一种类型，池化字节缓冲区的抽象基础类
+ * @param <T>
+ */
 abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
     private final Handle<PooledByteBuf<T>> recyclerHandle;

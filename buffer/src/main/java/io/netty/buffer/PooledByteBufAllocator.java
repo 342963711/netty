@@ -53,6 +53,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     static final int DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK;
 
     private static final int MIN_PAGE_SIZE = 4096;
+    //2^30 MAX_CHUNK_SIZE=Integer.MIN_VALUE>>>1; 无符号右移
     private static final int MAX_CHUNK_SIZE = (int) (((long) Integer.MAX_VALUE + 1) / 2);
 
     private static final int CACHE_NOT_USED = 0;
@@ -65,8 +66,10 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     };
 
     static {
+        //直接内存缓存对齐
         int defaultAlignment = SystemPropertyUtil.getInt(
                 "io.netty.allocator.directMemoryCacheAlignment", 0);
+        //设置页大小 8k
         int defaultPageSize = SystemPropertyUtil.getInt("io.netty.allocator.pageSize", 8192);
         Throwable pageSizeFallbackCause = null;
         try {

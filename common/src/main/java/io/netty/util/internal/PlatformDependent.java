@@ -72,9 +72,12 @@ import static java.lang.Math.min;
  * Utility that detects various properties specific to the current runtime
  * environment, such as Java version and the availability of the
  * {@code sun.misc.Unsafe} object.
+ * 检测当前运行环境的的各种属性。例如java版本或者Unsafe 可用性的工具
  * <p>
  * You can disable the use of {@code sun.misc.Unsafe} if you specify
  * the system property <strong>io.netty.noUnsafe</strong>.
+ *
+ * 你可以禁用Unsafe 如果你指定了io.netty.noUnsafe 这个系统属性
  */
 public final class PlatformDependent {
 
@@ -157,6 +160,11 @@ public final class PlatformDependent {
         // * == 0  - Use cleaner, Netty will not enforce max memory, and instead will defer to JDK.
         // * >  0  - Don't use cleaner. This will limit Netty's total direct memory
         //           (note: that JDK's direct memory limit is independent of this).
+
+        //<0 , 不使用cleaner，从java继承最大的直接内存，在这种情况下，真实的最大内存为 jdk定义的最大内存*2(默认值)
+        //=0 ，netty 将不会限制最大内存。而由JDK 继续决定
+        //>0 ，Don't use cleaner，这个将限制netty的总直接内存，jdk的总直接限制不依赖这个。
+        // maxDirectMemory默认值是-1，默认行为默认是jdk的最大内存*2
         long maxDirectMemory = SystemPropertyUtil.getLong("io.netty.maxDirectMemory", -1);
 
         if (maxDirectMemory == 0 || !hasUnsafe() || !PlatformDependent0.hasDirectBufferNoCleanerConstructor()) {
@@ -199,6 +207,7 @@ public final class PlatformDependent {
         }
 
         // We should always prefer direct buffers by default if we can use a Cleaner to release direct buffers.
+        //如果我们可以使用Cleaner来释放直接缓冲区，那么我们应该始终默认选择直接缓冲区。
         DIRECT_BUFFER_PREFERRED = CLEANER != NOOP
                                   && !SystemPropertyUtil.getBoolean("io.netty.noPreferDirect", false);
         if (logger.isDebugEnabled()) {
@@ -372,6 +381,7 @@ public final class PlatformDependent {
     /**
      * Return {@code true} if {@code sun.misc.Unsafe} was found on the classpath and can be used for accelerated
      * direct memory access.
+     * Unsafe 在类加载器中存在，用于加速直接内存访问
      */
     public static boolean hasUnsafe() {
         return UNSAFE_UNAVAILABILITY_CAUSE == null;
@@ -767,6 +777,7 @@ public final class PlatformDependent {
     /**
      * Allocate a new {@link ByteBuffer} with the given {@code capacity}. {@link ByteBuffer}s allocated with
      * this method <strong>MUST</strong> be deallocated via {@link #freeDirectNoCleaner(ByteBuffer)}.
+     * 通过此方法进行分配的ByteBuffer，必须通过freeDirectNoCleaner方法来进行内存释放
      */
     public static ByteBuffer allocateDirectNoCleaner(int capacity) {
         assert USE_DIRECT_BUFFER_NO_CLEANER;
