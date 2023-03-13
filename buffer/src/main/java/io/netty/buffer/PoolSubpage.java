@@ -27,20 +27,20 @@ import static io.netty.buffer.SizeClasses.LOG2_QUANTUM;
 final class PoolSubpage<T> implements PoolSubpageMetric {
 
     final PoolChunk<T> chunk;
-    final int elemSize;
-    private final int pageShifts;
+    final int elemSize;  //记录每个⼩内存块的大小
+    private final int pageShifts;  //PoolSubpage 在 PoolChunk 中 memory 的偏移量
     private final int runOffset;
     private final int runSize;
-    private final long[] bitmap;
+    private final long[] bitmap; //记录每个⼩内存块的状态
 
     PoolSubpage<T> prev;
     PoolSubpage<T> next;
 
     boolean doNotDestroy;
-    private int maxNumElems;
+    private int maxNumElems; //最多可以存放多少⼩内存块：8K/elemSize
     private int bitmapLength;
     private int nextAvail;
-    private int numAvail;
+    private int numAvail; //可⽤于分配的内存块个数
 
     private final ReentrantLock lock = new ReentrantLock();
 

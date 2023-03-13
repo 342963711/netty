@@ -21,8 +21,11 @@ import static io.netty.buffer.PoolThreadCache.*;
  * SizeClasses requires {@code pageShifts} to be defined prior to inclusion,
  * and it in turn defines:
  * <p>
+ *   //每次大小加倍的大小类计数日志
  *   LOG2_SIZE_CLASS_GROUP: Log of size class count for each size doubling.
+ *   //查找表中最大大小类的日志
  *   LOG2_MAX_LOOKUP_SIZE: Log of max size class in the lookup table.
+ *
  *   sizeClasses: Complete table of [index, log2Group, log2Delta, nDelta, isMultiPageSize,
  *                 isSubPage, log2DeltaLookup] tuples.
  *     index: Size class index.

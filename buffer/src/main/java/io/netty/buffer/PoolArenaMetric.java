@@ -25,6 +25,7 @@ public interface PoolArenaMetric extends SizeClassesMetric {
 
     /**
      * Returns the number of thread caches backed by this arena.
+     * 返回支持的线程缓存数
      */
     int numThreadCaches();
 

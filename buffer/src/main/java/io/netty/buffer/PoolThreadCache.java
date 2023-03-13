@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * technics of
  * <a href="https://www.facebook.com/notes/facebook-engineering/scalable-memory-allocation-using-jemalloc/480222803919">
  * Scalable memory allocation using jemalloc</a>.
+ * 充当线程缓冲，与jemalloc 类似，都包含thread cache的特性。
  */
 final class PoolThreadCache {
 

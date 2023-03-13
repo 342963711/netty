@@ -766,6 +766,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
      * in this buffer.  This method does not modify {@code readerIndex} or
      * {@code writerIndex} of this buffer.
      *
+     *
      * @throws IndexOutOfBoundsException
      *         if the specified {@code index} is less than {@code 0} or
      *         {@code index + 4} is greater than {@code this.capacity}

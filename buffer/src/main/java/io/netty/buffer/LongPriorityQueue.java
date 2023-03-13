@@ -19,7 +19,9 @@ import java.util.Arrays;
 
 /**
  * Internal primitive priority queue, used by {@link PoolChunk}.
+ * 内部原语优先级队列，由{@link PoolChunk} 使用。
  * The implementation is based on the binary heap, as described in Algorithms by Sedgewick and Wayne.
+ * 该实现基于二进制堆
  */
 final class LongPriorityQueue {
     public static final int NO_VALUE = -1;

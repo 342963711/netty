@@ -31,7 +31,7 @@ import java.nio.channels.ScatteringByteChannel;
  * @param <T>
  */
 abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
-
+    //回收器手柄
     private final Handle<PooledByteBuf<T>> recyclerHandle;
 
     protected PoolChunk<T> chunk;

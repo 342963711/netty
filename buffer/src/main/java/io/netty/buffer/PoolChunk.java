@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Description of algorithm for PageRun/PoolSubpage allocation from PoolChunk
+ * 从 PoolChunk 分配 PageRun/PoolSubpage 的算法描述
  *
  * Notation: The following terms are important to understand the code
  * > page  - a page is the smallest unit of memory chunk that can be allocated
@@ -33,16 +34,26 @@ import java.util.concurrent.locks.ReentrantLock;
  * > chunk - a chunk is a collection of runs
  * > in this code chunkSize = maxPages * pageSize
  *
+ * 页-> 页是可以分配的最小内存块单位
+ * 运行 -> 是页面集合
+ * 块-> 块 是run 的集合
+ * chunkSize = maxPages*pageSize
+ *
  * To begin we allocate a byte array of size = chunkSize
  * Whenever a ByteBuf of given size needs to be created we search for the first position
  * in the byte array that has enough empty space to accommodate the requested size and
  * return a (long) handle that encodes this offset information, (this memory segment is then
  * marked as reserved so it is always used by exactly one ByteBuf and no more)
  *
+ * 首先，我们分配大小为chunkSize的字节数组，每当需要创建给定大小的ByteBuf时，我们在字节数组中搜索具有足够空间以容纳所请求大小的第一个位置，并返回编码该便宜信息的长句柄。
+ * （然后将此段内存段标记为保留，以便始终由一个ByteBuf使用）
+ *
  * For simplicity all sizes are normalized according to {@link PoolArena#size2SizeIdx(int)} method.
  * This ensures that when we request for memory segments of size > pageSize the normalizedCapacity
  * equals the next nearest size in {@link SizeClasses}.
  *
+ * 为了简单期间，所有大小都根据 PoolArena#size2SizeIdx(int)方法标准化。
+ * 这确保了当我们请求大小大于pageSize内存段时，normalizedCapacity（标准化容量）等于SizeClasses中下一个最近的大小
  *
  *  A chunk has the following layout:
  *
@@ -74,33 +85,42 @@ import java.util.concurrent.locks.ReentrantLock;
  * handle:
  * -------
  * a handle is a long number, the bit layout of a run looks like:
- *
+ * 句柄 是一个长数字，运行的位布局如下
  * oooooooo ooooooos ssssssss ssssssue bbbbbbbb bbbbbbbb bbbbbbbb bbbbbbbb
  *
- * o: runOffset (page offset in the chunk), 15bit
- * s: size (number of pages) of this run, 15bit
- * u: isUsed?, 1bit
- * e: isSubpage?, 1bit
- * b: bitmapIdx of subpage, zero if it's not subpage, 32bit
+ * o: runOffset (page offset in the chunk), 15bit   // 块中页面偏移量
+ * s: size (number of pages) of this run, 15bit     // 本次运行大小 （页面数量）。
+ * u: isUsed?, 1bit                                 //
+ * e: isSubpage?, 1bit                              // 是否是子页 1位
+ * b: bitmapIdx of subpage, zero if it's not subpage, 32bit // 子页面的bitmap.idx，如果不是子页面，则为0，32位
  *
- * runsAvailMap:
+ * runsAvailMap: 运行有效映射
  * ------
  * a map which manages all runs (used and not in used).
+ * 管理所有运行（已使用和未使用）的映射
  * For each run, the first runOffset and last runOffset are stored in runsAvailMap.
+ * 对于每次运行，第一个 runOffset 和 最后一个 runOffset 都存在在 runsAvailMap
  * key: runOffset
  * value: handle
  *
  * runsAvail:
+ * 运行有效
  * ----------
  * an array of {@link PriorityQueue}.
- * Each queue manages same size of runs.
- * Runs are sorted by offset, so that we always allocate runs with smaller offset.
+ * PriorityQueue 的一个数组
  *
+ * Each queue manages same size of runs.
+ * 每个队列管理相同大小的 运行
+ *
+ * Runs are sorted by offset, so that we always allocate runs with smaller offset.
+ * 运行按照偏移量排序，因此我们总是分配具有较小偏移量的运行。
  *
  * Algorithm:
+ * 算法
  * ----------
  *
  *   As we allocate runs, we update values stored in runsAvailMap and runsAvail so that the property is maintained.
+ *   在分配运行时，我们更新存储在 runsAvailMap 和 runsAvail中的值，以便维护该属性
  *
  * Initialization -
  *  In the beginning we store the initial run which is the whole chunk.
@@ -110,33 +130,54 @@ import java.util.concurrent.locks.ReentrantLock;
  *  isUsed = no
  *  isSubpage = no
  *  bitmapIdx = 0
- *
+ *  以上是初始化状态
  *
  * Algorithm: [allocateRun(size)]
+ * 分配运行
  * ----------
  * 1) find the first avail run using in runsAvails according to size
  * 2) if pages of run is larger than request pages then split it, and save the tailing run
  *    for later using
  *
+ * 1.根据大小在runsAvails查找第一个可用运行
+ * 2.如果运行的页面大于请求页面，则将其拆分。保存在run尾部以供以后使用
+ *
  * Algorithm: [allocateSubpage(size)]
+ * 算法：分配子页
  * ----------
  * 1) find a not full subpage according to size.
  *    if it already exists just return, otherwise allocate a new PoolSubpage and call init()
  *    note that this subpage object is added to subpagesPool in the PoolArena when we init() it
  * 2) call subpage.allocate()
  *
+ * 1.根据大小查找不完整的子页面，如果它已经存在，则返回，否则分配一个新的 PoolSubpage 并调用 init()。注意，当我们初始化它时，这个子页面对象被添加到
+ * PoolArena的子页面池中
+ * 2.调用分配
+ *
  * Algorithm: [free(handle, length, nioBuffer)]
+ * 算法，释放空间
  * ----------
  * 1) if it is a subpage, return the slab back into this subpage
  * 2) if the subpage is not used or it is a run, then start free this run
  * 3) merge continuous avail runs
  * 4) save the merged run
  *
+ * 1.如果是子页面，将。。返回到此子页面
+ * 2.如果子页面未使用或者正在运行，开始释放这个run
+ * 3.合并连续可用运行
+ * 4.保存并且合并run
+ *
+ * 注意： PoolChunk 被设计为满二叉树
+ *
  */
 final class PoolChunk<T> implements PoolChunkMetric {
+    //块中页面偏移量或者本次运行大小 （页面数量）。
     private static final int SIZE_BIT_LENGTH = 15;
+    // 是否使用
     private static final int INUSED_BIT_LENGTH = 1;
+    //是否子页面
     private static final int SUBPAGE_BIT_LENGTH = 1;
+    //子页面的bitmap.idx，如果不是子页面，则为0，32位
     private static final int BITMAP_IDX_BIT_LENGTH = 32;
 
     static final int IS_SUBPAGE_SHIFT = BITMAP_IDX_BIT_LENGTH;
@@ -146,16 +187,19 @@ final class PoolChunk<T> implements PoolChunkMetric {
 
     final PoolArena<T> arena;
     final Object base;
+    //存储的数据
     final T memory;
     final boolean unpooled;
 
     /**
      * store the first page and last page of each avail run
+     * 存储每次可用运行的第一页和最后一页
      */
     private final LongLongHashMap runsAvailMap;
 
     /**
      * manage all avail runs
+     * 管理所有可用运行
      */
     private final LongPriorityQueue[] runsAvail;
 
@@ -163,11 +207,13 @@ final class PoolChunk<T> implements PoolChunkMetric {
 
     /**
      * manage all subpages in this chunk
+     * 管理此块中所有的子页面， Netty中并没有page的定义，直接使用PoolSubpage表示
      */
     private final PoolSubpage<T>[] subpages;
 
     /**
      * Accounting of pinned memory – memory that is currently in use by ByteBuf instances.
+     * bytebuf示例当前使用的内存，
      */
     private final LongCounter pinnedBytes = PlatformDependent.newLongCounter();
 
