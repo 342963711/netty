@@ -27,7 +27,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A pool of {@link Constant}s.
  *
+ * 常量池
+ *
  * @param <T> the type of the constant
+ *           常量类型
  */
 public abstract class ConstantPool<T extends Constant<T>> {
 

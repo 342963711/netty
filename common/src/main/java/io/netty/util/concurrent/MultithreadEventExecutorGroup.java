@@ -29,13 +29,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks with multiple threads at
  * the same time.
+ * EventExecutorGroup 实现的抽象基类，该实现同时用多个线程处理任务
+ *
+ * 多线程事件处理器组
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
-
+    //事件处理器数组
     private final EventExecutor[] children;
     private final Set<EventExecutor> readonlyChildren;
     private final AtomicInteger terminatedChildren = new AtomicInteger();
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+    //默认按照轮训规则返回 children 其中的一个
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
     /**
@@ -65,6 +69,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the Executor to use, or {@code null} if the default should be used.
+     *                          使用指定的处理器，如果为null的话，将使用默认值，也就是ThreadPerTaskExecutor
      * @param chooserFactory    the {@link EventExecutorChooserFactory} to use.
      * @param args              arguments which will passed to each {@link #newChild(Executor, Object...)} call
      */
@@ -153,7 +158,8 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
     /**
      * Create a new EventExecutor which will later then accessible via the {@link #next()}  method. This method will be
      * called for each thread that will serve this {@link MultithreadEventExecutorGroup}.
-     *
+     * 创建一个新的 EventExecutor, 稍后将通过 next() 方法进行访问。
+     * 此方法将被每个服务于 MultithreadEventExecutorGroup 的线程调用
      */
     protected abstract EventExecutor newChild(Executor executor, Object... args) throws Exception;
 

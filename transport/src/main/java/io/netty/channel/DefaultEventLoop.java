@@ -42,6 +42,12 @@ public class DefaultEventLoop extends SingleThreadEventLoop {
         super(parent, threadFactory, true);
     }
 
+    /**
+     *
+     * @param parent 事件循环所在 事件循环组，默认是 DefaultEventLoopGroup
+     * @param executor
+     * @see io.netty.util.concurrent.ThreadPerTaskExecutor
+     */
     public DefaultEventLoop(EventLoopGroup parent, Executor executor) {
         super(parent, executor, true);
     }

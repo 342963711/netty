@@ -20,6 +20,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * {@link MultithreadEventLoopGroup} which must be used for the local transport.
+ * 多线程事件循环组必须用于本地传输
  */
 public class DefaultEventLoopGroup extends MultithreadEventLoopGroup {
 
@@ -68,6 +69,13 @@ public class DefaultEventLoopGroup extends MultithreadEventLoopGroup {
         super(nThreads, executor);
     }
 
+    /**
+     * 创建事件循环
+     * @param executor
+     * @param args
+     * @return
+     * @throws Exception
+     */
     @Override
     protected EventLoop newChild(Executor executor, Object... args) throws Exception {
         return new DefaultEventLoop(this, executor);

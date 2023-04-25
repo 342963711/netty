@@ -29,11 +29,15 @@ import java.util.concurrent.ThreadFactory;
 /**
  * Abstract base class for {@link EventLoopGroup} implementations that handles their tasks with multiple threads at
  * the same time.
+ *
+ * EventLoopGroup的基类实现。该实现同时使用多个线程处理任务
+ *
+ * 多线程事件循环组
  */
 public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup implements EventLoopGroup {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(MultithreadEventLoopGroup.class);
-
+    //最少是1，默认是cpu 核数*2
     private static final int DEFAULT_EVENT_LOOP_THREADS;
 
     static {
