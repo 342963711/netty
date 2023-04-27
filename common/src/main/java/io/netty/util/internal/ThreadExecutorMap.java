@@ -23,6 +23,8 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * Allow to retrieve the {@link EventExecutor} for the calling {@link Thread}.
+ *
+ * 对调用的 Thread 允许检索 EventExecutor
  */
 public final class ThreadExecutorMap {
 

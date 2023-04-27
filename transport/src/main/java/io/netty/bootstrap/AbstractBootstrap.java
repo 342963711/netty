@@ -47,8 +47,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link AbstractBootstrap} is a helper class that makes it easy to bootstrap a {@link Channel}. It support
  * method-chaining to provide an easy way to configure the {@link AbstractBootstrap}.
  *
+ * AbstractBootstrap 使得启动一个 channel 简单的辅助类， 它支持链式方法以提供一个简单的方式配置 AbstractBootstrap
+ *
  * <p>When not used in a {@link ServerBootstrap} context, the {@link #bind()} methods are useful for connectionless
  * transports such as datagram (UDP).</p>
+ *
+ * @see Bootstrap
+ * @see ServerBootstrap
  */
 public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C extends Channel> implements Cloneable {
     @SuppressWarnings("unchecked")
@@ -56,15 +61,21 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     @SuppressWarnings("unchecked")
     private static final Map.Entry<AttributeKey<?>, Object>[] EMPTY_ATTRIBUTE_ARRAY = new Map.Entry[0];
 
+    //事件循环组
     volatile EventLoopGroup group;
+
+    //channel工厂
     @SuppressWarnings("deprecation")
     private volatile ChannelFactory<? extends C> channelFactory;
+
+    //socket 地址
     private volatile SocketAddress localAddress;
 
     // The order in which ChannelOptions are applied is important they may depend on each other for validation
-    // purposes.
+    // purposes. ChannelOptions 的被应用的顺序很重要，因为他们可能相互依赖以进行验证
     private final Map<ChannelOption<?>, Object> options = new LinkedHashMap<ChannelOption<?>, Object>();
     private final Map<AttributeKey<?>, Object> attrs = new ConcurrentHashMap<AttributeKey<?>, Object>();
+
     private volatile ChannelHandler handler;
 
     AbstractBootstrap() {
@@ -262,6 +273,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * Create a new {@link Channel} and bind it.
+     * 创建一个新的 Channel 并 绑定它
      */
     public ChannelFuture bind(SocketAddress localAddress) {
         validate();
@@ -383,6 +395,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * Returns the {@link AbstractBootstrapConfig} object that can be used to obtain the current config
      * of the bootstrap.
+     * 返回AbstractBootstrapConfig 对象，该对象可用于获取引导程序的当前配置
      */
     public abstract AbstractBootstrapConfig<B, C> config();
 

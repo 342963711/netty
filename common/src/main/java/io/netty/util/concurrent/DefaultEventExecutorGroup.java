@@ -21,6 +21,8 @@ import java.util.concurrent.ThreadFactory;
 /**
  * Default implementation of {@link MultithreadEventExecutorGroup} which will use {@link DefaultEventExecutor} instances
  * to handle the tasks.
+ *
+ * 多线程事件处理器组的默认事项。 将使用DefaultEventExecutor实例 处理任务
  */
 public class DefaultEventExecutorGroup extends MultithreadEventExecutorGroup {
     /**

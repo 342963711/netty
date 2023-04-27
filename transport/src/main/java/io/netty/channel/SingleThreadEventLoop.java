@@ -31,12 +31,20 @@ import java.util.concurrent.ThreadFactory;
 /**
  * Abstract base class for {@link EventLoop}s that execute all its submitted tasks in a single thread.
  * EventLoop 的基类，在单个线程中执行其提交的所有任务
+ *
+ * 单线程事件循环
  */
 public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
 
+    /**
+     * 任务队列最小为16
+     */
     protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16,
             SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
 
+    /**
+     * 挂起任务队列,
+     */
     private final Queue<Runnable> tailTasks;
 
     protected SingleThreadEventLoop(EventLoopGroup parent, ThreadFactory threadFactory, boolean addTaskWakesUp) {
@@ -44,7 +52,7 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
     }
 
     /**
-     *
+     * 默认实现调用
      * @param parent
      * @param executor
      * @param addTaskWakesUp
@@ -157,6 +165,8 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
      * Returns the number of {@link Channel}s registered with this {@link EventLoop} or {@code -1}
      * if operation is not supported. The returned value is not guaranteed to be exact accurate and
      * should be viewed as a best effort.
+     * 返回注册在此 EventLoop 中的 Channel 数量。 如果操作不被支持，返回-1。
+     * 返回的值不能保证准确无误，应视为最大努力
      */
     @UnstableApi
     public int registeredChannels() {

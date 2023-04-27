@@ -20,6 +20,9 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
+/**
+ * 默认的事件循环
+ */
 public class DefaultEventLoop extends SingleThreadEventLoop {
 
     public DefaultEventLoop() {
@@ -45,6 +48,7 @@ public class DefaultEventLoop extends SingleThreadEventLoop {
     /**
      *
      * @param parent 事件循环所在 事件循环组，默认是 DefaultEventLoopGroup
+     * @see DefaultEventLoopGroup
      * @param executor
      * @see io.netty.util.concurrent.ThreadPerTaskExecutor
      */

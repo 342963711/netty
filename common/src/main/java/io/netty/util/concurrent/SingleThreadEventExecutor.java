@@ -46,7 +46,9 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * Abstract base class for {@link OrderedEventExecutor}'s that execute all its submitted tasks in a single thread.
+ * OrderedEventExecutor的基类，在单个线程里面处理它提交的所有任务
  *
+ * 单线程事件处理器
  */
 public abstract class SingleThreadEventExecutor extends AbstractScheduledEventExecutor implements OrderedEventExecutor {
 
@@ -55,7 +57,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     private static final InternalLogger logger =
             InternalLoggerFactory.getInstance(SingleThreadEventExecutor.class);
-
+    //现成运行状态
     private static final int ST_NOT_STARTED = 1;
     private static final int ST_STARTED = 2;
     private static final int ST_SHUTTING_DOWN = 3;
@@ -168,6 +170,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         super(parent);
         this.addTaskWakesUp = addTaskWakesUp;
         this.maxPendingTasks = DEFAULT_MAX_PENDING_EXECUTOR_TASKS;
+        //对当前执行环境进行包装并且存储到本地线程变量
         this.executor = ThreadExecutorMap.apply(executor, this);
         this.taskQueue = ObjectUtil.checkNotNull(taskQueue, "taskQueue");
         this.rejectedExecutionHandler = ObjectUtil.checkNotNull(rejectedHandler, "rejectedHandler");
@@ -186,6 +189,9 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * {@link LinkedBlockingQueue} but if your sub-class of {@link SingleThreadEventExecutor} will not do any blocking
      * calls on the this {@link Queue} it may make sense to {@code @Override} this and return some more performant
      * implementation that does not support blocking operations at all.
+     *
+     * 创建一个新的 Queue，将保存要执行的任务。此默认实现将返回LinkedBlockingQueue。 但如果SingleThreadEventExecutor的子类 在这个队列上不会进行阻塞调用。那么重写并返回完全不支持阻塞的更高性能实现
+     * 是有意义的
      */
     protected Queue<Runnable> newTaskQueue(int maxPendingTasks) {
         return new LinkedBlockingQueue<Runnable>(maxPendingTasks);
@@ -222,12 +228,15 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     /**
      * Take the next {@link Runnable} from the task queue and so will block if no task is currently present.
+     * 从任务队列中获取下一个Runnable。如果当前没有任务存在，则将阻塞
      * <p>
      * Be aware that this method will throw an {@link UnsupportedOperationException} if the task queue, which was
      * created via {@link #newTaskQueue()}, does not implement {@link BlockingQueue}.
      * </p>
+     * 如果任务队列通过 newTaskQueue 创建，没实现 BlockingQueue，将会抛出 UnsupportedOperationException
      *
      * @return {@code null} if the executor thread has been interrupted or waken up.
+     * 如果执行器线程被中断或唤醒，则返回null
      */
     protected Runnable takeTask() {
         assert inEventLoop();
@@ -538,6 +547,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     /**
      * Run the tasks in the {@link #taskQueue}
+     *
      */
     protected abstract void run();
 

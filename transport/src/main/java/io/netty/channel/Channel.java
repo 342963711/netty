@@ -205,30 +205,42 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      *   <li>{@link #deregister(ChannelPromise)}</li>
      *   <li>{@link #voidPromise()}</li>
      * </ul>
+     *
+     * 从不应从用户代码中调用<em>Unsafe</em>操作。这些方法仅用于实现实际传输，并且必须从I/O线程调用
+     * 以下方法：
+     *
      */
     interface Unsafe {
 
         /**
          * Return the assigned {@link RecvByteBufAllocator.Handle} which will be used to allocate {@link ByteBuf}'s when
          * receiving data.
+         * 返回分配的｛@link RecvByteBufAllocator.Handle｝，将用于在接收数据时分配｛@linkByteBuf｝
+         *
          */
         RecvByteBufAllocator.Handle recvBufAllocHandle();
 
         /**
          * Return the {@link SocketAddress} to which is bound local or
          * {@code null} if none.
+         * 返回绑定到本地 的SocketAddress，如果没有，则返回 null.
+         *
          */
         SocketAddress localAddress();
 
         /**
          * Return the {@link SocketAddress} to which is bound remote or
          * {@code null} if none is bound yet.
+         *
+         * 返回bending到远程的 SocketAddress，如果没有，返回null.
          */
         SocketAddress remoteAddress();
 
         /**
          * Register the {@link Channel} of the {@link ChannelPromise} and notify
          * the {@link ChannelFuture} once the registration was complete.
+         * 注册 ChannelPromise 的 Channel ，并在注册完成后，通知ChannelFuture
+         *
          */
         void register(EventLoop eventLoop, ChannelPromise promise);
 
