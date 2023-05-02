@@ -43,6 +43,8 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 
 /**
  * The default {@link ChannelConfig} implementation.
+ *
+ * ChannelConfig 的默认实现
  */
 public class DefaultChannelConfig implements ChannelConfig {
     private static final MessageSizeEstimator DEFAULT_MSG_SIZE_ESTIMATOR = DefaultMessageSizeEstimator.DEFAULT;

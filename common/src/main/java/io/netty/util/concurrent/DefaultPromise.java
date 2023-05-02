@@ -31,7 +31,12 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static io.netty.util.internal.ObjectUtil.checkNotNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
+/**
+ * @date 2023/5/1 08:11
+ * @author likai
+ * @email likai9376@163.com
+ * @desc Promise 的默认实现
+ */
 public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultPromise.class);
     private static final InternalLogger rejectedExecutionLogger =
@@ -48,23 +53,34 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private static final StackTraceElement[] CANCELLATION_STACK = CANCELLATION_CAUSE_HOLDER.cause.getStackTrace();
 
     private volatile Object result;
+
+    //事件执行器
     private final EventExecutor executor;
     /**
      * One or more listeners. Can be a {@link GenericFutureListener} or a {@link DefaultFutureListeners}.
      * If {@code null}, it means either 1) no listeners were added yet or 2) all listeners were notified.
      *
      * Threading - synchronized(this). We must support adding listeners when there is no EventExecutor.
+     *
+     * 一个或多个听众。可以是｛@link GenericFutureListener｝或｛@link-DefaultFutureListners｝。
+     * 如果｛@code null｝，则意味着1）尚未添加侦听器，或者2）已通知所有侦听器。
+     * 线程-同步（this）。当没有EventExecutor时，我们必须支持添加侦听器。
+     *
      */
     private GenericFutureListener<? extends Future<?>> listener;
     private DefaultFutureListeners listeners;
     /**
      * Threading - synchronized(this). We are required to hold the monitor to use Java's underlying wait()/notifyAll().
+     *
+     * 线程-同步（this）。我们需要持有监视器才能使用Java的底层wait（）/notifyAll（）。
      */
     private short waiters;
+
 
     /**
      * Threading - synchronized(this). We must prevent concurrent notification and FIFO listener notification if the
      * executor changes.
+     * 线程-同步（this）。如果执行器发生更改，我们必须防止并发通知和FIFO侦听器通知
      */
     private boolean notifyingListeners;
 
@@ -447,6 +463,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     /**
      * Get the executor used to notify listeners when this promise is complete.
+     * 当promise完成时，获取用于通知监听者的执行器
      * <p>
      * It is assumed this executor will protect against {@link StackOverflowError} exceptions.
      * The executor may be used to avoid {@link StackOverflowError} by executing a {@link Runnable} if the stack
@@ -643,6 +660,10 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     /**
      * Check if there are any waiters and if so notify these.
      * @return {@code true} if there are any listeners attached to the promise, {@code false} otherwise.
+     *
+     * 检查 是否有 waiters，如果有就进行通知。
+     *
+     * 如果这个promise有listeners，返回true,如果没有listener，就返回false
      */
     private synchronized boolean checkNotifyWaiters() {
         if (waiters > 0) {

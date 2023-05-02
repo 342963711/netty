@@ -25,11 +25,18 @@ import io.netty.channel.ChannelHandlerMask.Skip;
  * This implementation just forward the operation to the next {@link ChannelHandler} in the
  * {@link ChannelPipeline}. Sub-classes may override a method implementation to change this.
  * </p>
+ *
+ *
  * <p>
  * Be aware that messages are not released after the {@link #channelRead(ChannelHandlerContext, Object)}
  * method returns automatically. If you are looking for a {@link ChannelInboundHandler} implementation that
  * releases the received messages automatically, please see {@link SimpleChannelInboundHandler}.
  * </p>
+ * 请注意，在｛@link channelRead（ChannelHandlerContext，Object）｝方法自动返回后，不会释放消息。
+ *
+ * 如果您正在寻找自动释放接收到的消息的{@link ChannelInboundHandler}实现，请参阅{@link SimpleChannelInboundHandler}
+ *
+ * @see SimpleChannelInboundHandler
  */
 public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler {
 
@@ -120,6 +127,9 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireChannelWritabilityChanged()} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
+     *
+     * 调用｛@link ChannelHandlerContext#fireChannelWritabilityChanged（）｝转发到
+     * ｛@link ChannelPipeline｝中的下一个｛@linkChannelInboundHandler｝。
      *
      * Sub-classes may override this method to change behavior.
      */

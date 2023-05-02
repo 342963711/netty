@@ -39,26 +39,42 @@ import java.util.concurrent.RejectedExecutionException;
 
 /**
  * A skeletal {@link Channel} implementation.
+ *
+ * 一个 Channel 实现的骨架
  */
 public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannel.class);
 
+    //维护父级 层级关系
     private final Channel parent;
+    // 代表channel 的全局唯一标识
     private final ChannelId id;
+
+    //内部操作unsafe 类
     private final Unsafe unsafe;
+    //channel 管道
     private final DefaultChannelPipeline pipeline;
+    //channelPromise 和 future 通知类
     private final VoidChannelPromise unsafeVoidPromise = new VoidChannelPromise(this, false);
     private final CloseFuture closeFuture = new CloseFuture(this);
 
     private volatile SocketAddress localAddress;
     private volatile SocketAddress remoteAddress;
+
+    //事件循环，统一在Unsafe 类来进行管理
     private volatile EventLoop eventLoop;
+
+    //注册
     private volatile boolean registered;
+
+    //关闭初始化
     private boolean closeInitiated;
     private Throwable initialCloseCause;
 
     /** Cache for the string representation of this channel */
+
+    //缓冲此channel 的字符串表示形式
     private boolean strValActive;
     private String strVal;
 
@@ -78,6 +94,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     /**
      * Creates a new instance.
      *
+     * 创建一个新的示例
      * @param parent
      *        the parent of this channel. {@code null} if there's no parent.
      */
@@ -88,6 +105,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         pipeline = newChannelPipeline();
     }
 
+    //每次写入的最大消息数
     protected final int maxMessagesPerWrite() {
         ChannelConfig config = config();
         if (config instanceof DefaultChannelConfig) {
@@ -115,6 +133,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Returns a new {@link DefaultChannelPipeline} instance.
+     * 返回一个新的 DefaultChannelPipeline 实例
      */
     protected DefaultChannelPipeline newChannelPipeline() {
         return new DefaultChannelPipeline(this);
@@ -343,6 +362,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Create a new {@link AbstractUnsafe} instance which will be used for the life-time of the {@link Channel}
+     *
+     * 返回一个新的 AbstractUnsafe 实例。该实例将在channel 生命周期内使用
      */
     protected abstract AbstractUnsafe newUnsafe();
 
@@ -425,19 +446,24 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * {@link Unsafe} implementation which sub-classes must extend and use.
+     * Unsafe 的一个子类必须继承和使用的一个实现类
      */
     protected abstract class AbstractUnsafe implements Unsafe {
-
+        //channel 出站 缓冲池
         private volatile ChannelOutboundBuffer outboundBuffer = new ChannelOutboundBuffer(AbstractChannel.this);
+        //接受处理
         private RecvByteBufAllocator.Handle recvHandle;
+        //是否刷新
         private boolean inFlush0;
         /** true if the channel has never been registered, false otherwise */
+        //如果channel 没有被注册，返回true. 其他返回false.
         private boolean neverRegistered = true;
-
+        //如果 注册并且 当前线程不是事件循环线程。发生断言
         private void assertEventLoop() {
             assert !registered || eventLoop.inEventLoop();
         }
 
+        //接受 缓冲 分配 处理
         @Override
         public RecvByteBufAllocator.Handle recvBufAllocHandle() {
             if (recvHandle == null) {
@@ -446,6 +472,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             return recvHandle;
         }
 
+        //出站缓冲区
         @Override
         public final ChannelOutboundBuffer outboundBuffer() {
             return outboundBuffer;
@@ -497,6 +524,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        //执行注册
         private void register0(ChannelPromise promise) {
             try {
                 // check if the channel is still open as it could be closed in the mean time when the register
@@ -511,9 +539,12 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
                 // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the
                 // user may already fire events through the pipeline in the ChannelFutureListener.
+                //确保在实际通知promise之前调用handlerAdded（…）.
+                //这是必要的，因为用户可能已经通过ChannelFutureListener中的管道触发了事件
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);
+                //I/O操作 下发到链路
                 pipeline.fireChannelRegistered();
                 // Only fire a channelActive if the channel has never been registered. This prevents firing
                 // multiple channel actives if the channel is deregistered and re-registered.
@@ -1057,11 +1088,13 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Return {@code true} if the given {@link EventLoop} is compatible with this instance.
+     * 如果给定的｛@link EventLoop｝与此实例兼容，则返回｛@code true｝。
      */
     protected abstract boolean isCompatible(EventLoop loop);
 
     /**
      * Returns the {@link SocketAddress} which is bound locally.
+     * 返回绑定的SocketAddress
      */
     protected abstract SocketAddress localAddress0();
 
@@ -1072,7 +1105,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Is called after the {@link Channel} is registered with its {@link EventLoop} as part of the register process.
-     *
+     * 在｛@link Channel｝向其｛@linkEventLoop｝注册后调用，作为注册过程的一部分。
      * Sub-classes may override this method
      */
     protected void doRegister() throws Exception {
@@ -1081,22 +1114,28 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Bind the {@link Channel} to the {@link SocketAddress}
+     * 绑定 SocketAddress
      */
     protected abstract void doBind(SocketAddress localAddress) throws Exception;
 
     /**
      * Disconnect this {@link Channel} from its remote peer
+     *
+     * 断开此｛@link Channel｝与其远程对等端的连接
      */
     protected abstract void doDisconnect() throws Exception;
 
     /**
      * Close the {@link Channel}
+     * 关闭channel
      */
     protected abstract void doClose() throws Exception;
 
     /**
      * Called when conditions justify shutting down the output portion of the channel. This may happen if a write
      * operation throws an exception.
+     *
+     * 当条件允许关闭通道的输出部分时调用.如果写入操作引发异常，则可能会发生这种情况
      */
     @UnstableApi
     protected void doShutdownOutput() throws Exception {
@@ -1105,6 +1144,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Deregister the {@link Channel} from its {@link EventLoop}.
+     * 从此EventLoop 取消注册 channel
      *
      * Sub-classes may override this method
      */
@@ -1114,22 +1154,31 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Schedule a read operation.
+     * 安排一个读操作
+     * 由 unsafe 来进行调用，子类需要重写
      */
     protected abstract void doBeginRead() throws Exception;
 
     /**
      * Flush the content of the given buffer to the remote peer.
+     * 将给定的 buffer 的内容刷到远程对等端
+     * ChannelOutboundBuffer 由 unsafe 来进行维护
      */
     protected abstract void doWrite(ChannelOutboundBuffer in) throws Exception;
 
     /**
      * Invoked when a new message is added to a {@link ChannelOutboundBuffer} of this {@link AbstractChannel}, so that
      * the {@link Channel} implementation converts the message to another. (e.g. heap buffer -> direct buffer)
+     *
+     * 当将新消息添加到此{@link AbstractChannel｝的{@link ChannelOutboundBuffer｝时调用，
+     * 以便{@link Channel｝实现将消息转换为另一个消息。（例如，堆缓冲区->直接缓冲区）
+     *
      */
     protected Object filterOutboundMessage(Object msg) throws Exception {
         return msg;
     }
 
+    //验证文件区域
     protected void validateFileRegion(DefaultFileRegion region, long position) throws IOException {
         DefaultFileRegion.validate(region, position);
     }

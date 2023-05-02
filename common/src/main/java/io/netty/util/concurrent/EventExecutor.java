@@ -46,7 +46,7 @@ public interface EventExecutor extends EventExecutorGroup {
 
     /**
      * Return {@code true} if the given {@link Thread} is executed in the event loop,
-     * 如果给定的 现成出现在 实现循环中 ，则返回true
+     * 如果给定的 线程 出现在 事件循环中 ，则返回true
      * {@code false} otherwise.
      */
     boolean inEventLoop(Thread thread);

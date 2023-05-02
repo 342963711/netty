@@ -89,6 +89,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
      */
     private boolean registered;
 
+    //构建channel 管道
     protected DefaultChannelPipeline(Channel channel) {
         this.channel = ObjectUtil.checkNotNull(channel, "channel");
         succeededFuture = new SucceededChannelFuture(channel, null);
@@ -647,6 +648,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             firstRegistration = false;
             // We are now registered to the EventLoop. It's time to call the callbacks for the ChannelHandlers,
             // that were added before the registration was done.
+            //我们现在已注册到EventLoop。是时候调用在注册完成之前添加的ChannelHandlers的回调了。
             callHandlerAddedForAllHandlers();
         }
     }

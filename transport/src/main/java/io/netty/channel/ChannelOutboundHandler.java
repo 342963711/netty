@@ -19,10 +19,14 @@ import java.net.SocketAddress;
 
 /**
  * {@link ChannelHandler} which will get notified for IO-outbound-operations.
+ *
+ * ｛@link ChannelHandler｝，它将收到IO出站操作的通知。
  */
 public interface ChannelOutboundHandler extends ChannelHandler {
     /**
      * Called once a bind operation is made.
+     *
+     * 在进行绑定操作后调用。
      *
      * @param ctx           the {@link ChannelHandlerContext} for which the bind operation is made
      * @param localAddress  the {@link SocketAddress} to which it should bound
@@ -73,6 +77,8 @@ public interface ChannelOutboundHandler extends ChannelHandler {
 
     /**
      * Intercepts {@link ChannelHandlerContext#read()}.
+     *
+     * 拦截
      */
     void read(ChannelHandlerContext ctx) throws Exception;
 
@@ -80,6 +86,10 @@ public interface ChannelOutboundHandler extends ChannelHandler {
     * Called once a write operation is made. The write operation will write the messages through the
      * {@link ChannelPipeline}. Those are then ready to be flushed to the actual {@link Channel} once
      * {@link Channel#flush()} is called
+     *
+     * 在进行写入操作后调用。写入操作将通过｛@link ChannelPipeline｝写入消息。
+     * 然后，这些就可以被刷新到实际的｛@link Channel｝
+     * 一旦调用{@link通道#flush（）}
      *
      * @param ctx               the {@link ChannelHandlerContext} for which the write operation is made
      * @param msg               the message to write
@@ -91,6 +101,8 @@ public interface ChannelOutboundHandler extends ChannelHandler {
     /**
      * Called once a flush operation is made. The flush operation will try to flush out all previous written messages
      * that are pending.
+     *
+     * 在进行刷新操作后调用。flush操作将尝试flush所有以前写入的挂起的消息。
      *
      * @param ctx               the {@link ChannelHandlerContext} for which the flush operation is made
      * @throws Exception        thrown if an error occurs

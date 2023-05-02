@@ -20,6 +20,7 @@ import io.netty.util.internal.TypeParameterMatcher;
 
 /**
  * {@link ChannelInboundHandlerAdapter} which allows to explicit only handle a specific type of messages.
+ * ｛@link ChannelInboundHandlerAdapter｝，它只允许显式处理特定类型的消息。
  *
  * For example here is an implementation which only handle {@link String} messages.
  *
@@ -38,6 +39,12 @@ import io.netty.util.internal.TypeParameterMatcher;
  * Be aware that depending of the constructor parameters it will release all handled messages by passing them to
  * {@link ReferenceCountUtil#release(Object)}. In this case you may need to use
  * {@link ReferenceCountUtil#retain(Object)} if you pass the object to the next handler in the {@link ChannelPipeline}.
+ *
+ * 请注意，根据构造函数参数的不同，
+ * 它将通过将所有已处理的消息传递给{@linkReferenceCountUtil#release（Object）}来释放这些消息。
+ *
+ * 在这种情况下，如果将对象传递给{@link ChannelPipeline}中的下一个处理程序，
+ * 则可能需要使用{@link ReferenceCountUtil#retain（Object）}。
  */
 public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandlerAdapter {
 
@@ -102,6 +109,7 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
                 ctx.fireChannelRead(msg);
             }
         } finally {
+            //autoRelease默认为true. 当类型匹配的时候，会进行msg 的释放
             if (autoRelease && release) {
                 ReferenceCountUtil.release(msg);
             }

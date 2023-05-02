@@ -42,8 +42,12 @@ import static java.lang.Math.min;
 /**
  * (Transport implementors only) an internal data structure used by {@link AbstractChannel} to store its pending
  * outbound write requests.
+ * (仅限传输实现者）｛@link AbstractChannel｝用于存储其挂起的出站写入请求的内部数据结构。
+ *
  * <p>
  * All methods must be called by a transport implementation from an I/O thread, except the following ones:
+ * 所有方法都必须由传输实现从I/O线程调用，以下方法除外：
+ *
  * <ul>
  * <li>{@link #size()} and {@link #isEmpty()}</li>
  * <li>{@link #isWritable()}</li>

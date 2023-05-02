@@ -24,10 +24,14 @@ import java.util.Map;
 
 /**
  * A set of configuration properties of a {@link Channel}.
+ * Channel 配置属性的集合
+ *
  * <p>
  * Please down-cast to more specific configuration type such as
  * {@link SocketChannelConfig} or use {@link #setOptions(Map)} to set the
  * transport-specific properties:
+ *
+ *
  * <pre>
  * {@link Channel} ch = ...;
  * {@link SocketChannelConfig} cfg = <strong>({@link SocketChannelConfig}) ch.getConfig();</strong>
@@ -176,6 +180,9 @@ public interface ChannelConfig {
 
     /**
      * Returns {@link RecvByteBufAllocator} which is used for the channel to allocate receive buffers.
+     *
+     * 返回用于 通道 分配 接收缓冲区 的@link RecvByteBufAllocator｝。
+     *
      */
     <T extends RecvByteBufAllocator> T getRecvByteBufAllocator();
 

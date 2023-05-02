@@ -26,6 +26,8 @@ import java.net.SocketAddress;
  *
  * 主要是 channel 的 ChannelPipeline 链路调用
  *
+ * 引起 ChannelPipeline 中下一个 ChannelOutboundHandler 中对应方法的调用。 与{@link ChannelInboundInvoker} 类似
+ *
  * @see ChannelPromise
  * @see ChannelProgressivePromise
  * @see ChannelFuture
@@ -45,7 +47,7 @@ public interface ChannelOutboundInvoker {
      * called of the next {@link ChannelOutboundHandler} contained in the {@link ChannelPipeline} of the
      * {@link Channel}.
      *
-     *  这将导致 调用下一个 ChannelOutboundHandler 的 bind(ChannelHandlerContext, SocketAddress, ChannelPromise) 方法包含在channel的 ChannelPipeline 中
+     *  这将导致 调用方法包含在channel的 ChannelPipeline 中 下一个 ChannelOutboundHandler 的 bind(ChannelHandlerContext, SocketAddress, ChannelPromise)
      */
     ChannelFuture bind(SocketAddress localAddress);
 

@@ -15,6 +15,13 @@
  */
 package io.netty.channel;
 
+/**
+ * 入站调用这。
+ *
+ * 一般的方法调用是，触发 channel 关联的 ChannelPipeline 中下一个 ChannelInboundHandler 中相对应对应方法的调用。
+ *
+ * @see ChannelOutboundInvoker
+ */
 public interface ChannelInboundInvoker {
 
     /**
@@ -23,6 +30,10 @@ public interface ChannelInboundInvoker {
      * This will result in having the  {@link ChannelInboundHandler#channelRegistered(ChannelHandlerContext)} method
      * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
      * {@link Channel}.
+     *
+     * 这将导致 ，包含在｛@link Channel｝的｛@linkChannelPipeline｝中的下一个
+     * ｛@link ChannelInboundHandler｝的{@link ChannelInboundHandler#channelRegistered（ChannelHandlerContext）｝方法
+     * 被调用
      */
     ChannelInboundInvoker fireChannelRegistered();
 

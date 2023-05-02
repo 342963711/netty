@@ -25,11 +25,20 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * Default {@link AttributeMap} implementation which not exibit any blocking behaviour on attribute lookup while using a
  * copy-on-write approach on the modify path.<br> Attributes lookup and remove exibit {@code O(logn)} time worst-case
  * complexity, hence {@code attribute::set(null)} is to be preferred to {@code remove}.
+ * <p></p>
+ * 默认的｛@link AttributeMap｝实现，在修改路径上使用写时复制方法时，在属性查找上不存在任何阻塞行为。
+ * 属性查找和移除exibit｛@code O（logn）｝会导致最坏情况的复杂性，因此｛@code-attribute:：set（null）｝比｛@code remove｝更可取。
+ *
  */
 public class DefaultAttributeMap implements AttributeMap {
 
+    /**
+     * 原子更新映射
+     */
     private static final AtomicReferenceFieldUpdater<DefaultAttributeMap, DefaultAttribute[]> ATTRIBUTES_UPDATER =
             AtomicReferenceFieldUpdater.newUpdater(DefaultAttributeMap.class, DefaultAttribute[].class, "attributes");
+
+    //被映射的原子属性
     private static final DefaultAttribute[] EMPTY_ATTRIBUTES = new DefaultAttribute[0];
 
     /**
@@ -159,6 +168,8 @@ public class DefaultAttributeMap implements AttributeMap {
         private static final AtomicReferenceFieldUpdater<DefaultAttribute, DefaultAttributeMap> MAP_UPDATER =
                 AtomicReferenceFieldUpdater.newUpdater(DefaultAttribute.class,
                                                        DefaultAttributeMap.class, "attributeMap");
+
+
         private static final long serialVersionUID = -2661411462200283011L;
 
         private volatile DefaultAttributeMap attributeMap;

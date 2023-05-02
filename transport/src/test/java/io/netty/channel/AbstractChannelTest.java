@@ -33,18 +33,32 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
+/**
+ * @date 2023/5/2 12:37
+ * @author likai
+ * @email likai9376@163.com
+ * @desc 抽象channel 测试类
+ * @see AbstractChannel
+ */
 public class AbstractChannelTest {
 
+
+    /**
+     * 测试初初始化注册会 触发active
+     * @throws Throwable
+     */
     @Test
     public void ensureInitialRegistrationFiresActive() throws Throwable {
         EventLoop eventLoop = mock(EventLoop.class);
         // This allows us to have a single-threaded test
         when(eventLoop.inEventLoop()).thenReturn(true);
 
+        //创建一个测试channel
         TestChannel channel = new TestChannel();
         ChannelInboundHandler handler = mock(ChannelInboundHandler.class);
         channel.pipeline().addLast(handler);
 
+        //将测试channel 注册到模拟的 eventLoop
         registerChannel(eventLoop, channel);
 
         verify(handler).handlerAdded(any(ChannelHandlerContext.class));
@@ -52,6 +66,10 @@ public class AbstractChannelTest {
         verify(handler).channelActive(any(ChannelHandlerContext.class));
     }
 
+    /**
+     * 测试并发注册不会触发 Active
+     * @throws Throwable
+     */
     @Test
     public void ensureSubsequentRegistrationDoesNotFireActive() throws Throwable {
         final EventLoop eventLoop = mock(EventLoop.class);
@@ -84,6 +102,9 @@ public class AbstractChannelTest {
         verify(handler).channelUnregistered(any(ChannelHandlerContext.class));
     }
 
+    /**
+     * 确保使用了默认的 DefaultChannelId
+     */
     @Test
     public void ensureDefaultChannelId() {
         TestChannel channel = new TestChannel();
@@ -91,6 +112,9 @@ public class AbstractChannelTest {
         assertTrue(channelId instanceof DefaultChannelId);
     }
 
+    /**
+     * 测试java9的进程ID
+     */
     @Test
     @EnabledForJreRange(min = JRE.JAVA_9)
     void processIdWithProcessHandleJava9() {

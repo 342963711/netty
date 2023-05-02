@@ -23,10 +23,12 @@ import java.util.Map;
 
 /**
  * Skeleton implementation of a {@link ChannelHandler}.
+ * ChannelHandler 的基本骨架，主要处理 Sharable 注解。
  */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
 
     // Not using volatile because it's used only for a sanity check.
+    //不使用volatile，因为它只用于健全性检查。
     boolean added;
 
     /**
