@@ -28,8 +28,28 @@ public class DefaultEventExecutorTest {
             logger.info("eventExecutor:"+eventExecutor.toString());
             logger.info("hello");
         };
-        defaultEventExecutor.submit(runnable);
+        defaultEventExecutor.execute(runnable);
 
         Thread.sleep(20000L);
+    }
+
+    @Test
+    public void testDefaultEventFuture() throws InterruptedException {
+        DefaultEventExecutor defaultEventExecutor = new DefaultEventExecutor();
+        Future<String> submit = defaultEventExecutor.submit(() -> {
+            logger.info("runnable start");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            logger.info("runnable end");
+            return "hello";
+        });
+        submit.addListener(future->{
+            Object s = future.get();
+            logger.info("执行完毕：{}",s);
+        });
+        Thread.sleep(10000);
     }
 }

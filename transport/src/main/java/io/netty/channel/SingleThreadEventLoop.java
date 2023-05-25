@@ -33,6 +33,9 @@ import java.util.concurrent.ThreadFactory;
  * EventLoop 的基类，在单个线程中执行其提交的所有任务
  *
  * 单线程事件循环
+ *
+ * @see DefaultEventLoop
+ * @see io.netty.channel.nio.NioEventLoop
  */
 public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
 
@@ -43,7 +46,7 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
             SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
 
     /**
-     * 挂起任务队列,
+     * 挂起任务队列
      */
     private final Queue<Runnable> tailTasks;
 

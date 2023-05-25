@@ -24,6 +24,7 @@ import java.nio.channels.WritableByteChannel;
 /**
  * A region of a file that is sent via a {@link Channel} which supports
  * <a href="https://en.wikipedia.org/wiki/Zero-copy">zero-copy file transfer</a>.
+ * 通过｛@link Channel｝发送的文件的一个区域，该区域支持零拷贝文件传输
  *
  * <h3>Upgrade your JDK / JRE</h3>
  *
@@ -31,6 +32,8 @@ import java.nio.channels.WritableByteChannel;
  * four known bugs in the old versions of Sun JDK and perhaps its derived ones.
  * Please upgrade your JDK to 1.6.0_18 or later version if you are going to use
  * zero-copy file transfer.
+ * 在早期的jdk版本中最少存在4个bug, 如果想使用零拷贝，文件传输，需要升级jdk 版本
+ *
  * <ul>
  * <li><a href="https://bugs.java.com/bugdatabase/view_bug.do?bug_id=5103988">5103988</a>
  *   - FileChannel.transferTo() should return -1 for EAGAIN instead throws IOException</li>
@@ -48,7 +51,11 @@ import java.nio.channels.WritableByteChannel;
  * transfer, sending a file with {@link FileRegion} might fail or yield worse
  * performance.  For example, sending a large file doesn't work well in Windows.
  *
+ * 如果您的操作系统（或JDK/JJRE）不支持零拷贝文件传输，则使用{@linkFileRegion}发送文件可能会失败或产生更差的性能。例如，发送一个大文件在Windows中无法正常工作
+ *
  * <h3>Not all transports support it</h3>
+ *
+ * @see DefaultFileRegion
  */
 public interface FileRegion extends ReferenceCounted {
 
@@ -67,17 +74,20 @@ public interface FileRegion extends ReferenceCounted {
 
     /**
      * Returns the bytes which was transferred already.
+     * 返回已经传输的字节
      */
     long transferred();
 
     /**
      * Returns the number of bytes to transfer.
+     *
+     * 返回传输的字节总数
      */
     long count();
 
     /**
      * Transfers the content of this file region to the specified channel.
-     *
+     * 传输这个文件域中的内容到指定的 通道中
      * @param target    the destination of the transfer
      * @param position  the relative offset of the file where the transfer
      *                  begins from.  For example, <tt>0</tt> will make the

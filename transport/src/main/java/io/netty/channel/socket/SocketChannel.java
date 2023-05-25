@@ -21,6 +21,13 @@ import java.net.InetSocketAddress;
 
 /**
  * A TCP/IP socket {@link Channel}.
+ *
+ * TCP、IP 的 套接字管道
+ *
+ * @see io.netty.channel.socket.nio.NioSocketChannel
+ * @see io.netty.channel.epoll.EpollSocketChannel
+ * @see io.netty.channel.kqueue.KQueueSocketChannel
+ * @see io.netty.channel.socket.oio.OioSocketChannel
  */
 public interface SocketChannel extends DuplexChannel {
     @Override

@@ -22,7 +22,11 @@ package io.netty.util.concurrent;
  * way to access methods.
  *
  * EventExecutor 是一个特殊的 EventExecutorGroup ，它提供了一些方便的方法来查看 Thread 是否在事件循环中执行
- * 除此之外，它还扩展了 EventExecutorGroup ，以允许以通用方式访问方法
+ * 除此之外，它还扩展了 EventExecutorGroup ，以允许以通用方式访问方法.
+ * {@link AbstractEventExecutor}
+ * {@link OrderedEventExecutor}
+ * {@link UnorderedThreadPoolEventExecutor}
+ *
  */
 public interface EventExecutor extends EventExecutorGroup {
 
@@ -65,6 +69,10 @@ public interface EventExecutor extends EventExecutorGroup {
      * Create a new {@link Future} which is marked as succeeded already. So {@link Future#isSuccess()}
      * will return {@code true}. All {@link FutureListener} added to it will be notified directly. Also
      * every call of blocking methods will just return without blocking.
+     *
+     * 创建一个已标记为成功的新｛@link Future｝。因此｛@link Future#isSuccess（）｝
+     * 将返回｛@code true｝。所有添加到其中的｛@link FutureListener｝都将直接收到通知。而且
+     * 阻塞方法的每次调用都将返回而不阻塞。
      */
     <V> Future<V> newSucceededFuture(V result);
 

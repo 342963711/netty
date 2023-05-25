@@ -29,9 +29,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * A special {@link ChannelInboundHandler} which offers an easy way to initialize a {@link Channel} once it was
  * registered to its {@link EventLoop}.
  *
+ * 一个特殊的｛@link ChannelInboundHandler｝，它提供了一种简单的方法，可以在｛@link Channel｝注册到其｛@link EventLoop｝后初始化它
+ *
+ *
  * Implementations are most often used in the context of {@link Bootstrap#handler(ChannelHandler)} ,
  * {@link ServerBootstrap#handler(ChannelHandler)} and {@link ServerBootstrap#childHandler(ChannelHandler)} to
  * setup the {@link ChannelPipeline} of a {@link Channel}.
+ *
+ * <p></p>
+ * 实现最常用于{@link Bootstrap#handler(ChannelHandler)}、
+ * {@link ServerBootstrap#handler(ChannelHandler)}和
+ * {@link ServerBootstrap#childHandler(ChannelHandler)} 的上下文中，以设置{@link Channel}的{@link ChannelPipeline}。
  *
  * <pre>
  *
@@ -47,7 +55,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * ...
  * </pre>
  * Be aware that this class is marked as {@link Sharable} and so the implementation must be safe to be re-used.
- *
+ * 请注意，这个类被标记为{@link Sharable}，因此该实现必须是安全的才能重复使用。
  * @param <C>   A sub-type of {@link Channel}
  */
 @Sharable
@@ -56,12 +64,17 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ChannelInitializer.class);
     // We use a Set as a ChannelInitializer is usually shared between all Channels in a Bootstrap /
     // ServerBootstrap. This way we can reduce the memory usage compared to use Attributes.
+
+    //我们使用Set作为通道初始化程序。初始化程序通常在Bootstrap/ServerBootstrap中的所有通道之间共享。
+    //通过这种方式，与使用属性相比，我们可以减少内存使用。
     private final Set<ChannelHandlerContext> initMap = Collections.newSetFromMap(
             new ConcurrentHashMap<ChannelHandlerContext, Boolean>());
 
     /**
      * This method will be called once the {@link Channel} was registered. After the method returns this instance
      * will be removed from the {@link ChannelPipeline} of the {@link Channel}.
+     * <p></p>
+     * 一旦注册了｛@link Channel｝，就会调用此方法。方法返回后，此实例将从｛@link Channel｝的｛@linkChannelPipeline｝中删除。
      *
      * @param ch            the {@link Channel} which was registered.
      * @throws Exception    is thrown if an error occurs. In that case it will be handled by

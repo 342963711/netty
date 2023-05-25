@@ -70,6 +70,14 @@ public class NioEventLoopTest extends AbstractEventLoopTest {
         return NioServerSocketChannel.class;
     }
 
+
+    @Test
+    public void testNioEventLoopDemo(){
+        NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(1);
+        Channel channel = new NioServerSocketChannel();
+        nioEventLoopGroup.next().register(channel).syncUninterruptibly();
+    }
+
     @Test
     public void testRebuildSelector() {
         EventLoopGroup group = new NioEventLoopGroup(1);

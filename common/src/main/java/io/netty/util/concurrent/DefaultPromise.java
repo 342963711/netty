@@ -52,6 +52,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
             StacklessCancellationException.newInstance(DefaultPromise.class, "cancel(...)"));
     private static final StackTraceElement[] CANCELLATION_STACK = CANCELLATION_CAUSE_HOLDER.cause.getStackTrace();
 
+    //处理结果
     private volatile Object result;
 
     //事件执行器
@@ -65,7 +66,6 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
      * 一个或多个听众。可以是｛@link GenericFutureListener｝或｛@link-DefaultFutureListners｝。
      * 如果｛@code null｝，则意味着1）尚未添加侦听器，或者2）已通知所有侦听器。
      * 线程-同步（this）。当没有EventExecutor时，我们必须支持添加侦听器。
-     *
      */
     private GenericFutureListener<? extends Future<?>> listener;
     private DefaultFutureListeners listeners;

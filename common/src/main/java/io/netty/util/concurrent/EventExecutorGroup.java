@@ -15,6 +15,7 @@
  */
 package io.netty.util.concurrent;
 
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -27,14 +28,27 @@ import java.util.concurrent.TimeUnit;
  * life-cycle and allows shutting them down in a global fashion.
  *
  * EventExecutorGroup 负责通过它的 next 方法提供 EventExecutor 去使用。
- * 除此之外，它还负责处理它们的生命周期，并通过全局方式关闭它们
+ * 除此之外，它还负责处理它们的生命周期，并通过全局方式关闭它们。
  *
+ * @see MultithreadEventExecutorGroup
+ * {@link EventExecutor} 接口 增强了 {@link EventExecutorGroup} 接口能力，是一个特殊的子接口
+ * {@link io.netty.channel.EventLoopGroup#next()}  是允许注册 channel 的一种特殊 EventExecutorGroup，并返回 {@link io.netty.channel.EventLoop}
+ * {@link NonStickyEventExecutorGroup} 一个非顺序性的默认实现
+ *
+ * @see AbstractEventExecutorGroup 是 简单对 EventExecutorGroup的基本实现抽象类,将方法调用委托给 {@link EventExecutorGroup#next()}方法返回的 EventExecutor 去具体执行
+ * @see EventExecutor 是被EventExecutorGroup管理的类对象
+ * @see io.netty.channel.EventLoopGroup
  */
 public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<EventExecutor> {
 
     /**
+     *
      * Returns {@code true} if and only if all {@link EventExecutor}s managed by this {@link EventExecutorGroup}
      * are being {@linkplain #shutdownGracefully() shut down gracefully} or was {@linkplain #isShutdown() shut down}.
+     *
+     * 返回｛@code true｝，当且仅当此｛@link EventExecutorGroup｝管理的所有｛@linkEventExecutor｝都被｛@linkplain#shutdownRacefully（）优雅地关闭｝
+     * 或被｛@linkplain#isShutdown（）关闭｝时。
+     *
      */
     boolean isShuttingDown();
 
@@ -83,6 +97,8 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
 
     /**
      * Returns one of the {@link EventExecutor}s managed by this {@link EventExecutorGroup}.
+     *
+     * 返回一个 被 {@link EventExecutorGroup} 管理的 {@link EventExecutor}
      */
     EventExecutor next();
 

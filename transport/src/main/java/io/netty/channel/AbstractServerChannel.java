@@ -27,8 +27,13 @@ import java.net.SocketAddress;
  * <li>{@link #flush()}</li>
  * <li>and the shortcut methods which calls the methods mentioned above
  * </ul>
+ *
+ * 一个实现Channel 的基本服务端，服务端不允许以下操作。连接，断开，写，刷新操作。
+ * 以及调用上述方法的快捷方法。
+ *
  */
 public abstract class AbstractServerChannel extends AbstractChannel implements ServerChannel {
+
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
 
     /**

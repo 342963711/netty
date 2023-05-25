@@ -44,15 +44,33 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract base class for {@link Channel} implementations which use a Selector based approach.
+ * <p>
+ * 实现了Channel 的抽象基础类，它使用了 了一个 选择器基本操作的
+ *
+ * @see AbstractNioByteChannel
+ * @see AbstractNioMessageChannel
  */
 public abstract class AbstractNioChannel extends AbstractChannel {
 
     private static final InternalLogger logger =
             InternalLoggerFactory.getInstance(AbstractNioChannel.class);
 
+    /**
+     * 可路由通道子类
+     */
     private final SelectableChannel ch;
+
+    /**
+     * 通道操作
+     */
     protected final int readInterestOp;
+
+    /**
+     * 路由通道 注册 到路由器 的对象表示。注册对象标识
+     */
     volatile SelectionKey selectionKey;
+
+
     boolean readPending;
     private final Runnable clearReadPendingRunnable = new Runnable() {
         @Override
@@ -72,9 +90,10 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     /**
      * Create a new instance
      *
-     * @param parent            the parent {@link Channel} by which this instance was created. May be {@code null}
-     * @param ch                the underlying {@link SelectableChannel} on which it operates
-     * @param readInterestOp    the ops to set to receive data from the {@link SelectableChannel}
+     * @param parent         the parent {@link Channel} by which this instance was created. May be {@code null}
+     * @param ch             the underlying {@link SelectableChannel} on which it operates.
+     *                       要设置为{@link SelectableChannel｝接收数据的操作
+     * @param readInterestOp the ops to set to receive data from the {@link SelectableChannel}
      */
     protected AbstractNioChannel(Channel parent, SelectableChannel ch, int readInterestOp) {
         super(parent);
@@ -87,7 +106,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                 ch.close();
             } catch (IOException e2) {
                 logger.warn(
-                            "Failed to close a partially initialized socket.", e2);
+                        "Failed to close a partially initialized socket.", e2);
             }
 
             throw new ChannelException("Failed to enter non-blocking mode.", e);
@@ -221,7 +240,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             }
             int interestOps = key.interestOps();
             if ((interestOps & readInterestOp) != 0) {
-                // only remove readInterestOp if needed
+                // only remove readInterestOp if needed  //仅在需要时删除readInterestOp
                 key.interestOps(interestOps & ~readInterestOp);
             }
         }
@@ -260,7 +279,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                                 ChannelPromise connectPromise = AbstractNioChannel.this.connectPromise;
                                 if (connectPromise != null && !connectPromise.isDone()
                                         && connectPromise.tryFailure(new ConnectTimeoutException(
-                                                "connection timed out: " + remoteAddress))) {
+                                        "connection timed out: " + remoteAddress))) {
                                     close(voidPromise());
                                 }
                             }
@@ -350,6 +369,8 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             // Flush immediately only when there's no pending flush.
             // If there's a pending flush operation, event loop will call forceFlush() later,
             // and thus there's no need to call it now.
+            //只有在没有挂起的刷新时才立即刷新。
+            //如果有一个挂起的刷新操作，事件循环稍后将调用forceFlush（），因此现在没有必要调用它。
             if (!isFlushPending()) {
                 super.flush0();
             }
@@ -375,7 +396,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     @Override
     protected void doRegister() throws Exception {
         boolean selected = false;
-        for (;;) {
+        for (; ; ) {
             try {
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;

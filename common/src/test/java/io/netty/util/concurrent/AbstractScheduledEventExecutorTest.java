@@ -28,6 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * AbstractScheduledEventExecutor 类中 一些schedule 方法的参数校验 测试类。例如
+ *
+ * {@link AbstractScheduledEventExecutor#schedule(Runnable, long, TimeUnit)}
+ */
 public class AbstractScheduledEventExecutorTest {
     private static final Runnable TEST_RUNNABLE = new Runnable() {
 

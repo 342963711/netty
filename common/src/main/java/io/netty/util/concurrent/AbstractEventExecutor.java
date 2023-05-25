@@ -34,7 +34,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * Abstract base class for {@link EventExecutor} implementations.
  *
- * EventExecutor 实现的抽象基类
+ * EventExecutor 实现的抽象基类, 一些具体方法需要子类去实现。 例如
+ * {@link AbstractEventExecutor#inEventLoop(Thread),AbstractEventExecutor#execute(Runnable)} 等
+ *
+ * @see AbstractScheduledEventExecutor
+ * @see ImmediateEventExecutor
  */
 public abstract class AbstractEventExecutor extends AbstractExecutorService implements EventExecutor {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractEventExecutor.class);
@@ -65,7 +69,7 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
 
     @Override
     public boolean inEventLoop() {
-        return inEventLoop(Thread.currentThread());
+        return this.inEventLoop(Thread.currentThread());
     }
 
     @Override

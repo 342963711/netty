@@ -27,10 +27,15 @@ import static io.netty.util.internal.InternalThreadLocalMap.VARIABLES_TO_REMOVE_
 /**
  * A special variant of {@link ThreadLocal} that yields higher access performance when accessed from a
  * {@link FastThreadLocalThread}.
+ *
+ * {@link ThreadLocal}的一种特殊变体，当从{@link FastThreadLocalThread}访问时，它会产生更高的访问性能
  * <p>
+ *
  * Internally, a {@link FastThreadLocal} uses a constant index in an array, instead of using hash code and hash table,
  * to look for a variable.  Although seemingly very subtle, it yields slight performance advantage over using a hash
  * table, and it is useful when accessed frequently.
+ *
+ * 在内部，｛@link FastThreadLocal｝使用数组中的常量索引来查找变量，而不是使用哈希代码和哈希表。尽管看起来非常不明显，但与使用哈希表相比，它的性能略有优势，并且在频繁访问时非常有用。
  * </p><p>
  * To take advantage of this thread-local variable, your thread must be a {@link FastThreadLocalThread} or its subtype.
  * By default, all threads created by {@link DefaultThreadFactory} are {@link FastThreadLocalThread} due to this reason.
@@ -39,6 +44,10 @@ import static io.netty.util.internal.InternalThreadLocalMap.VARIABLES_TO_REMOVE_
  * a special field to store the necessary state.  An access by any other kind of thread falls back to a regular
  * {@link ThreadLocal}.
  * </p>
+ *
+ *
+ * 若要利用此线程局部变量，您的线程必须是｛@link FastThreadLocalThread｝或其子类型。由于这个原因，默认情况下，由{@link DefaultThreadFactory}创建的所有线程都是{@link FastThreadLocalThread}。
+ * 请注意，快速路径只能在扩展{@link FastThreadLocalThread}的线程上使用，因为它需要一个特殊的字段来存储必要的状态。任何其他类型的线程的访问都会返回到常规的｛@link ThreadLocal｝。
  *
  * @param <V> the type of the thread-local variable
  * @see ThreadLocal

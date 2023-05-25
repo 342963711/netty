@@ -46,15 +46,21 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * A {@link Channel} for the local transport.
+ *
+ * 为本地传输提供的通道
  */
 public class LocalChannel extends AbstractChannel {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(LocalChannel.class);
     @SuppressWarnings({ "rawtypes" })
     private static final AtomicReferenceFieldUpdater<LocalChannel, Future> FINISH_READ_FUTURE_UPDATER =
             AtomicReferenceFieldUpdater.newUpdater(LocalChannel.class, Future.class, "finishReadFuture");
+
     private static final ChannelMetadata METADATA = new ChannelMetadata(false);
+
+    //最大读栈深度
     private static final int MAX_READER_STACK_DEPTH = 8;
 
+    //状态，打开，绑定，连接，关闭
     private enum State { OPEN, BOUND, CONNECTED, CLOSED }
 
     private final ChannelConfig config = new DefaultChannelConfig(this);

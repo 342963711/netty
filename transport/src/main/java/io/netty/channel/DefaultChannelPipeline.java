@@ -42,6 +42,8 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * The default {@link ChannelPipeline} implementation.  It is usually created
  * by a {@link Channel} implementation when the {@link Channel} is created.
+ *
+ * 默认实现，当channel 创建的时候，ChannelPipeline一般被创建
  */
 public class DefaultChannelPipeline implements ChannelPipeline {
 
@@ -86,6 +88,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     /**
      * Set to {@code true} once the {@link AbstractChannel} is registered.Once set to {@code true} the value will never
      * change.
+     * 一旦 AbstractChannel 注册，就设置为true. 设置为true后，该值将不会改变
      */
     private boolean registered;
 
@@ -159,14 +162,16 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         synchronized (this) {
             checkMultiplicity(handler);
             name = filterName(name, handler);
-
+            //创建上下文
             newCtx = newContext(group, name, handler);
-
+            //上下文添加到管道
             addFirst0(newCtx);
 
             // If the registered is false it means that the channel was not registered on an eventLoop yet.
             // In this case we add the context to the pipeline and add a task that will call
             // ChannelHandler.handlerAdded(...) once the channel is registered.
+            //如果registered 是false,意味着channel 没有注册到 eventLoop.
+            //在这种情况下，我们将上下文添加到管道中，并添加一个任务，该任务将在通道注册后调用ChannelHandler.handlerAdd（…）。
             if (!registered) {
                 newCtx.setAddPending();
                 callHandlerCallbackLater(newCtx, true);
@@ -183,6 +188,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return this;
     }
 
+    //节点插入
     private void addFirst0(AbstractChannelHandlerContext newCtx) {
         AbstractChannelHandlerContext nextCtx = head.next;
         newCtx.prev = head;
@@ -209,7 +215,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             // If the registered is false it means that the channel was not registered on an eventLoop yet.
             // In this case we add the context to the pipeline and add a task that will call
             // ChannelHandler.handlerAdded(...) once the channel is registered.
+
+            //如果registered 是false,意味着channel 没有注册到 eventLoop.
+            //在这种情况下，我们将上下文添加到管道中，并添加一个任务，该任务将在通道注册后调用ChannelHandler.handlerAdd（…）。
             if (!registered) {
+                //
                 newCtx.setAddPending();
                 callHandlerCallbackLater(newCtx, true);
                 return this;
@@ -1436,6 +1446,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    //挂起 处理程序的回调
     private abstract static class PendingHandlerCallback implements Runnable {
         final AbstractChannelHandlerContext ctx;
         PendingHandlerCallback next;
@@ -1447,6 +1458,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         abstract void execute();
     }
 
+    /**
+     * 挂起处理程序添加任务
+     */
     private final class PendingHandlerAddedTask extends PendingHandlerCallback {
 
         PendingHandlerAddedTask(AbstractChannelHandlerContext ctx) {

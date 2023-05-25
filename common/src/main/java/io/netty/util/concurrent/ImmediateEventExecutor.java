@@ -29,6 +29,11 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * All {@link Throwable} objects thrown from {@link #execute(Runnable)} will be swallowed and logged. This is to ensure
  * that all queued {@link Runnable} objects have the chance to be run.
+ *
+ * 在调用者线程 中 执行 Runnable 对象。 如果{@link#execute（Runnable）}是可重入的，它将被排队，直到原始{@linkRunnable}完成执行
+ *
+ * 从{@link#execute（Runnable）}抛出的所有{@linkThrowable}对象都将被吞噬并记录。这是为了确保所有排队的{@linkRunnable}对象都有机会运行。
+ *
  */
 public final class ImmediateEventExecutor extends AbstractEventExecutor {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ImmediateEventExecutor.class);

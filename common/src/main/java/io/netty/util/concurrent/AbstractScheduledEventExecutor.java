@@ -26,6 +26,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract base class for {@link EventExecutor}s that want to support scheduling.
+ *
+ * 要支持调度的{@link EventExecutor}的抽象基类。
+ *
+ * @see SingleThreadEventExecutor
+ * @see GlobalEventExecutor
+ *
  */
 public abstract class AbstractScheduledEventExecutor extends AbstractEventExecutor {
     private static final Comparator<ScheduledFutureTask<?>> SCHEDULED_FUTURE_TASK_COMPARATOR =

@@ -23,12 +23,19 @@ import java.net.Socket;
 
 /**
  * A duplex {@link Channel} that has two sides that can be shutdown independently.
+ *
+ * 一种双工{@link 通道}，它有两个可以独立关闭的端。
+ *
+ * @see SocketChannel
  */
 public interface DuplexChannel extends Channel {
     /**
      * Returns {@code true} if and only if the remote peer shut down its output so that no more
      * data is received from this channel.  Note that the semantic of this method is different from
      * that of {@link Socket#shutdownInput()} and {@link Socket#isInputShutdown()}.
+     *
+     * 返回｛@code true｝当且仅当远程对等方关闭其输出，导致不能不再从该通道接收数据时
+     * 请注意，此方法的语义与{@link Socket#shutdownInput（）}和{@link Socket#isInputShutdown（）}的语义不同。
      */
     boolean isInputShutdown();
 
@@ -63,11 +70,13 @@ public interface DuplexChannel extends Channel {
 
     /**
      * Determine if both the input and output of this channel have been shutdown.
+     * 确定该通道的输入和输出是否都已关闭。
      */
     boolean isShutdown();
 
     /**
      * Will shutdown the input and output sides of this channel.
+     * 将关闭此通道的输入和输出侧。
      * @return will be completed when both shutdown operations complete.
      */
     ChannelFuture shutdown();

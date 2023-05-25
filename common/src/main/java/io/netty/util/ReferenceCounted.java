@@ -64,6 +64,8 @@ public interface ReferenceCounted {
      * purposes.  If this object is determined to be leaked, the information recorded by this operation will be
      * provided to you via {@link ResourceLeakDetector}.
      *
+     * 记录此对象的当前访问位置以及用于调试的附加任意信息。
+     * 如果确定此对象被泄露，则此操作记录的信息将通过{@link ResourceLeakDetector}提供给您
      *
      */
     ReferenceCounted touch(Object hint);

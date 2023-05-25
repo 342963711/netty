@@ -49,7 +49,7 @@ import java.net.SocketAddress;
  *
  *
  * <h3>All I/O operations are asynchronous.</h3>
- * 所有的IO 操作都是异步的
+ * 1.所有的IO 操作都是异步的
  * <p>
  * All I/O operations in Netty are asynchronous.  It means any I/O calls will
  * return immediately with no guarantee that the requested I/O operation has
@@ -58,7 +58,7 @@ import java.net.SocketAddress;
  * operation has succeeded, failed, or canceled.
  *
  * <h3>Channels are hierarchical</h3>
- * 通道是分层的
+ * 2.通道是分层的
  * <p>
  * A {@link Channel} can have a {@linkplain #parent() parent} depending on
  * how it was created.  For instance, a {@link SocketChannel}, that was accepted
@@ -75,29 +75,39 @@ import java.net.SocketAddress;
  *
  *
  * <h3>Downcast to access transport-specific operations</h3>
- * 向下强转 以访问特定于传输的操作
+ * 3.向下强转 以访问特定于传输的操作
  *
  * <p>
  * Some transports exposes additional operations that is specific to the
  * transport.  Down-cast the {@link Channel} to sub-type to invoke such
  * operations.  For example, with the old I/O datagram transport, multicast
  * join / leave operations are provided by {@link DatagramChannel}.
- *某些传输会暴露特定于传输的附加操作。
- * 将｛@link Channel｝向下转换为子类型以调用此类操作。
- * 例如，对于旧的I/O数据报传输，多播加入/离开操作由{@link DatagramChannel}提供。
+ *  某些传输会暴露特定于传输的附加操作。
+ *  将｛@link Channel｝向下转换为子类型以调用此类操作。
+ *  例如，对于旧的I/O数据报传输，多播加入/离开操作由{@link DatagramChannel}提供。
  *
  *
  * <h3>Release resources</h3>
- * 资源释放
+ * 4.资源释放
+ *
  * <p>
  * It is important to call {@link #close()} or {@link #close(ChannelPromise)} to release all
  * resources once you are done with the {@link Channel}. This ensures all resources are
  * released in a proper way, i.e. filehandles.
  *
- * 调用{@link#close（）}或{@link#close（ChannelPromise）}以在完成{@linkChannel}后释放所有资源是很重要的。这样可以确保以正确的方式释放所有资源，
+ * 调用{@link#close（）}或{@link#close（ChannelPromise）}以在完成{@link Channel}后释放所有资源是很重要的。这样可以确保以正确的方式释放所有资源，
  * 即文件句柄。
  *
- * @see ChannelPipeline
+ *
+ * @see AbstractChannel
+ * @see ServerChannel
+ * @see DatagramChannel
+ * @see io.netty.channel.socket.DuplexChannel
+ * @see io.netty.channel.unix.DomainDatagramChannel
+ * @see io.netty.channel.unix.UnixChannel
+ * @see io.netty.handler.codec.http2.Http2StreamChannel
+ * @see io.netty.channel.sctp.SctpChannel
+ * @see io.netty.channel.udt.UdtChannel
  */
 public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparable<Channel> {
 

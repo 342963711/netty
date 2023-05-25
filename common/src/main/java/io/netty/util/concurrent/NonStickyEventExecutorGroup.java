@@ -33,13 +33,18 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link EventExecutorGroup} which will preserve {@link Runnable} execution order but makes no guarantees about what
- * {@link EventExecutor} (and therefore {@link Thread}) will be used to execute the {@link Runnable}s.
+ * {@link EventExecutor}(and therefore {@link Thread}) will be used to execute the {@link Runnable}s.
+ * ｛@link EventExecutorGroup｝，它将保留｛@linkRunnable｝的执行顺序，但不能保证使用什么｛@LinkEventExecutor｝
+ * 因此｛@link Thread｝）将用于执行｛@linkRunnable｝s
  *
  * <p>The {@link EventExecutorGroup#next()} for the wrapped {@link EventExecutorGroup} must <strong>NOT</strong> return
  * executors of type {@link OrderedEventExecutor}.
+ *
+ * 包装的 EventExecutorGroup 的 next() 方法不能返回 类型为 {@link OrderedEventExecutor} 的执行器 查看{@link NonStickyEventExecutorGroup#next()}
  */
 @UnstableApi
 public final class NonStickyEventExecutorGroup implements EventExecutorGroup {
+    //包装类
     private final EventExecutorGroup group;
     private final int maxTaskExecutePerRun;
 
@@ -222,8 +227,9 @@ public final class NonStickyEventExecutorGroup implements EventExecutorGroup {
         private static final int RUNNING = 2;
 
         private final AtomicInteger state = new AtomicInteger();
+        //每个线程执行的最大任务数
         private final int maxTaskExecutePerRun;
-
+        //执行线程
         private final AtomicReference<Thread> executingThread = new AtomicReference<Thread>();
 
         NonStickyOrderedEventExecutor(EventExecutor executor, int maxTaskExecutePerRun) {

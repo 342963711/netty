@@ -26,6 +26,11 @@ import io.netty.util.concurrent.OrderedEventExecutor;
  *
  * 一个EventLoop 实例 通常会处理多个Channel，但这可能取决于实现细节和内部结构
  *
+ *
+ * @see AbstractEventLoop EvenntLoop 接口的基本实现抽象类，该抽象类没有实现，不重要
+ * @see io.netty.channel.embedded.EmbeddedEventLoop
+ * @see SingleThreadEventLoop EventLoop 接口 的实现 基本抽象类，在单个线程中执行其提交的所有任务。核心实现类
+ *
  */
 public interface EventLoop extends OrderedEventExecutor, EventLoopGroup {
     @Override

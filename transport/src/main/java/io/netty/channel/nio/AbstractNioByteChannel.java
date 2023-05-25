@@ -39,6 +39,9 @@ import static io.netty.channel.internal.ChannelUtils.WRITE_STATUS_SNDBUF_FULL;
 
 /**
  * {@link AbstractNioChannel} base class for {@link Channel}s that operate on bytes.
+ *
+ *
+ * @see io.netty.channel.socket.nio.NioSocketChannel
  */
 public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
@@ -306,17 +309,24 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
      * Write a {@link FileRegion}
      *
      * @param region        the {@link FileRegion} from which the bytes should be written
+     *                      应该写入字节的 {@link FileRegion}
      * @return amount       the amount of written bytes
      */
     protected abstract long doWriteFileRegion(FileRegion region) throws Exception;
 
+
     /**
      * Read bytes into the given {@link ByteBuf} and return the amount.
+     *
+     * 读取字节到给定的 {@link ByteBuf} 并返回字节数量
      */
     protected abstract int doReadBytes(ByteBuf buf) throws Exception;
 
     /**
      * Write bytes form the given {@link ByteBuf} to the underlying {@link java.nio.channels.Channel}.
+     *
+     * 将字节从给定的｛@link ByteBuf｝写入底层的 {@link java.nio.channels.Channel}。
+     *
      * @param buf           the {@link ByteBuf} from which the bytes should be written
      * @return amount       the amount of written bytes
      */

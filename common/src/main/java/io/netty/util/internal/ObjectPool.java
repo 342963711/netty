@@ -19,6 +19,7 @@ import io.netty.util.Recycler;
 
 /**
  * Light-weight object pool.
+ * 重量级的 对象池
  *
  * @param <T> the type of the pooled object
  */

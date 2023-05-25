@@ -26,14 +26,13 @@ import java.net.SocketAddress;
  *
  * 主要是 channel 的 ChannelPipeline 链路调用
  *
- * 引起 ChannelPipeline 中下一个 ChannelOutboundHandler 中对应方法的调用。 与{@link ChannelInboundInvoker} 类似
+ * 引起 ChannelPipeline 中下一个 {@link ChannelOutboundHandler} 中对应方法的调用。 与{@link ChannelInboundInvoker} 类似
  *
- * @see ChannelPromise
- * @see ChannelProgressivePromise
- * @see ChannelFuture
+ *
+ *
+ * @see Channel
  * @see ChannelHandlerContext
- * @see ChannelOutboundHandler
- * @see ChannelInboundHandler
+ * @see ChannelPipeline
  */
 public interface ChannelOutboundInvoker {
 

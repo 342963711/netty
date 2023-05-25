@@ -40,21 +40,43 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  * A skeletal {@link Channel} implementation.
  *
- * 一个 Channel 实现的骨架
+ * 一个 Channel 实现的骨架. 提供I/O操作相关的抽象方法，需要具体的子类去实现
+ * {@link AbstractUnsafe} , 实现了除connect 的所有方法，并将需要实现的方法委托给 {@link AbstractChannel}中的一些方法，例如
+ * {@link AbstractChannel#doBind(SocketAddress)}等方法。{@link AbstractUnsafe#connect(SocketAddress)} 方法的具体实现子类参考
+ * {@link io.netty.channel.nio.AbstractNioChannel.AbstractNioUnsafe}
+ * {@link io.netty.channel.epoll.AbstractEpollChannel.AbstractEpollUnsafe}
+ * {@link io.netty.channel.kqueue.AbstractKQueueChannel.AbstractKQueueUnsafe}
+ *
+ * AbstractChannel 具体实现的参考类参考下面的
+ *
+ * @see AbstractServerChannel
+ * @see io.netty.channel.nio.AbstractNioChannel
+ *
+ * //以下可以进行参考
+ * @see io.netty.channel.epoll.AbstractEpollChannel
+ * @see io.netty.channel.kqueue.AbstractKQueueChannel
+ * @see io.netty.channel.oio.AbstractOioChannel
+ * @see io.netty.channel.local.LocalChannel
+ *
+ *
  */
 public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannel.class);
 
+    /**
+     * 以下方法构造函数进行初始化
+     */
     //维护父级 层级关系
     private final Channel parent;
     // 代表channel 的全局唯一标识
     private final ChannelId id;
-
     //内部操作unsafe 类
     private final Unsafe unsafe;
     //channel 管道
     private final DefaultChannelPipeline pipeline;
+
+
     //channelPromise 和 future 通知类
     private final VoidChannelPromise unsafeVoidPromise = new VoidChannelPromise(this, false);
     private final CloseFuture closeFuture = new CloseFuture(this);
@@ -80,6 +102,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Creates a new instance.
+     * 创建实例，里面初始化一些基本属性
      *
      * @param parent
      *        the parent of this channel. {@code null} if there's no parent.
@@ -447,6 +470,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     /**
      * {@link Unsafe} implementation which sub-classes must extend and use.
      * Unsafe 的一个子类必须继承和使用的一个实现类
+     *
      */
     protected abstract class AbstractUnsafe implements Unsafe {
         //channel 出站 缓冲池
@@ -1088,6 +1112,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Return {@code true} if the given {@link EventLoop} is compatible with this instance.
+     *
      * 如果给定的｛@link EventLoop｝与此实例兼容，则返回｛@code true｝。
      */
     protected abstract boolean isCompatible(EventLoop loop);

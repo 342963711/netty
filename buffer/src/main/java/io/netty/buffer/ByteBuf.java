@@ -1835,6 +1835,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
      * Transfers this buffer's data to the specified stream starting at the
      * current {@code readerIndex}.
      *
+     * 将此缓冲区的数据传输到指定的流，从当前｛@code readerIndex｝。
+     *
      * @param length the maximum number of bytes to transfer
      *
      * @return the actual number of bytes written out to the specified channel

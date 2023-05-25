@@ -40,6 +40,8 @@ import java.net.SocketTimeoutException;
 /**
  * A {@link SocketChannel} which is using Old-Blocking-IO
  *
+ * 使用旧阻塞IO的｛@link SocketChannel｝
+ *
  * @deprecated use NIO / EPOLL / KQUEUE transport.
  */
 @Deprecated

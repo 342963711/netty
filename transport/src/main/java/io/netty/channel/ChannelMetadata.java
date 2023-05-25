@@ -21,6 +21,8 @@ import java.net.SocketAddress;
 
 /**
  * Represents the properties of a {@link Channel} implementation.
+ *
+ * 表示｛@link Channel｝实现的属性。
  */
 public final class ChannelMetadata {
 

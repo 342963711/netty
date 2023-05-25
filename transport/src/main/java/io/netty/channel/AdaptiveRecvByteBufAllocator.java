@@ -25,12 +25,19 @@ import static java.lang.Math.min;
 /**
  * The {@link RecvByteBufAllocator} that automatically increases and
  * decreases the predicted buffer size on feed back.
+ *
+ * ｛@link RecvByteBufAllocator｝在反馈时自动增加和减少预测的缓冲区大小。
+ *
+ *
  * <p>
  * It gradually increases the expected number of readable bytes if the previous
  * read fully filled the allocated buffer.  It gradually decreases the expected
  * number of readable bytes if the read operation was not able to fill a certain
  * amount of the allocated buffer two times consecutively.  Otherwise, it keeps
  * returning the same prediction.
+ *
+ * 如果前一次读取完全填满了分配的缓冲区，则会逐渐增加预期的可读字节数。
+ * 如果读取操作无法连续两次填充一定量的已分配缓冲区，则会逐渐减少预期的可读字节数。否则，它会不断返回相同的预测
  */
 public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufAllocator {
 

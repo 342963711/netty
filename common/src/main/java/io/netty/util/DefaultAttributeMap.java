@@ -26,9 +26,12 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * copy-on-write approach on the modify path.<br> Attributes lookup and remove exibit {@code O(logn)} time worst-case
  * complexity, hence {@code attribute::set(null)} is to be preferred to {@code remove}.
  * <p></p>
- * 默认的｛@link AttributeMap｝实现，在修改路径上使用写时复制方法时，在属性查找上不存在任何阻塞行为。
+ *
+ * {@link AttributeMap} 的默认的实现，在修改路径上使用写时复制方法时，在属性查找上不存在任何阻塞行为。
+ *
  * 属性查找和移除exibit｛@code O（logn）｝会导致最坏情况的复杂性，因此｛@code-attribute:：set（null）｝比｛@code remove｝更可取。
  *
+ * @see io.netty.channel.AbstractChannel
  */
 public class DefaultAttributeMap implements AttributeMap {
 

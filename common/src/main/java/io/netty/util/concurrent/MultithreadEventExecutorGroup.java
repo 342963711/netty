@@ -29,9 +29,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks with multiple threads at
  * the same time.
+ *
  * EventExecutorGroup 实现的抽象基类，该实现同时用多个线程处理任务
  *
- * 多线程事件处理器组
+ * 多线程事件处理器组，提供了多线程 事件处理器组方法模板，并且子类需要实现 {@link #newChild(Executor, Object...)}, {@link #execute(Runnable)} 方法的实现是
+ *
+ *
+ * @see DefaultEventExecutorGroup 多线程处理器组 默认实现
+ * @see io.netty.channel.MultithreadEventLoopGroup  多线程事件循环 扩展实现
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
     //事件处理器数组

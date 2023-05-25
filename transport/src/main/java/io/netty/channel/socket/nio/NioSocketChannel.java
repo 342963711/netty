@@ -55,6 +55,8 @@ import static io.netty.channel.internal.ChannelUtils.MAX_BYTES_PER_GATHERING_WRI
 
 /**
  * {@link io.netty.channel.socket.SocketChannel} which uses NIO selector based implementation.
+ *
+ * 使用了NIO 选择器的 SocketChannel 的基础实现
  */
 public class NioSocketChannel extends AbstractNioByteChannel implements io.netty.channel.socket.SocketChannel {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioSocketChannel.class);
@@ -458,6 +460,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
                     // We need to cancel this key of the channel so we may not end up in a eventloop spin
                     // because we try to read or write until the actual close happens which may be later due
                     // SO_LINGER handling.
+                    //我们需要取消通道的这个键，这样我们就不会因为试图读取或写入而导致事件循环旋转，直到实际关闭发生，这可能会因为so_LINGER处理而推迟。
                     // See https://github.com/netty/netty/issues/4449
                     doDeregister();
                     return GlobalEventExecutor.INSTANCE;

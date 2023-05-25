@@ -61,10 +61,11 @@ public class SingleThreadEventExecutorTest {
                 }
             }
         };
-
+        //底层执行任务器已经关闭
         executorService.shutdownNow();
+        //如果SingleThreadEventExecutor 执行execute，则底层（ExecutorService）执行的时候将会抛出RejectedExecutionException异常
         executeShouldFail(executor);
-        executeShouldFail(executor);
+        //测试关闭
         assertThrows(RejectedExecutionException.class, new Executable() {
             @Override
             public void execute() {
@@ -153,6 +154,7 @@ public class SingleThreadEventExecutorTest {
                 }
             }
         };
+
         try {
             assertThrows(RejectedExecutionException.class, new Executable() {
                 @Override
@@ -190,6 +192,9 @@ public class SingleThreadEventExecutorTest {
                         }
                     });
                     promise.syncUninterruptibly();
+
+                    Throwable cause = promise.cause();
+                    System.out.println(promise.isSuccess());
                 }
             });
         } finally {

@@ -46,9 +46,21 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * Abstract base class for {@link OrderedEventExecutor}'s that execute all its submitted tasks in a single thread.
+ *
  * OrderedEventExecutor的基类，在单个线程里面处理它提交的所有任务
  *
  * 单线程事件处理器
+ * ，将 execute() 方法委托给 真正的执行器 executor。并抽象出 一个 run 方法
+ *
+ * {@link ThreadPerTaskExecutor} 用于执行任务的默认执行器 {@link SingleThreadEventExecutor#executor} ，可以在初始化对象的时候由具体实现通过参数传递进来。
+ *
+ * {@link SingleThreadEventExecutor#execute(Runnable, boolean)} 核心方法，底层需要具体实现的是 {@link SingleThreadEventExecutor#run()}
+ *
+ *
+ *
+ * {@link DefaultEventExecutor} 一个 默认的时间执行器
+ *
+ * {@link io.netty.channel.SingleThreadEventLoop} channel 包中 一个抽象类实现
  */
 public abstract class SingleThreadEventExecutor extends AbstractScheduledEventExecutor implements OrderedEventExecutor {
 
@@ -71,14 +83,23 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         }
     };
 
+    /**
+     * 状态更新属性
+     */
     private static final AtomicIntegerFieldUpdater<SingleThreadEventExecutor> STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(SingleThreadEventExecutor.class, "state");
+
+    /**
+     * 线程属性更新
+     */
     private static final AtomicReferenceFieldUpdater<SingleThreadEventExecutor, ThreadProperties> PROPERTIES_UPDATER =
             AtomicReferenceFieldUpdater.newUpdater(
                     SingleThreadEventExecutor.class, ThreadProperties.class, "threadProperties");
-
+    //任务队列
     private final Queue<Runnable> taskQueue;
-
+    /**
+     * {@link #doStartThread()} . 任务执行线程
+     */
     private volatile Thread thread;
     @SuppressWarnings("unused")
     private volatile ThreadProperties threadProperties;
@@ -109,6 +130,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * @param threadFactory     the {@link ThreadFactory} which will be used for the used {@link Thread}
      * @param addTaskWakesUp    {@code true} if and only if invocation of {@link #addTask(Runnable)} will wake up the
      *                          executor thread
+     *
+     *                         设置为true后，当且仅当调用 addTask(Runnable) 才会唤醒 执行线程
      */
     protected SingleThreadEventExecutor(
             EventExecutorGroup parent, ThreadFactory threadFactory, boolean addTaskWakesUp) {
@@ -148,8 +171,10 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      *
      * @param parent            the {@link EventExecutorGroup} which is the parent of this instance and belongs to it
      * @param executor          the {@link Executor} which will be used for executing
+     *                              将用于执行的｛@link Executor｝
      * @param addTaskWakesUp    {@code true} if and only if invocation of {@link #addTask(Runnable)} will wake up the
      *                          executor thread
+     *                              如果true 表示 当且仅当调用｛@link#addTask（Runnable）｝将唤醒执行器线程
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
      */
@@ -389,6 +414,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         if (ranAtLeastOne) {
             lastExecutionTime = getCurrentTimeNanos();
         }
+        //运行完队列中所有任务 的后续操作
         afterRunningAllTasks();
         return ranAtLeastOne;
     }
@@ -422,9 +448,13 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     /**
      * Runs all tasks from the passed {@code taskQueue}.
      *
+     * 从传递的｛@code taskQueue｝中运行所有任务。
+     *
      * @param taskQueue To poll and execute all tasks.
+     *                  轮询并执行所有任务。
      *
      * @return {@code true} if at least one task was executed.
+     * 如果至少一个任务被执行，返回true.
      */
     protected final boolean runAllTasksFrom(Queue<Runnable> taskQueue) {
         Runnable task = pollTaskFrom(taskQueue);
@@ -461,8 +491,10 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     }
 
     /**
-     * Poll all tasks from the task queue and run them via {@link Runnable#run()} method.  This method stops running
-     * the tasks in the task queue and returns if it ran longer than {@code timeoutNanos}.
+     * Poll all tasks from the task queue and run them via {@link Runnable#run()} method.
+     * This method stops running the tasks in the task queue and returns if it ran longer than {@code timeoutNanos}.
+     * 从队列中拉取所有任务，通过run 方法 运行他们
+     * 此方法停止运行任务队列中的任务，并在运行时间超过 timeoutNanos的时候 返回
      */
     protected boolean runAllTasks(long timeoutNanos) {
         fetchFromScheduledTaskQueue();
@@ -503,6 +535,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     /**
      * Invoked before returning from {@link #runAllTasks()} and {@link #runAllTasks(long)}.
+     * 以上方法返回前 进行以下方法的调用进行后续处理
      */
     @UnstableApi
     protected void afterRunningAllTasks() { }
@@ -566,6 +599,11 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         }
     }
 
+    /**
+     *
+     * @param thread 一般默认是当前线程
+     * @return this.thread 是任务执行线程。
+     */
     @Override
     public boolean inEventLoop(Thread thread) {
         return thread == this.thread;
@@ -905,6 +943,9 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * Returns the {@link ThreadProperties} of the {@link Thread} that powers the {@link SingleThreadEventExecutor}.
      * If the {@link SingleThreadEventExecutor} is not started yet, this operation will start it and block until
      * it is fully started.
+     *
+     * 返回{@link线程}的{@link ThreadProperties}，该线程为{@link SingleThreadEventExecutor}提供动力。
+     * 如果｛@link SingleThreadEventExecutor｝尚未启动，则此操作将启动它并阻止它，直到它完全启动为止。
      */
     public final ThreadProperties threadProperties() {
         ThreadProperties threadProperties = this.threadProperties;
@@ -935,6 +976,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     /**
      * Can be overridden to control which tasks require waking the {@link EventExecutor} thread
      * if it is waiting so that they can be run immediately.
+     *
+     * 可以重写以控制哪些任务需要在｛@link EventExecutor｝线程等待时唤醒该线程，以便立即运行。
      */
     protected boolean wakesUpForTask(Runnable task) {
         return true;

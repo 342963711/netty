@@ -21,7 +21,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The result of an asynchronous operation.
- * 异步操作的结果
+ *
+ * 异步操作的结果，基于future ，扩展了future 能力
+ *
+ * @see AbstractFuture
+ * @see Promise
+ * @see ScheduledFuture
+ * @see ProgressiveFuture
+ * @see ScheduledFuture
  */
 @SuppressWarnings("ClassNameSameAsAncestorName")
 public interface Future<V> extends java.util.concurrent.Future<V> {
