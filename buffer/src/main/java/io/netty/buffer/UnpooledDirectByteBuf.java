@@ -36,6 +36,8 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
  * {@link Unpooled#wrappedBuffer(ByteBuffer)} instead of calling the constructor explicitly.
  * 一个基于 NIO bytebuffer 的缓冲区，建议使用  UnpooledByteBufAllocator Unpooled Unpooled 而不是直接的调用构造函数
  *
+ * @see UnpooledUnsafeDirectByteBuf
+ * @see io.netty.buffer.UnpooledByteBufAllocator.InstrumentedUnpooledDirectByteBuf
  */
 public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
 
