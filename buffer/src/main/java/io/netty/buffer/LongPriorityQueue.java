@@ -19,8 +19,10 @@ import java.util.Arrays;
 
 /**
  * Internal primitive priority queue, used by {@link PoolChunk}.
+ *
  * 内部原语优先级队列，由{@link PoolChunk} 使用。
  * The implementation is based on the binary heap, as described in Algorithms by Sedgewick and Wayne.
+ *
  * 该实现基于二进制堆
  */
 final class LongPriorityQueue {
@@ -75,6 +77,11 @@ final class LongPriorityQueue {
         return size == 0;
     }
 
+
+    /**
+     * 按照 升序排序
+     * @param index
+     */
     private void lift(int index) {
         int parentIndex;
         while (index > 1 && subord(parentIndex = index >> 1, index)) {

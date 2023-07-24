@@ -35,11 +35,16 @@ import static java.lang.Math.min;
 
 /**
  * Light-weight object pool based on a thread-local stack.
+ * 基于本地线程栈 的重量级 对象池
  *
- * @param <T> the type of the pooled object
+ * 池对象创建，回收，核心控制类
+ *
+ * @param <T> the type of the pooled object ， 池对象的类型
  */
 public abstract class Recycler<T> {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(Recycler.class);
+
+
     private static final Handle<?> NOOP_HANDLE = new Handle<Object>() {
         @Override
         public void recycle(Object object) {
@@ -51,11 +56,35 @@ public abstract class Recycler<T> {
             return "NOOP_HANDLE";
         }
     };
+
+    /**
+     * 默认使用4k实例
+     */
     private static final int DEFAULT_INITIAL_MAX_CAPACITY_PER_THREAD = 4 * 1024; // Use 4k instances as default.
+
+    /**
+     * 每个线程默认最大容量 默认是4k
+     */
     private static final int DEFAULT_MAX_CAPACITY_PER_THREAD;
+
+    /**
+     * 比例. 默认是8
+     */
     private static final int RATIO;
+
+    /**
+     * 每个线程的 默认队列 中的块数量。 默认是 32
+     */
     private static final int DEFAULT_QUEUE_CHUNK_SIZE_PER_THREAD;
+
+    /**
+     * 默认 false,
+     */
     private static final boolean BLOCKING_POOL;
+
+    /**
+     * true,仅批次fastThreadLocal
+     */
     private static final boolean BATCH_FAST_TL_ONLY;
 
     static {
@@ -74,6 +103,11 @@ public abstract class Recycler<T> {
         // By default, we allow one push to a Recycler for each 8th try on handles that were never recycled before.
         // This should help to slowly increase the capacity of the recycler while not be too sensitive to allocation
         // bursts.
+        /**
+         * 默认情况下，我们允许每8次尝试以前从未回收过的手柄，就向回收器推送一次。
+         *
+         * 这应该有助于缓慢增加回收器的容量，同时对分配突发不太敏感。
+         **/
         RATIO = max(0, SystemPropertyUtil.getInt("io.netty.recycler.ratio", 8));
 
         BLOCKING_POOL = SystemPropertyUtil.getBoolean("io.netty.recycler.blocking", false);
@@ -96,12 +130,27 @@ public abstract class Recycler<T> {
         }
     }
 
+    /**
+     * 每个线程容量 4k
+     */
     private final int maxCapacityPerThread;
+
+    //interval = max(0, ratio);  初始化默认值是 8
     private final int interval;
+
+    /**
+     * 块大小，默认是 32
+     *
+     */
     private final int chunkSize;
+
+    /**
+     * 每个线程都存储一个 LocalPool
+     */
     private final FastThreadLocal<LocalPool<T>> threadLocal = new FastThreadLocal<LocalPool<T>>() {
         @Override
         protected LocalPool<T> initialValue() {
+            // 默认值 分别是 4k, 8, 32
             return new LocalPool<T>(maxCapacityPerThread, interval, chunkSize);
         }
 
@@ -171,10 +220,13 @@ public abstract class Recycler<T> {
         if (maxCapacityPerThread == 0) {
             return newObject((Handle<T>) NOOP_HANDLE);
         }
+        //是一个消费端。
         LocalPool<T> localPool = threadLocal.get();
+        //申请一个handler，用于创建可回收对象
         DefaultHandle<T> handle = localPool.claim();
         T obj;
         if (handle == null) {
+            //方法用于控制创建可回收对象的频率
             handle = localPool.newHandle();
             if (handle != null) {
                 obj = newObject(handle);
@@ -213,12 +265,24 @@ public abstract class Recycler<T> {
      */
     protected abstract T newObject(Handle<T> handle);
 
+    /**
+     * 因兼容性问题，不能修改
+     * @param <T>
+     */
     @SuppressWarnings("ClassNameSameAsAncestorName") // Can't change this due to compatibility.
     public interface Handle<T> extends ObjectPool.Handle<T>  { }
 
+    /**
+     * 默认的 回收处理
+     * @param <T>
+     */
     private static final class DefaultHandle<T> implements Handle<T> {
+        //初始化为可回收状态
         private static final int STATE_CLAIMED = 0;
+
+        //标记为已回收
         private static final int STATE_AVAILABLE = 1;
+
         private static final AtomicIntegerFieldUpdater<DefaultHandle<?>> STATE_UPDATER;
         static {
             AtomicIntegerFieldUpdater<?> updater = AtomicIntegerFieldUpdater.newUpdater(DefaultHandle.class, "state");
@@ -227,9 +291,12 @@ public abstract class Recycler<T> {
         }
 
         private volatile int state; // State is initialised to STATE_CLAIMED (aka. 0) so they can be released.
+
+        //通过该对象来进行回收
         private final LocalPool<T> localPool;
         private T value;
 
+        //回收本地池中的对象
         DefaultHandle(LocalPool<T> localPool) {
             this.localPool = localPool;
         }
@@ -263,14 +330,40 @@ public abstract class Recycler<T> {
         }
     }
 
+    /**
+     * 本地池, 主要是管理 DefaultHandle 的创建和
+     * @param <T>
+     */
     private static final class LocalPool<T> implements MessagePassingQueue.Consumer<DefaultHandle<T>> {
+        /**
+         * 比例间隔
+         */
         private final int ratioInterval;
+
+        /**
+         * 块 数量
+         */
         private final int chunkSize;
+
+
         private final ArrayDeque<DefaultHandle<T>> batch;
         private volatile Thread owner;
+        /**
+         * 消息传递队列，多生产者，单消费者
+         */
         private volatile MessagePassingQueue<DefaultHandle<T>> pooledHandles;
+
+        /**
+         * 比例 计数
+         */
         private int ratioCounter;
 
+        /**
+         *
+         * @param maxCapacity 4k
+         * @param ratioInterval 8
+         * @param chunkSize 32
+         */
         @SuppressWarnings("unchecked")
         LocalPool(int maxCapacity, int ratioInterval, int chunkSize) {
             this.ratioInterval = ratioInterval;
@@ -279,10 +372,12 @@ public abstract class Recycler<T> {
             Thread currentThread = Thread.currentThread();
             owner = !BATCH_FAST_TL_ONLY || currentThread instanceof FastThreadLocalThread ? currentThread : null;
             if (BLOCKING_POOL) {
+                //一般是为了测试
                 pooledHandles = new BlockingMessageQueue<DefaultHandle<T>>(maxCapacity);
             } else {
                 pooledHandles = (MessagePassingQueue<DefaultHandle<T>>) newMpscQueue(chunkSize, maxCapacity);
             }
+            //每隔一段时间启动，这样第一个将被回收
             ratioCounter = ratioInterval; // Start at interval so the first one will be recycled.
         }
 
@@ -317,6 +412,7 @@ public abstract class Recycler<T> {
             }
         }
 
+        //用于创建新的 DefaultHandle 对象，
         DefaultHandle<T> newHandle() {
             if (++ratioCounter >= ratioInterval) {
                 ratioCounter = 0;
@@ -336,6 +432,9 @@ public abstract class Recycler<T> {
      * {@link PlatformDependent#newMpscQueue(int)}, but intended to be used for debugging purpose.
      * The implementation relies on synchronised monitor locks for thread-safety.
      * The {@code fill} bulk operation is not supported by this implementation.
+     *
+     * 这是｛@link MessagePassingQueue｝的实现，类似于从｛@link PlatformDependent#newMpscQueue（int）｝，但用于调试目的。
+     * 该实现依赖于同步监视器锁来实现线程安全。此实现不支持｛@code fill｝批量操作。
      */
     private static final class BlockingMessageQueue<T> implements MessagePassingQueue<T> {
         private final Queue<T> deque;

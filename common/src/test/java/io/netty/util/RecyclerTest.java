@@ -16,6 +16,7 @@
 package io.netty.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.function.Executable;
@@ -251,6 +252,9 @@ public class RecyclerTest {
         }
     }
 
+    /**
+     * 测试可回收对象
+     */
     @Test
     public void testRecycle() {
         Recycler<HandledObject> recycler = newRecycler(1024);
@@ -261,6 +265,9 @@ public class RecyclerTest {
         object2.recycle();
     }
 
+    /**
+     * 测试禁用回收
+     */
     @Test
     public void testRecycleDisable() {
         Recycler<HandledObject> recycler = newRecycler(-1);
@@ -271,6 +278,10 @@ public class RecyclerTest {
         object2.recycle();
     }
 
+
+    /**
+     * 当ratio 为 0，表示对象可以释放后继续获取，也就是不会删除
+     */
     @Test
     public void testRecycleDisableDrop() {
         Recycler<HandledObject> recycler = newRecycler(1024, 0, 16);
@@ -297,6 +308,22 @@ public class RecyclerTest {
         }
     }
 
+    @Test
+    public void testMaxCapacity02(){
+        int maxCapacity=4;
+        Recycler<HandledObject> handledObjectRecycler = newRecycler(4);
+        HandledObject[] objects = new HandledObject[maxCapacity*8];
+        for(int i=0;i<objects.length;i++){
+            objects[i]=handledObjectRecycler.get();
+        }
+        Assertions.assertTrue(handledObjectRecycler.threadLocalSize()==0);
+        //缓存的对象大小
+        for(int i=0;i<objects.length;i++){
+            objects[i].recycle();
+        }
+        Assertions.assertTrue(handledObjectRecycler.threadLocalSize()==maxCapacity);
+    }
+
     private static void testMaxCapacity(int maxCapacity) {
         Recycler<HandledObject> recycler = newRecycler(maxCapacity);
         HandledObject[] objects = new HandledObject[maxCapacity * 3];
@@ -316,24 +343,30 @@ public class RecyclerTest {
 
     @Test
     public void testRecycleAtDifferentThread() throws Exception {
+        //ratio 表示的是 1,3对象是可回收的。（默认第一个对象是可回收的，2，3 对象中，3对象是可回收的）
         final Recycler<HandledObject> recycler = newRecycler(256, 2, 16);
-        final HandledObject o = recycler.get();
+        final HandledObject o1 = recycler.get();
         final HandledObject o2 = recycler.get();
 
-        final Thread thread = newThread(new Runnable() {
+        final Thread t1 = newThread(new Runnable() {
             @Override
             public void run() {
-                o.recycle();
+                o1.recycle();
                 o2.recycle();
             }
         });
-        thread.start();
-        thread.join();
-
-        assertSame(recycler.get(), o);
-        assertNotSame(recycler.get(), o2);
+        t1.start();
+        t1.join();
+        HandledObject o3 = recycler.get();
+        HandledObject o4 = recycler.get();
+        assertSame(o3, o1);
+        assertNotSame(o4, o2);
     }
 
+    /**
+     * Always recycler the first object
+     * @throws Exception
+     */
     @Test
     public void testRecycleAtTwoThreadsMulti() throws Exception {
         final Recycler<HandledObject> recycler = newRecycler(256);
@@ -376,6 +409,10 @@ public class RecyclerTest {
         single.shutdown();
     }
 
+    /**
+     * 在不同线程 测试 Recycle 的最大容量
+     * @throws Exception
+     */
     @Test
     public void testMaxCapacityWithRecycleAtDifferentThread() throws Exception {
         final int maxCapacity = 4;
@@ -405,12 +442,14 @@ public class RecyclerTest {
         thread.start();
         thread.join();
 
+        //已经释放完毕后，最大的缓存数量未 创建的对象总数/ratio  就是缓存的数量
         assertEquals(maxCapacity * 3 / 4, recycler.threadLocalSize());
 
+        //此处把所有的缓存对象都已经取出来
         for (int i = 0; i < array.length; i ++) {
             recycler.get();
         }
-
+        //回收期中可用的缓存对象 个数为0
         assertEquals(0, recycler.threadLocalSize());
     }
 
@@ -465,6 +504,9 @@ public class RecyclerTest {
     }
 
     static final class HandledObject {
+
+
+
         Recycler.Handle<HandledObject> handle;
 
         HandledObject(Recycler.Handle<HandledObject> handle) {

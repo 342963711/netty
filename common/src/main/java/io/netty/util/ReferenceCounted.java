@@ -32,6 +32,10 @@ package io.netty.util;
  * reference count becomes 0.
  * </p>
  * 如果实现了ReferenceCounted 是一个包含其他实现了ReferenceCounted 对象的容器。 当容器的引用计数为0的时候，它包含的对象也将通过release()来进行释放
+ *
+ *
+ * @see AbstractReferenceCounted
+ * @see ReferenceCountUpdater
  */
 public interface ReferenceCounted {
     /**
@@ -83,6 +87,8 @@ public interface ReferenceCounted {
      * count reaches at {@code 0}.
      *
      * @return {@code true} if and only if the reference count became {@code 0} and this object has been deallocated
+     *
+     * 当且仅当引用计数变为{@code 0}并且此对象已被解除分配
      */
     boolean release(int decrement);
 }

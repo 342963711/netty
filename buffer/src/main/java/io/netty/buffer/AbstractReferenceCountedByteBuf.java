@@ -23,6 +23,14 @@ import io.netty.util.internal.ReferenceCountUpdater;
 /**
  * Abstract base class for {@link ByteBuf} implementations that count references.
  * 引用计数控制与回收
+ *
+ * @see AbstractPooledDerivedByteBuf
+ * @see CompositeByteBuf
+ *
+ * @see PooledByteBuf
+ *
+ * @see UnpooledDirectByteBuf
+ * @see UnpooledHeapByteBuf
  */
 public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
 
@@ -124,6 +132,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
 
     /**
      * Called once {@link #refCnt()} is equals 0.
+     * 进行释放
      */
     protected abstract void deallocate();
 }

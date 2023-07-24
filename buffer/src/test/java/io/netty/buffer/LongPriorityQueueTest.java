@@ -26,6 +26,12 @@ import java.util.ListIterator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @date 2023/7/17 15:54
+ * @author likai
+ * @email likai9376@163.com
+ * @desc 测试 优先队列
+ */
 class LongPriorityQueueTest {
     @Test
     public void mustThrowWhenAddingNoValue() {
@@ -143,5 +149,14 @@ class LongPriorityQueueTest {
         assertTrue(pq.isEmpty());
         assertThat(pq.poll()).isEqualTo(LongPriorityQueue.NO_VALUE);
         assertThat(pq.peek()).isEqualTo(LongPriorityQueue.NO_VALUE);
+    }
+
+    @Test
+    public void priorityQueInfo(){
+        LongPriorityQueue pq = new LongPriorityQueue();
+
+        pq.offer(100);
+        pq.offer(99);
+        pq.offer(101);
     }
 }

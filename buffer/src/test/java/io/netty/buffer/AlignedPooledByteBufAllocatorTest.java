@@ -20,6 +20,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * @date 2023/7/4 11:32
+ * @author likai
+ * @email likai9376@163.com
+ * @desc 对齐测试
+ */
 public class AlignedPooledByteBufAllocatorTest extends PooledByteBufAllocatorTest {
     @Override
     protected PooledByteBufAllocator newAllocator(boolean preferDirect) {

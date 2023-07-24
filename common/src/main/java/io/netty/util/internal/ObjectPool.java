@@ -19,7 +19,7 @@ import io.netty.util.Recycler;
 
 /**
  * Light-weight object pool.
- * 重量级的 对象池
+ * 轻量级的 对象池
  *
  * @param <T> the type of the pooled object
  */
@@ -41,6 +41,7 @@ public abstract class ObjectPool<T> {
     public interface Handle<T> {
         /**
          * Recycle the {@link Object} if possible and so make it ready to be reused.
+         * //如果可能的话，请回收 self,使其可以重复使用
          */
         void recycle(T self);
     }
@@ -57,6 +58,8 @@ public abstract class ObjectPool<T> {
          * Creates an returns a new {@link Object} that can be used and later recycled via
          * {@link Handle#recycle(Object)}.
          *
+         * 创建一个对象，可以被使用并在之后 通过 Handler 来进行回收
+         *
          * @param handle can NOT be null.
          */
         T newObject(Handle<T> handle);
@@ -70,7 +73,13 @@ public abstract class ObjectPool<T> {
         return new RecyclerObjectPool<T>(ObjectUtil.checkNotNull(creator, "creator"));
     }
 
+    /**
+     * 可回收对象池
+     * @param <T>
+     */
     private static final class RecyclerObjectPool<T> extends ObjectPool<T> {
+
+        //回收期，匿名类对 ObjectCreator 进行包装。 可以进行对象创建，同时，创建出来的对象都有Handler 可以进行自身回收
         private final Recycler<T> recycler;
 
         RecyclerObjectPool(final ObjectCreator<T> creator) {

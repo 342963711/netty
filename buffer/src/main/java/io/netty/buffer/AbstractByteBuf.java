@@ -45,12 +45,18 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
  * A skeletal implementation of a buffer.
  * ByteBuf 的基础实现，维护基本数据结构，
  * 1.操作检测 2.底层实现抽象
+ *
+ * @see AbstractDerivedByteBuf 弃用，可以不看
+ * @see AbstractReferenceCountedByteBuf
  */
 public abstract class AbstractByteBuf extends ByteBuf {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractByteBuf.class);
+    //检查可进入的
     private static final String LEGACY_PROP_CHECK_ACCESSIBLE = "io.netty.buffer.bytebuf.checkAccessible";
     private static final String PROP_CHECK_ACCESSIBLE = "io.netty.buffer.checkAccessible";
+
     static final boolean checkAccessible; // accessed from CompositeByteBuf
+    //检查边界
     private static final String PROP_CHECK_BOUNDS = "io.netty.buffer.checkBounds";
     private static final boolean checkBounds;
 
@@ -67,6 +73,9 @@ public abstract class AbstractByteBuf extends ByteBuf {
         }
     }
 
+    /**
+     * 泄露探测器
+     */
     static final ResourceLeakDetector<ByteBuf> leakDetector =
             ResourceLeakDetectorFactory.instance().newResourceLeakDetector(ByteBuf.class);
 

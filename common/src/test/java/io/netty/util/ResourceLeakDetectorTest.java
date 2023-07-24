@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 public class ResourceLeakDetectorTest {
     @SuppressWarnings("unused")
@@ -109,20 +110,25 @@ public class ResourceLeakDetectorTest {
     public void testLeakSetupHints() throws Throwable {
         DefaultResource.detectorWithSetupHint.initialise();
         leakResource();
-
+//        Resource resource = new DefaultResource();
+//        // We'll never close this ResourceLeakTracker.
+//        DefaultResource.detectorWithSetupHint.track(resource);
         do {
             // Trigger GC.
             System.gc();
             // Track another resource to trigger refqueue visiting.
+            // 跟踪另一个资源以触发refqueue访问。
             Resource resource2 = new DefaultResource();
-            DefaultResource.detectorWithSetupHint.track(resource2).close(resource2);
+            ResourceLeakTracker<Resource> track = DefaultResource.detectorWithSetupHint.track(resource2);
+            //track 关闭
+//            track.close(resource2);
             // Give the GC something to work on.
             for (int i = 0; i < 1000; i++) {
                 sink = System.identityHashCode(new byte[10000]);
             }
         } while (DefaultResource.detectorWithSetupHint.getLeaksFound() < 1 && !Thread.interrupted());
 
-        assertThat(DefaultResource.detectorWithSetupHint.getLeaksFound()).isOne();
+        assertThat(DefaultResource.detectorWithSetupHint.getLeaksFound()).isEqualTo(2);
         DefaultResource.detectorWithSetupHint.assertNoErrors();
     }
 
@@ -155,8 +161,10 @@ public class ResourceLeakDetectorTest {
 
     private static final class DefaultResource implements Resource {
         // Sample every allocation
+        //每个 分配都 进行 取样
         static final TestResourceLeakDetector<Resource> detector = new TestResourceLeakDetector<Resource>(
                 Resource.class, 1, Integer.MAX_VALUE);
+        //带有设置提示的检测器
         static final CreationRecordLeakDetector<Resource> detectorWithSetupHint =
                 new CreationRecordLeakDetector<Resource>(Resource.class, 1);
 
@@ -209,6 +217,10 @@ public class ResourceLeakDetectorTest {
         }
     }
 
+    /**
+     * 创建 记录泄露 探测
+     * @param <T>
+     */
     private static final class CreationRecordLeakDetector<T> extends ResourceLeakDetector<T> {
         private String canaryString;
 
@@ -231,6 +243,7 @@ public class ResourceLeakDetectorTest {
 
         @Override
         protected void reportTracedLeak(String resourceType, String records) {
+            super.reportTracedLeak(resourceType,records);
             if (!records.contains(canaryString)) {
                 reportError(new AssertionError("Leak records did not contain canary string"));
             }
@@ -239,6 +252,7 @@ public class ResourceLeakDetectorTest {
 
         @Override
         protected void reportUntracedLeak(String resourceType) {
+            super.reportUntracedLeak(resourceType);
             reportError(new AssertionError("Got untraced leak w/o canary string"));
             leaksFound.incrementAndGet();
         }
@@ -247,6 +261,11 @@ public class ResourceLeakDetectorTest {
             error.compareAndSet(null, cause);
         }
 
+        /**
+         * 设置初始提示
+         * @param resourceType
+         * @return
+         */
         @Override
         protected Object getInitialHint(String resourceType) {
             return canaryString;
@@ -259,5 +278,36 @@ public class ResourceLeakDetectorTest {
         void assertNoErrors() throws Throwable {
             ResourceLeakDetectorTest.assertNoErrors(error);
         }
+    }
+
+
+    public static class MyResource{
+        private byte[] array = new byte[1024];
+    }
+
+    static ResourceLeakDetector<MyResource> myResourceResourceLeakDetector = ResourceLeakDetectorFactory.instance().newResourceLeakDetector(MyResource.class, 1);
+
+
+    public void useResource(){
+        MyResource myResource = new MyResource();
+        ResourceLeakTracker<MyResource> track = myResourceResourceLeakDetector.track(myResource);
+
+    }
+
+    @Test
+    public void testResourceDetect() throws InterruptedException {
+        useResource();
+        int i=0;
+        do {
+            System.gc();
+            Thread.sleep(500);
+            MyResource myResource = new MyResource();
+            ResourceLeakTracker<MyResource> track = myResourceResourceLeakDetector.track(myResource);
+            track.record("hello");
+            track.close(myResource);
+            i++;
+        }while (i<=1);
+
+
     }
 }

@@ -26,6 +26,8 @@ import java.lang.reflect.Constructor;
 
 /**
  * This static factory should be used to load {@link ResourceLeakDetector}s as needed
+ *
+ * 此静态工厂应用于根据需要加{@link ResourceLeakDetector}s
  */
 public abstract class ResourceLeakDetectorFactory {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ResourceLeakDetectorFactory.class);
@@ -110,6 +112,7 @@ public abstract class ResourceLeakDetectorFactory {
             if (customLeakDetector == null) {
                 obsoleteCustomClassConstructor = customClassConstructor = null;
             } else {
+                //弃用的构造类
                 obsoleteCustomClassConstructor = obsoleteCustomClassConstructor(customLeakDetector);
                 customClassConstructor = customClassConstructor(customLeakDetector);
             }

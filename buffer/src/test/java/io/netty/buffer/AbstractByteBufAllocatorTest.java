@@ -22,6 +22,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+
+/**
+ * @date 2023/7/4 11:30
+ * @author likai
+ * @email likai9376@163.com
+ * @desc
+ *
+ * @see PooledByteBufAllocatorTest
+ * @see UnpooledByteBufAllocatorTest
+ */
 public abstract class AbstractByteBufAllocatorTest<T extends AbstractByteBufAllocator> extends ByteBufAllocatorTest {
 
     @Override

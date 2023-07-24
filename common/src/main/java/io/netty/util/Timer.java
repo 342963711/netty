@@ -22,6 +22,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Schedules {@link TimerTask}s for one-time future execution in a background
  * thread.
+ *
+ * 调度 TimerTask 以便 将来 在后台线程进行执行
+ *
+ * @see HashedWheelTimer
  */
 public interface Timer {
 
@@ -43,6 +47,8 @@ public interface Timer {
      *
      * @return the handles associated with the tasks which were canceled by
      *         this method
+     *
+     *         被此方法取消与任务关联的句柄
      */
     Set<Timeout> stop();
 }

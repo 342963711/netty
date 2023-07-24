@@ -27,6 +27,21 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LongLongHashMapTest {
+
+
+    @Test
+    public void mapInfo(){
+        LongLongHashMap map = new LongLongHashMap(-1);
+        map.put(0,120000);
+        map.put(511,120000);
+
+        map.remove(0);
+        map.remove(511);
+
+        map.put(1,1200002);
+        map.put(511,1200002);
+    }
+
     @Test
     public void zeroPutGetAndRemove() {
         LongLongHashMap map = new LongLongHashMap(-1);

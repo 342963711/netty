@@ -21,6 +21,7 @@ package io.netty.util.concurrent;
  * 可写的 特殊 Future
  *
  * @see DefaultPromise
+ * @see ProgressivePromise
  */
 public interface Promise<V> extends Future<V> {
 

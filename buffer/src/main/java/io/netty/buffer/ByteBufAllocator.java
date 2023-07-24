@@ -22,6 +22,9 @@ package io.netty.buffer;
  * 主要分为两大类
  * 一个是head,一个是direct 类型的缓冲区类型
  * 另外还包含CompositeByteBuf 类型的缓冲区
+ *
+ *
+ * @see AbstractByteBufAllocator
  */
 public interface ByteBufAllocator {
 
@@ -94,6 +97,7 @@ public interface ByteBufAllocator {
     ByteBuf directBuffer(int initialCapacity, int maxCapacity);
 
     /**
+     * 组合byteBuf
      * Allocate a {@link CompositeByteBuf}.
      * If it is a direct or heap buffer depends on the actual implementation.
      */
@@ -127,7 +131,7 @@ public interface ByteBufAllocator {
 
     /**
      * Returns {@code true} if direct {@link ByteBuf}'s are pooled
-     * 如果直接内容是共享的话
+     * 如果直接内存  是池化的话
      */
     boolean isDirectBufferPooled();
 

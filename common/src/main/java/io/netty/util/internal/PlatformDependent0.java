@@ -74,6 +74,9 @@ final class PlatformDependent0 {
      */
     private static final long UNSAFE_COPY_THRESHOLD = 1024L * 1024L;
 
+    /**
+     * 内存对齐
+     */
     private static final boolean UNALIGNED;
 
     /**

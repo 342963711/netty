@@ -36,20 +36,34 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @author likai
  * @email likai9376@163.com
  * @desc Promise 的默认实现
+ *
+ * @see PromiseTask
+ * @see DefaultProgressivePromise
  */
 public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultPromise.class);
     private static final InternalLogger rejectedExecutionLogger =
             InternalLoggerFactory.getInstance(DefaultPromise.class.getName() + ".rejectedExecution");
+    //最大监听栈深度
     private static final int MAX_LISTENER_STACK_DEPTH = Math.min(8,
             SystemPropertyUtil.getInt("io.netty.defaultPromise.maxListenerStackDepth", 8));
     @SuppressWarnings("rawtypes")
     private static final AtomicReferenceFieldUpdater<DefaultPromise, Object> RESULT_UPDATER =
             AtomicReferenceFieldUpdater.newUpdater(DefaultPromise.class, Object.class, "result");
+
     private static final Object SUCCESS = new Object();
+
+    //不可撤销
     private static final Object UNCANCELLABLE = new Object();
+
+    /**
+     * 取消异常持有类
+     */
     private static final CauseHolder CANCELLATION_CAUSE_HOLDER = new CauseHolder(
             StacklessCancellationException.newInstance(DefaultPromise.class, "cancel(...)"));
+    /**
+     * 取消栈信息
+     */
     private static final StackTraceElement[] CANCELLATION_STACK = CANCELLATION_CAUSE_HOLDER.cause.getStackTrace();
 
     //处理结果
@@ -88,6 +102,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
      * Creates a new instance.
      *
      * It is preferable to use {@link EventExecutor#newPromise()} to create a new promise
+     * 最好使用{@link EventExecutor#newPromise()}来创建新的promise
      *
      * @param executor
      *        the {@link EventExecutor} which is used to notify the promise once it is complete.
@@ -501,6 +516,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private void notifyListeners() {
         EventExecutor executor = executor();
         if (executor.inEventLoop()) {
+            //本地线程栈深处理
             final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
             final int stackDepth = threadLocals.futureListenerStackDepth();
             if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
@@ -513,7 +529,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
                 return;
             }
         }
-
+        //异步处理
         safeExecute(executor, new Runnable() {
             @Override
             public void run() {
@@ -559,6 +575,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
             listener = this.listener;
             listeners = this.listeners;
             // Only proceed if there are listeners to notify and we are not already notifying listeners.
+            // 只有在有侦听器需要通知并且我们还没有通知侦听器的情况下才继续。
             if (notifyingListeners || (listener == null && listeners == null)) {
                 return;
             }

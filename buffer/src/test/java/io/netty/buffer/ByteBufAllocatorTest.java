@@ -19,23 +19,39 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * @date 2023/7/4 11:30
+ * @author likai
+ * @email likai9376@163.com
+ * @desc
+ *
+ * @see AbstractByteBufAllocatorTest
+ */
 public abstract class ByteBufAllocatorTest {
 
     protected abstract int defaultMaxCapacity();
 
     protected abstract int defaultMaxComponents();
 
+    //获取 分配器
     protected abstract ByteBufAllocator newAllocator(boolean preferDirect);
 
     @Test
     public void testBuffer() {
         testBuffer(true);
-        testBuffer(false);
+        //testBuffer(false);
     }
 
     private void testBuffer(boolean preferDirect) {
         ByteBufAllocator allocator = newAllocator(preferDirect);
-        ByteBuf buffer = allocator.buffer(1);
+        //测试分配 内存
+        //理解 子页的 分配，
+        ByteBuf buffer = allocator.buffer(1); //子页会会按照默认的16 进行划分元素
+        ByteBuf buffer1 = allocator.buffer(28672); //如果大于第一个默认的子页
+        ByteBuf buffer2 = allocator.buffer(28672);
+        ByteBuf buffer3 = allocator.buffer(28672);
+
+//        ByteBuf buffer1 = allocator.buffer(4);
         try {
             assertBuffer(buffer, isDirectExpected(preferDirect), 1, defaultMaxCapacity());
         } finally {

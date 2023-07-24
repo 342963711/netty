@@ -291,6 +291,8 @@ public final class ThreadLocalRandom extends Random {
      * Returns a pseudorandom, uniformly distributed value between the
      * given least value (inclusive) and bound (exclusive).
      *
+     * 返回一个伪随机，在给定的最小值（包括）和界（不包括）之间均匀分布的值。
+     *
      * @param least the least value returned
      * @param bound the upper bound (exclusive)
      * @throws IllegalArgumentException if least greater than or equal

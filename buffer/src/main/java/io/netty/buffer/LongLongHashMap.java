@@ -21,9 +21,12 @@ package io.netty.buffer;
  * 内部原语映射实现，专门针对{@link PoolChunk}中的可用性映射 用例进行了优化
  */
 final class LongLongHashMap {
+    //掩码模板
     private static final int MASK_TEMPLATE = ~1;
+    //掩码
     private int mask;
     private long[] array;
+    //探针
     private int maxProbe;
     private long zeroVal;
     private final long emptyVal;

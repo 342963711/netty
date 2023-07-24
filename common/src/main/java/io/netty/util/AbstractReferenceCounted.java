@@ -21,10 +21,18 @@ import io.netty.util.internal.ReferenceCountUpdater;
 
 /**
  * Abstract base class for classes wants to implement {@link ReferenceCounted}.
+ *  为想实现 {@link ReferenceCounted} 提供的抽象基类，作为工具包中的一个类，为其他包提供基础实现
+ *
+ * @see ReferenceCountUpdater 为{@link AbstractReferenceCounted}类中方法的提供了核心的实现
  */
 public abstract class AbstractReferenceCounted implements ReferenceCounted {
+    //提供引用数量字段 在 内存中的偏移量
     private static final long REFCNT_FIELD_OFFSET =
             ReferenceCountUpdater.getUnsafeOffset(AbstractReferenceCounted.class, "refCnt");
+
+    /**
+     * 提供引数量字段 的原子操作类
+     */
     private static final AtomicIntegerFieldUpdater<AbstractReferenceCounted> AIF_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(AbstractReferenceCounted.class, "refCnt");
 

@@ -25,7 +25,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+/**
+ * @date 2023/6/7 20:08
+ * @author likai
+ * @email likai9376@163.com
+ * @desc
+ *
+ * @see PooledBigEndianDirectByteBufTest
+ * @see PooledLittleEndianDirectByteBufTest
+ *
+ * @see PooledBigEndianHeapByteBufTest
+ * @see PooledLittleEndianHeapByteBufTest
+ */
 public abstract class AbstractPooledByteBufTest extends AbstractByteBufTest {
 
     protected abstract ByteBuf alloc(int length, int maxCapacity);

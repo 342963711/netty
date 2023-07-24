@@ -24,18 +24,24 @@ import io.netty.util.ReferenceCounted;
 
 /**
  * Common logic for {@link ReferenceCounted} implementations
+ *
+ * ReferenceCounted 类公共逻辑实现 抽象类
  */
 public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
     /*
      * Implementation notes:
      *
      * For the updated int field:
-     *   Even => "real" refcount is (refCnt >>> 1)
-     *   Odd  => "real" refcount is 0
+     *   Even => "real" refcount is (refCnt >>> 1)  。如果引用计数是偶数，真实的引用计数为>>>1 （左移动1位）
+     *   Odd  => "real" refcount is 0。 如果应用技术为奇数，真实的引用计数为0
      *
      * (x & y) appears to be surprisingly expensive relative to (x == y). Thus this class uses
      * a fast-path in some places for most common low values when checking for live (even) refcounts,
      * for example: if (rawCnt == 2 || rawCnt == 4 || (rawCnt & 1) == 0) { ...
+     *
+     *
+     * 相对于（x＝＝y），（x&y）显得出奇地昂贵。因此，当检查活着的（偶数）引用计数时，
+     * 该类在一些地方对最常见的低值使用快速路径，例如：如果（rawCnt==2||rawCnt=4||（rawCnt&1）==0）｛。。。
      */
 
     protected ReferenceCountUpdater() { }
@@ -59,6 +65,10 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
         return 2;
     }
 
+    /**
+     * 设置引用初始值。默认是2
+     * @param instance
+     */
     public void setInitialValue(T instance) {
         final long offset = unsafeOffset();
         if (offset == -1) {
@@ -68,6 +78,11 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
         }
     }
 
+    /**
+     * 奇数返回0， 偶数/2 就是真实引用次数
+     * @param rawCnt
+     * @return
+     */
     private static int realRefCnt(int rawCnt) {
         return rawCnt != 2 && rawCnt != 4 && (rawCnt & 1) != 0 ? 0 : rawCnt >>> 1;
     }
@@ -93,6 +108,11 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
         return realRefCnt(updater().get(instance));
     }
 
+    /**
+     * 返回true,代表次对象是被引用的。返回false,表示没有被引用
+     * @param instance
+     * @return
+     */
     public final boolean isLiveNonVolatile(T instance) {
         final long offset = unsafeOffset();
         final int rawCnt = offset != -1 ? PlatformDependent.getInt(instance, offset) : updater().get(instance);
@@ -110,6 +130,7 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
 
     /**
      * Resets the reference count to 1
+     * 重置引用计数
      */
     public final void resetRefCnt(T instance) {
         updater().set(instance, initialValue());

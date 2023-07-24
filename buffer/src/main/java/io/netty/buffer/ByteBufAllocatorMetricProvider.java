@@ -19,6 +19,8 @@ public interface ByteBufAllocatorMetricProvider {
 
     /**
      * Returns a {@link ByteBufAllocatorMetric} for a {@link ByteBufAllocator}.
+     *
+     * 为字节缓冲区分配器 提供一个 字节缓冲区分配指标
      */
     ByteBufAllocatorMetric metric();
 }

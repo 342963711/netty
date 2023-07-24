@@ -27,12 +27,30 @@ import static java.lang.Math.*;
 
 import java.nio.ByteBuffer;
 
+/**
+ * 该类主要是维护 PoolChunk 的 使用率，根据不同的使用率将 PoolChunk 进行漂移管理
+ * 主要分为
+ * 1.PoolChunk 所属的 PoolChunkList
+ *
+ * 2.PoolChunk的分配调用
+ * 3.PoolChunk的释放调用
+ * @param <T>
+ */
 final class PoolChunkList<T> implements PoolChunkListMetric {
     private static final Iterator<PoolChunkMetric> EMPTY_METRICS = Collections.<PoolChunkMetric>emptyList().iterator();
+    /**
+     * 该块列表所属于的 池化区域
+     */
     private final PoolArena<T> arena;
+    /**
+     * 下一个块列
+     */
     private final PoolChunkList<T> nextList;
+    //限制的最小利用率
     private final int minUsage;
+    //限制的最大利用率
     private final int maxUsage;
+    //可分配的最大容量
     private final int maxCapacity;
     private PoolChunk<T> head;
     private final int freeMinThreshold;
@@ -65,29 +83,52 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         //       the condition can be converted to: freeBytes < 1 * chunkSize / 100
         //     this is why we have + 0.99999999 shifts. A example why just +1 shift cannot be used:
         //       freeBytes = 16777216 == freeMaxThreshold: 16777216, usage = 0 < minUsage: 1, chunkSize: 16777216
+
         //     At the same time we want to have zero thresholds in case of (maxUsage == 100) and (minUsage == 100).
         //
+        //  1.阈值是与PoolChunk.usage()逻辑保持对齐
+        //  基本逻辑： usage(利用率) = 100- freeByte*100/chunkSize
+        //  因此，例如 usage(利用率)>maxUsage 的 条件可以被转换为以下方式
+        //    100-freeBytes * 100 / chunkSize >=maxUsage
+        //    freeBytes <= chunkSize * (100 - maxUsage) / 100
+        //    设置 freeMinThreshold = chunkSize * (100 - maxUsage) / 100 。 因为 freeBytes <= freeMinThreshold
+
+        //  2. usage（）返回一个int值，并在计算过程中进行向下取整，
+        //
+        //空闲最小阈值，如果空闲字节小于该阈值，说明不满足了 maxUsage（当前利用率超过了maxUsage）
         freeMinThreshold = (maxUsage == 100) ? 0 : (int) (chunkSize * (100.0 - maxUsage + 0.99999999) / 100L);
+        //空闲最大阈值，如果空闲字节大于该阈值，说明不满足了 minUsage（当前利用率小于了minUsage）
         freeMaxThreshold = (minUsage == 100) ? 0 : (int) (chunkSize * (100.0 - minUsage + 0.99999999) / 100L);
     }
 
     /**
      * Calculates the maximum capacity of a buffer that will ever be possible to allocate out of the {@link PoolChunk}s
      * that belong to the {@link PoolChunkList} with the given {@code minUsage} and {@code maxUsage} settings.
+     *
+     * 计算在给定的{@code minUsage}和{@code maxUsage}设置下，
+     * 可以从属于{@link PoolChunkList}的{@link PoolChunk}中分配的缓冲区的最大容量。
      */
     private static int calculateMaxCapacity(int minUsage, int chunkSize) {
         minUsage = minUsage0(minUsage);
 
         if (minUsage == 100) {
             // If the minUsage is 100 we can not allocate anything out of this list.
+            // 如果 最小使用量为100，则不能从改列表中分配
             return 0;
         }
 
         // Calculate the maximum amount of bytes that can be allocated from a PoolChunk in this PoolChunkList.
         //
+        // 计算可从此PoolChunkList中的PoolChunk分配的最大字节数。
+        //
+
         // As an example:
         // - If a PoolChunkList has minUsage == 25 we are allowed to allocate at most 75% of the chunkSize because
         //   this is the maximum amount available in any PoolChunk in this PoolChunkList.
+
+        //说明
+        // 如果PoolChunkList的minUsage==25，我们最多可以分配chunkSize的75%，因为这是该PoolChunkList中任何PoolChunk中可用的最大数量。
+        //
         return  (int) (chunkSize * (100L - minUsage) / 100L);
     }
 
@@ -101,9 +142,11 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         if (normCapacity > maxCapacity) {
             // Either this PoolChunkList is empty or the requested capacity is larger then the capacity which can
             // be handled by the PoolChunks that are contained in this PoolChunkList.
+
+            // 此PoolChunkList为空，或者请求的容量大于此PoolChunk List中包含的PoolChunk可以处理的容量。
             return false;
         }
-
+        //挨个PoolChunk 进行分配，直到分配成功
         for (PoolChunk<T> cur = head; cur != null; cur = cur.next) {
             if (cur.allocate(buf, reqCapacity, sizeIdx, threadCache)) {
                 if (cur.freeBytes <= freeMinThreshold) {
@@ -153,16 +196,21 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         return prevList.move(chunk);
     }
 
+    //添加一个内存块
     void add(PoolChunk<T> chunk) {
+        //如果添加的chunk中空闲字节小于该阈值。则将该块添加到链中的下一个节点（向使用率较高的节点进行漂移）
         if (chunk.freeBytes <= freeMinThreshold) {
             nextList.add(chunk);
             return;
         }
+        //如果满足该列表管理的使用率，则添加块到该对象中
         add0(chunk);
     }
 
     /**
      * Adds the {@link PoolChunk} to this {@link PoolChunkList}.
+     *
+     * 添加一个 PoolChunk 到该对象中, 并且将该对象中之前的head进行头插法后移
      */
     void add0(PoolChunk<T> chunk) {
         chunk.parent = this;

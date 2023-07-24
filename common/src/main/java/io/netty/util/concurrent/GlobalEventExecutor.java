@@ -39,6 +39,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * task pending in the task queue for {@code io.netty.globalEventExecutor.quietPeriodSeconds} second
  * (default is 1 second).  Please note it is not scalable to schedule large number of tasks to this executor;
  * use a dedicated executor.
+ *
+ * 单线程singleton｛@link EventExecutor｝。当任务队列中没有挂起的任务时，它会自动启动线程并停止线程｛@code-io.netty.globalEventExecutor.quietPeriodSeconds｝秒
+ *
+ * （默认为1秒）。请注意，向该执行器调度大量任务是不可扩展的；使用专门的执行人。
  */
 public final class GlobalEventExecutor extends AbstractScheduledEventExecutor implements OrderedEventExecutor {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(GlobalEventExecutor.class);
@@ -56,7 +60,9 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor im
     }
 
     public static final GlobalEventExecutor INSTANCE = new GlobalEventExecutor();
-
+    /**
+     * 任务队列
+     */
     final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
     final ScheduledFutureTask<Void> quietPeriodTask = new ScheduledFutureTask<Void>(
             this, Executors.<Void>callable(new Runnable() {
@@ -76,7 +82,9 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor im
     // be sticky about its thread group
     // visible for testing
     final ThreadFactory threadFactory;
+    //消费者处理类
     private final TaskRunner taskRunner = new TaskRunner();
+    //线程运行状态
     private final AtomicBoolean started = new AtomicBoolean();
     volatile Thread thread;
 
@@ -230,6 +238,7 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor im
 
     private void startThread() {
         if (started.compareAndSet(false, true)) {
+            //创建一个线程去执行
             final Thread t = threadFactory.newThread(taskRunner);
             // Set to null to ensure we not create classloader leaks by holds a strong reference to the inherited
             // classloader.

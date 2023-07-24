@@ -32,6 +32,10 @@ import static io.netty.util.internal.PlatformDependent.BIG_ENDIAN_NATIVE_ORDER;
  * All operations get and set as {@link ByteOrder#BIG_ENDIAN}.
  */
 final class UnsafeByteBufUtil {
+
+    /**
+     * 平台是否支持未对齐访问
+     */
     private static final boolean UNALIGNED = PlatformDependent.isUnaligned();
     private static final byte ZERO = 0;
 

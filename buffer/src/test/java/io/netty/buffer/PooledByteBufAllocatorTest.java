@@ -46,6 +46,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * @date 2023/7/4 11:31
+ * @author likai
+ * @email likai9376@163.com
+ * @desc
+ *
+ * @see AlignedPooledByteBufAllocatorTest
+ */
 public class PooledByteBufAllocatorTest extends AbstractByteBufAllocatorTest<PooledByteBufAllocator> {
 
     @Override

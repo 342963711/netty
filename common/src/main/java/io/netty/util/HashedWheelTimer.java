@@ -44,12 +44,18 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
 /**
  * A {@link Timer} optimized for approximated I/O timeout scheduling.
  *
+ *
  * <h3>Tick Duration</h3>
+ * 1.时钟刻度,默认是100毫秒 一次滴答
  *
  * As described with 'approximated', this timer does not execute the scheduled
  * {@link TimerTask} on time.  {@link HashedWheelTimer}, on every tick, will
  * check if there are any {@link TimerTask}s behind the schedule and execute
  * them.
+ * 如“近似”所述，此计时器未按时执行计划的｛@link TimerTask｝。
+ * {@link HashedWheelTimer}, on every tick, will check if there are any {@link TimerTask}s behind the schedule and execute them.
+ *
+ *
  * <p>
  * You can increase or decrease the accuracy of the execution timing by
  * specifying smaller or larger tick duration in the constructor.  In most
@@ -57,7 +63,11 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
  * the default tick duration is 100 milliseconds and you will not need to try
  * different configurations in most cases.
  *
+ * 您可以通过以下方式提高或降低执行计时的准确性，在构造函数中指定较小或较大的刻度持续时间。在大多数网络应用程序中，I/O超时不需要精确。
+ * 因此，默认的刻度持续时间是100毫秒，在大多数情况下您不需要尝试不同的配置。
+ *
  * <h3>Ticks per Wheel (Wheel Size)</h3>
+ * 2.每个轮的滴答数（每个轮的刻度），轮子大小
  *
  * {@link HashedWheelTimer} maintains a data structure called 'wheel'.
  * To put simply, a wheel is a hash table of {@link TimerTask}s whose hash
@@ -65,14 +75,25 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
  * (i.e. the size of the wheel) is 512.  You could specify a larger value
  * if you are going to schedule a lot of timeouts.
  *
+ * ｛@link HashedWheelTimer｝维护一个名为“wheel”的数据结构。简单来说，轮子是{@link TimerTask} 的 hash表。 它的hash函数是 任务的死亡线。
+ * 每个轮的刻度数 默认是512. 你可以设置一个更大的值，如果你有很多的超时调用。
+ *
+ *
  * <h3>Do not create many instances.</h3>
+ * 3.不要创建很多的实例
  *
  * {@link HashedWheelTimer} creates a new thread whenever it is instantiated and
  * started.  Therefore, you should make sure to create only one instance and
  * share it across your application.  One of the common mistakes, that makes
  * your application unresponsive, is to create a new instance for every connection.
  *
+ * ｛@link HashedWheelTimer｝在实例化和启动时都会创建一个新线程。
+ * 因此，您应该确保只创建一个实例，并在应用程序中共享它。导致应用程序无响应的常见错误之一是为每个连接创建一个新实例。
+ *
+ *
+ *
  * <h3>Implementation Details</h3>
+ * 4.实现细节
  *
  * {@link HashedWheelTimer} is based on
  * <a href="https://cseweb.ucsd.edu/users/varghese/">George Varghese</a> and
@@ -81,6 +102,12 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
  * and Hierarchical Timing Wheels: data structures to efficiently implement a
  * timer facility'</a>.  More comprehensive slides are located
  * <a href="https://www.cse.wustl.edu/~cdgill/courses/cs6874/TimingWheels.ppt">here</a>.
+ * 查看关于 定时器设计的 cse论文
+ *
+ * 内部实现支持类
+ * @see Worker
+ * @see HashedWheelTimeout
+ * @see HashedWheelBucket
  */
 public class HashedWheelTimer implements Timer {
 

@@ -396,6 +396,7 @@ public final class PlatformDependent {
 
     /**
      * {@code true} if and only if the platform supports unaligned access.
+     * 当且仅当 平台支持 未对齐访问的时候，返回true
      *
      * @see <a href="https://en.wikipedia.org/wiki/Segmentation_fault#Bus_error">Wikipedia on segfault</a>
      */
@@ -406,6 +407,8 @@ public final class PlatformDependent {
     /**
      * Returns {@code true} if the platform has reliable low-level direct buffer access API and a user has not specified
      * {@code -Dio.netty.noPreferDirect} option.
+     *
+     * 如果平台具有可靠的低级直接缓冲区访问API，且用户没有指定 -Dio.netty.noPreferDirect 选型的话，返回true.
      */
     public static boolean directBufferPreferred() {
         return DIRECT_BUFFER_PREFERRED;
@@ -1063,6 +1066,9 @@ public final class PlatformDependent {
      * Create a new {@link Queue} which is safe to use for multiple producers (different threads) and a single
      * consumer (one thread!).
      * The queue will grow and shrink its capacity in units of the given chunk size.
+     *
+     * 创建一个新的｛@link Queue｝，它可以安全地用于多个生产者（不同的线程）和一个消费者（一个线程！）。
+     * 队列将以给定块大小为单位增长和收缩其容量
      */
     public static <T> Queue<T> newMpscQueue(final int chunkSize, final int maxCapacity) {
         return Mpsc.newChunkedMpscQueue(chunkSize, maxCapacity);

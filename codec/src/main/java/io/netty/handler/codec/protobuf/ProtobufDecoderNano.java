@@ -58,6 +58,7 @@ import io.netty.util.internal.ObjectUtil;
  *     ch.write(res);
  * }
  * </pre>
+ *
  */
 @Sharable
 public class ProtobufDecoderNano extends MessageToMessageDecoder<ByteBuf> {

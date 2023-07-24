@@ -27,7 +27,13 @@ import io.netty.util.internal.StringUtil;
 /**
  * Skeletal {@link ByteBufAllocator} implementation to extend.
  * 实现ByteBufAllocator 的模板类
- * @see UnpooledByteBufAllocator,PooledByteBufAllocator
+ *
+ *
+ * 子类需要实现
+ * {@link #newHeapBuffer(int, int),#newDirectBuffer(int, int)}}
+ *
+ * @see UnpooledByteBufAllocator  非池化的字节缓冲区分配器
+ * @see PooledByteBufAllocator 池化字节缓冲区分配器
  */
 public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     //默认初始化容量 256 byte
@@ -45,7 +51,11 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         ResourceLeakDetector.addExclusions(AbstractByteBufAllocator.class, "toLeakAwareBuffer");
     }
 
-    //内存泄露缓冲区
+    /**
+     * 包装字节缓冲区，增加泄露追踪
+     * @param buf
+     * @return
+     */
     protected static ByteBuf toLeakAwareBuffer(ByteBuf buf) {
         ResourceLeakTracker<ByteBuf> leak;
         switch (ResourceLeakDetector.getLevel()) {
@@ -91,9 +101,12 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     }
 
     /**
-     *
+     * 直接内存 的默认值
      */
     private final boolean directByDefault;
+    /**
+     * 用于返回，初始大小0的字节缓冲
+     */
     private final ByteBuf emptyBuf;
 
     /**
@@ -262,6 +275,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     public String toString() {
         return StringUtil.simpleClassName(this) + "(directByDefault: " + directByDefault + ')';
     }
+
 
     @Override
     public int calculateNewCapacity(int minNewCapacity, int maxCapacity) {

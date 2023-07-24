@@ -305,6 +305,12 @@ import java.nio.charset.UnsupportedCharsetException;
  * Please refer to {@link ByteBufInputStream} and
  * {@link ByteBufOutputStream}.
  * 具体的实现类是包装了NIO的{@link ByteBuf} 来进行实现的
+ *
+ * @see AbstractByteBuf
+ * @see EmptyByteBuf
+ * @see SwappedByteBuf
+ * @see WrappedByteBuf
+ *
  */
 public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, ByteBufConvertible {
 
@@ -314,6 +320,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
     public abstract int capacity();
 
     /**
+     * 调整此缓冲区的容量。如果｛@code newCapacity｝小于当前容量，则此缓冲区的内容将被截断。
+     * 如果{@code newCapacity}大于当前容量，则缓冲区会附加长度为{@code（newCapacity-currentCapacity）}的未指定数据。
+     *
      * Adjusts the capacity of this buffer.  If the {@code newCapacity} is less than the current
      * capacity, the content of this buffer is truncated.  If the {@code newCapacity} is greater
      * than the current capacity, the buffer is appended with unspecified data whose length is
@@ -326,6 +335,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
     /**
      * Returns the maximum allowed capacity of this buffer. This value provides an upper
      * bound on {@link #capacity()}.
+     *
+     * 返回此缓冲区允许的最大容量，这个值提供了 capacity 的上限
      */
     public abstract int maxCapacity();
 
@@ -2510,7 +2521,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
 
     /**
      * Returns the low-level memory address that point to the first byte of ths backing data.
-     *
+     * 返回指向此备份数据的第一个字节的低级别内存地址。
      * @throws UnsupportedOperationException
      *         if this buffer does not support accessing the low-level memory address
      */

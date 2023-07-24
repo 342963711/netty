@@ -74,6 +74,8 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * An abstract test class for channel buffers
+ *
+ * @see AbstractPooledByteBufTest
  */
 public abstract class AbstractByteBufTest {
 
@@ -89,6 +91,12 @@ public abstract class AbstractByteBufTest {
         return newBuffer(capacity, Integer.MAX_VALUE);
     }
 
+    /**
+     * 唯一抽象方法，供给测试类去实现
+     * @param capacity
+     * @param maxCapacity
+     * @return
+     */
     protected abstract ByteBuf newBuffer(int capacity, int maxCapacity);
 
     protected boolean discardReadBytesDoesNotMoveWritableBytes() {

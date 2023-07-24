@@ -25,9 +25,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
+/**
+ * @date 2023/6/8 17:21
+ * @author likai
+ * @email likai9376@163.com
+ * @desc
+ * 该类指定了 ByteBuffer的
+ */
 final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
 
-    private static final ObjectPool<PooledDirectByteBuf> RECYCLER = ObjectPool.newPool(
+    private static final ObjectPool<PooledDirectByteBuf> OBJECT_POOL = ObjectPool.newPool(
             new ObjectCreator<PooledDirectByteBuf>() {
         @Override
         public PooledDirectByteBuf newObject(Handle<PooledDirectByteBuf> handle) {
@@ -35,8 +42,13 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
         }
     });
 
+    /**
+     * 静态方法，初始化一个 PooledDirectByteBuf，本包或其他包中的子类
+     * @param maxCapacity
+     * @return
+     */
     static PooledDirectByteBuf newInstance(int maxCapacity) {
-        PooledDirectByteBuf buf = RECYCLER.get();
+        PooledDirectByteBuf buf = OBJECT_POOL.get();
         buf.reuse(maxCapacity);
         return buf;
     }

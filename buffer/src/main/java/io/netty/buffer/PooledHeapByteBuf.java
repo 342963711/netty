@@ -24,6 +24,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
+/**
+ *
+ * byte[] 数组的操作  由{@link HeapByteBufUtil} 来提供支持
+ *
+ * @see PooledUnsafeHeapByteBuf
+ *
+ */
 class PooledHeapByteBuf extends PooledByteBuf<byte[]> {
 
     private static final ObjectPool<PooledHeapByteBuf> RECYCLER = ObjectPool.newPool(
