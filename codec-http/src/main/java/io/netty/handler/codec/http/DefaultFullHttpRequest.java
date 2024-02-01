@@ -23,6 +23,8 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
  * Default implementation of {@link FullHttpRequest}.
+ *
+ * FullHttpRequest的默认实现，包含全部的请求
  */
 public class DefaultFullHttpRequest extends DefaultHttpRequest implements FullHttpRequest {
     private final ByteBuf content;

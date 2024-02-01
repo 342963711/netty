@@ -129,6 +129,7 @@ public final class StringUtil {
 
     /**
      * Converts the specified byte value into a 2-digit hexadecimal integer.
+     * 将指定的字节数值转换为 两位的 16进制整数
      */
     public static String byteToHexStringPadded(int value) {
         return BYTE2HEX_PAD[value & 0xff];

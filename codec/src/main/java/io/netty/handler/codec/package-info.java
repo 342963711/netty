@@ -18,5 +18,8 @@
  * Extensible decoder and its common implementations which deal with the
  * packet fragmentation and reassembly issue found in a stream-based transport
  * such as TCP/IP.
+ * 可扩展解码器及其常见实现，用于处理基于流的传输中发现的数据包碎片和重组问题
+ *
+ * 例如TCP/IP。
  */
 package io.netty.handler.codec;

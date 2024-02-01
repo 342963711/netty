@@ -22,6 +22,7 @@ package io.netty.util;
  * 可用于访问｛@link AttributeMap｝中的｛@linkAttribute｝的键。请注意，不可能有多个具有相同名称的密钥。
  *
  * @param <T>   the type of the {@link Attribute} which can be accessed via this {@link AttributeKey}.
+ *
  */
 @SuppressWarnings("UnusedDeclaration") // 'T' is used only at compile time
 public final class AttributeKey<T> extends AbstractConstant<AttributeKey<T>> {

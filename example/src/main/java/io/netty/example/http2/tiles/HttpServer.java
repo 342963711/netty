@@ -53,10 +53,10 @@ public final class HttpServer {
         .childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
-                ch.pipeline().addLast(new HttpRequestDecoder(),
-                                      new HttpResponseEncoder(),
-                                      new HttpObjectAggregator(MAX_CONTENT_LENGTH),
-                                      new Http1RequestHandler());
+                ch.pipeline().addLast(new HttpRequestDecoder(), //对于服务端来说，先要对请求进行解码
+                                      new HttpResponseEncoder(), //然后可以对响应进行编码
+                                      new HttpObjectAggregator(MAX_CONTENT_LENGTH), //可以对大度想进行聚合
+                                      new Http1RequestHandler());  //针对请求的处理
             }
         });
 

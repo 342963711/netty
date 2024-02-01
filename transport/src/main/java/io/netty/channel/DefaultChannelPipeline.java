@@ -43,7 +43,8 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * The default {@link ChannelPipeline} implementation.  It is usually created
  * by a {@link Channel} implementation when the {@link Channel} is created.
  *
- * 默认实现，当channel 创建的时候，ChannelPipeline一般被创建
+ * 默认实现，当channel 创建的时候，ChannelPipeline被创建，
+ * 相当于
  */
 public class DefaultChannelPipeline implements ChannelPipeline {
 
@@ -63,7 +64,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     private static final AtomicReferenceFieldUpdater<DefaultChannelPipeline, MessageSizeEstimator.Handle> ESTIMATOR =
             AtomicReferenceFieldUpdater.newUpdater(
                     DefaultChannelPipeline.class, MessageSizeEstimator.Handle.class, "estimatorHandle");
+    //主要处理，ChannelOutboundInvoker
     final HeadContext head;
+
+    //主要处理ChannelInboundInvoker 中的方法
     final TailContext tail;
 
     private final Channel channel;
@@ -72,6 +76,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     private final boolean touch = ResourceLeakDetector.isEnabled();
 
     private Map<EventExecutorGroup, EventExecutor> childExecutors;
+    //消息大小估算 处理器
     private volatile MessageSizeEstimator.Handle estimatorHandle;
     private boolean firstRegistration = true;
 
@@ -82,6 +87,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
      * We only keep the head because it is expected that the list is used infrequently and its size is small.
      * Thus full iterations to do insertions is assumed to be a good compromised to saving memory and tail management
      * complexity.
+     * 处理所有挂起 Handler 的头节点
+     *
      */
     private PendingHandlerCallback pendingHandlerCallbackHead;
 
@@ -207,9 +214,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         final AbstractChannelHandlerContext newCtx;
         synchronized (this) {
             checkMultiplicity(handler);
-
+            //针对handler 创建新的 ctx。
             newCtx = newContext(group, filterName(name, handler), handler);
-
+            //添加ctx 到 尾队列中
             addLast0(newCtx);
 
             // If the registered is false it means that the channel was not registered on an eventLoop yet.
@@ -219,7 +226,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             //如果registered 是false,意味着channel 没有注册到 eventLoop.
             //在这种情况下，我们将上下文添加到管道中，并添加一个任务，该任务将在通道注册后调用ChannelHandler.handlerAdd（…）。
             if (!registered) {
-                //
+                //更新剩下文状态为 等待添加
                 newCtx.setAddPending();
                 callHandlerCallbackLater(newCtx, true);
                 return this;
@@ -460,6 +467,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return (T) remove((AbstractChannelHandlerContext) ctx).handler();
     }
 
+    /**
+     * 删除指定的上下文
+     * @param ctx
+     * @return
+     */
     private AbstractChannelHandlerContext remove(final AbstractChannelHandlerContext ctx) {
         assert ctx != head && ctx != tail;
 
@@ -615,6 +627,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * 调用 handler的added 方法
+     * @param ctx
+     */
     private void callHandlerAdded0(final AbstractChannelHandlerContext ctx) {
         try {
             ctx.callHandlerAdded();
@@ -822,6 +838,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return buf.toString();
     }
 
+    /**
+     * 通道注册链路，由ctx 调用各个链路，从head开始
+     * @return
+     */
     @Override
     public final ChannelPipeline fireChannelRegistered() {
         AbstractChannelHandlerContext.invokeChannelRegistered(head);
@@ -1088,6 +1108,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * 查找handler的 上下文对象
+     * @param handler
+     * @return
+     */
     private AbstractChannelHandlerContext getContextOrDie(ChannelHandler handler) {
         AbstractChannelHandlerContext ctx = (AbstractChannelHandlerContext) context(handler);
         if (ctx == null) {
@@ -1314,6 +1339,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * 默认的头节点 handler
+     * 依赖unsafe 处理出站请求，或者直接调用下一个过滤
+     */
     final class HeadContext extends AbstractChannelHandlerContext
             implements ChannelOutboundHandler, ChannelInboundHandler {
 
@@ -1340,6 +1369,12 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             // NOOP
         }
 
+        /**
+         * 默认的 外部 事件，交给底层unsafe 来执行操作
+         * @param ctx           the {@link ChannelHandlerContext} for which the bind operation is made
+         * @param localAddress  the {@link SocketAddress} to which it should bound
+         * @param promise       the {@link ChannelPromise} to notify once the operation completes
+         */
         @Override
         public void bind(
                 ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) {
@@ -1446,7 +1481,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
-    //挂起 处理程序的回调
+    /**
+     * 有两种handler 的回调，分别 对应 add or remove
+     */
     private abstract static class PendingHandlerCallback implements Runnable {
         final AbstractChannelHandlerContext ctx;
         PendingHandlerCallback next;

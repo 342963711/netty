@@ -32,11 +32,15 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+/**
+ * 主要是处理 handler 方法，对handler 中的方法进行掩码处理。通知处理@skip 注解
+ */
 final class ChannelHandlerMask {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ChannelHandlerMask.class);
 
     // Using to mask which methods must be called for a ChannelHandler.
     static final int MASK_EXCEPTION_CAUGHT = 1;
+    //已注册的
     static final int MASK_CHANNEL_REGISTERED = 1 << 1;
     static final int MASK_CHANNEL_UNREGISTERED = 1 << 2;
     static final int MASK_CHANNEL_ACTIVE = 1 << 3;
@@ -76,6 +80,7 @@ final class ChannelHandlerMask {
     static int mask(Class<? extends ChannelHandler> clazz) {
         // Try to obtain the mask from the cache first. If this fails calculate it and put it in the cache for fast
         // lookup in the future.
+        // 请先尝试从缓存中获取掩码。如果失败，请计算它并将其放入缓存，以便将来快速查找。
         Map<Class<? extends ChannelHandler>, Integer> cache = MASKS.get();
         Integer mask = cache.get(clazz);
         if (mask == null) {
@@ -87,6 +92,8 @@ final class ChannelHandlerMask {
 
     /**
      * Calculate the {@code executionMask}.
+     *
+     * 返回可以执行方法的 掩码
      */
     private static int mask0(Class<? extends ChannelHandler> handlerType) {
         int mask = MASK_EXCEPTION_CAUGHT;

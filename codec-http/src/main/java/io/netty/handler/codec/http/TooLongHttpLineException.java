@@ -20,6 +20,8 @@ import io.netty.handler.codec.TooLongFrameException;
 /**
  * An {@link TooLongFrameException} which is thrown when the length of the
  * line decoded is greater than the allowed maximum.
+ *
+ * ｛@link TooLongFrameException｝，当解码的行长度大于允许的最大值时引发该异常。
  */
 public final class TooLongHttpLineException extends TooLongFrameException {
 

@@ -27,6 +27,7 @@ import java.net.SocketAddress;
 public final class ChannelMetadata {
 
     private final boolean hasDisconnect;
+    //一般默认是16
     private final int defaultMaxMessagesPerRead;
 
     /**

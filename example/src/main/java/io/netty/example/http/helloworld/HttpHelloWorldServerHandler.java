@@ -15,16 +15,24 @@
  */
 package io.netty.example.http.helloworld;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.charset.Charset;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
@@ -35,6 +43,8 @@ import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class HttpHelloWorldServerHandler extends SimpleChannelInboundHandler<HttpObject> {
+
+    private static Logger LOGGER = LoggerFactory.getLogger(HttpHelloWorldServerHandler.class);
     private static final byte[] CONTENT = { 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd' };
 
     @Override
@@ -46,7 +56,16 @@ public class HttpHelloWorldServerHandler extends SimpleChannelInboundHandler<Htt
     public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
         if (msg instanceof HttpRequest) {
             HttpRequest req = (HttpRequest) msg;
-
+            DecoderResult decoderResult = msg.decoderResult();
+            if(msg instanceof FullHttpRequest){
+                FullHttpRequest fullHttpRequest = (FullHttpRequest)msg;
+                ByteBuf content = fullHttpRequest.content();
+                String s = content.toString(Charset.forName("utf-8"));
+                LOGGER.info("接受到的内容:{}",s);
+            }
+            HttpHeaders headers = req.headers();
+            LOGGER.info("headers:{}",headers.toString());
+            LOGGER.info("处理Http请求:{}",msg.getClass());
             boolean keepAlive = HttpUtil.isKeepAlive(req);
             FullHttpResponse response = new DefaultFullHttpResponse(req.protocolVersion(), OK,
                                                                     Unpooled.wrappedBuffer(CONTENT));

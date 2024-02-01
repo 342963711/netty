@@ -52,6 +52,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>When not used in a {@link ServerBootstrap} context, the {@link #bind()} methods are useful for connectionless
  * transports such as datagram (UDP).</p>
  *
+ * 核心功能， 配置channel ，
+ * 1.设置channel 的过滤器 通过 {@link #init(Channel)}
+ * 2.将channel 进行注册。通过 {@link #initAndRegister()}，
+ * 其中 执行注册的调用类是{@link EventLoopGroup#register(Channel)}
+ * 注册的底层实现类是 {@link io.netty.channel.AbstractChannel.AbstractUnsafe#register0(ChannelPromise)}
+ *
+ * 作为模板类，不管是是一下任何实现类，都需要执行绑定，因此该模板类实现了{@link #bind()} 方法
+ *
+ *
  * @see Bootstrap
  * @see ServerBootstrap
  */
@@ -292,6 +301,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
         if (regFuture.isDone()) {
             // At this point we know that the registration was complete and successful.
+            // 注册完成并且成功
             ChannelPromise promise = channel.newPromise();
             doBind0(regFuture, channel, localAddress, promise);
             return promise;
@@ -323,6 +333,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         Channel channel = null;
         try {
             channel = channelFactory.newChannel();
+            // 进行通道初始化
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
@@ -335,6 +346,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
 
+        //使用 异步事件线程 去执行通道注册，并返回异步结果
         ChannelFuture regFuture = config().group().register(channel);
         if (regFuture.cause() != null) {
             if (channel.isRegistered()) {
@@ -357,7 +369,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
-     * 模板方法
+     * 模板方法，主要是对Channel 进行初始化。主要是设置channelPipeline 中的过滤器，channelHandler
      * @param channel
      * @throws Exception
      */

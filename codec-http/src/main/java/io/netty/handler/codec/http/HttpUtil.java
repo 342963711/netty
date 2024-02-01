@@ -314,8 +314,10 @@ public final class HttpUtil {
     /**
      * Checks to see if the transfer encoding in a specified {@link HttpMessage} is chunked
      *
+     * 检查指定的｛@link HttpMessage｝中的传输编码是否被分块
+     *
      * @param message The message to check
-     * @return True if transfer encoding is chunked, otherwise false
+     * @return True if transfer encoding is chunked, otherwise false  ，如果传输的编码被分块，则返回true
      */
     public static boolean isTransferEncodingChunked(HttpMessage message) {
         return message.headers().containsValue(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED, true);

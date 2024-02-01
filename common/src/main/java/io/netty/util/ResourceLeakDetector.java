@@ -41,7 +41,6 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
 
 /**
  * @date 2023/6/6 22:58
- * @author likai
  * @email likai9376@163.com
  * @desc 资源泄露检查器
  * 该类没有其余子类（除了测试的子类）
@@ -414,7 +413,6 @@ public class ResourceLeakDetector<T> {
         return null;
     }
 
-
     /**
      * 内存泄露追踪类，复合管理所有的 资源记录 {@link TraceRecord}
      * 内部是一个单项链表
@@ -708,7 +706,6 @@ public class ResourceLeakDetector<T> {
             }
         } while (!excludedMethods.compareAndSet(oldMethods, newMethods));
     }
-
 
     /**
      * 堆栈信息记录

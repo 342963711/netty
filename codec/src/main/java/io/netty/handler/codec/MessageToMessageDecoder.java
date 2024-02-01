@@ -28,9 +28,12 @@ import java.util.List;
 /**
  * {@link ChannelInboundHandlerAdapter} which decodes from one message to an other message.
  *
+ * 将一个消息编码外两外一个消息类型
  *
  * For example here is an implementation which decodes a {@link String} to an {@link Integer} which represent
  * the length of the {@link String}.
+ *
+ *
  *
  * <pre>
  *     public class StringToIntegerDecoder extends

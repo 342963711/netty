@@ -27,6 +27,7 @@ import io.netty.buffer.ByteBufHolder;
 public final class DefaultMessageSizeEstimator implements MessageSizeEstimator {
 
     private static final class HandleImpl implements Handle {
+        //默认 未知大小是8
         private final int unknownSize;
 
         private HandleImpl(int unknownSize) {

@@ -31,6 +31,10 @@ package io.netty.handler.codec.http;
  * @see io.netty.handler.codec.http.cookie.ClientCookieDecoder
  * @see io.netty.handler.codec.http.cookie.ServerCookieEncoder
  * @see io.netty.handler.codec.http.cookie.ClientCookieEncoder
+ *
+ * 子类
+ * @see DefaultHttpResponse
+ * @see FullHttpResponse
  */
 public interface HttpResponse extends HttpMessage {
 
@@ -42,6 +46,8 @@ public interface HttpResponse extends HttpMessage {
 
     /**
      * Returns the status of this {@link HttpResponse}.
+     *
+     * 返回 {@link HttpResponse} 的 状态码
      *
      * @return The {@link HttpResponseStatus} of this {@link HttpResponse}
      */

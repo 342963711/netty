@@ -29,16 +29,29 @@ import java.util.List;
  * with a delimiter such as {@link Delimiters#nulDelimiter() NUL} or
  * {@linkplain Delimiters#lineDelimiter() newline characters}.
  *
+ * 一种解码器，通过一个或多个分隔符将接收到的｛@link ByteBuf｝s拆分。
+ * 它对于解码以分隔符结尾的帧特别有用，例如｛@link Delimiters#nulDelimiter（）NUL｝或｛@linkplain Delimiters#lineDelimier（）换行符｝。
+ *
  * <h3>Predefined delimiters</h3>
+ * 预定义分隔符
+ *
  * <p>
  * {@link Delimiters} defines frequently used delimiters for convenience' sake.
+ * 为了方便起见，｛@link Delimiters｝定义了常用的分隔符。
  *
  * <h3>Specifying more than one delimiter</h3>
+ * 指定多个分隔符
+ *
  * <p>
  * {@link DelimiterBasedFrameDecoder} allows you to specify more than one
  * delimiter.  If more than one delimiter is found in the buffer, it chooses
  * the delimiter which produces the shortest frame.  For example, if you have
  * the following data in the buffer:
+ *
+ * ｛@link DelimiterBasedFrameDecoder｝允许您指定多个分隔符。
+ * 如果在缓冲区中找到多个分隔符，它会选择产生最短帧的分隔符。例如，如果缓冲区中有以下数据：
+ * 那么将会以\n 进行帧分割，产生两个帧，而不是以\r\n为分割符，产生一个帧
+ *
  * <pre>
  * +--------------+
  * | ABC\nDEF\r\n |
@@ -62,11 +75,13 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
 
     private final ByteBuf[] delimiters;
     private final int maxFrameLength;
+    //解码的帧是否去掉分隔符，默认值是true
     private final boolean stripDelimiter;
     private final boolean failFast;
     private boolean discardingTooLongFrame;
     private int tooLongFrameLength;
     /** Set only when decoding with "\n" and "\r\n" as the delimiter.  */
+    // 仅在以“\n”和“\r\n”作为分隔符进行解码时设置。
     private final LineBasedFrameDecoder lineBasedDecoder;
 
     /**
@@ -155,6 +170,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
      *                        the length of the frame exceeds this value.
      * @param stripDelimiter  whether the decoded frame should strip out the
      *                        delimiter or not
+     *                        解码的帧是否应该去掉分隔符
      * @param failFast  If <tt>true</tt>, a {@link TooLongFrameException} is
      *                  thrown as soon as the decoder notices the length of the
      *                  frame will exceed <tt>maxFrameLength</tt> regardless of
@@ -162,6 +178,9 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
      *                  If <tt>false</tt>, a {@link TooLongFrameException} is
      *                  thrown after the entire frame that exceeds
      *                  <tt>maxFrameLength</tt> has been read.
+     *
+     *                  如果＜tt＞true＜/tt＞，则只要解码器注意到帧的长度将超过maxFrameLength，就会抛出｛@link TooLongFrameException｝，无论是否读取了整个帧。
+     *                  如果＜tt＞false＜/tt＞，则｛@link TooLongFrameException｝在读取超过＜tt＞maxFrameLength＜/tt＞的整个帧之后抛出。
      * @param delimiters  the delimiters
      */
     public DelimiterBasedFrameDecoder(
@@ -220,6 +239,8 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
     /**
      * Create a frame out of the {@link ByteBuf} and return it.
      *
+     * 从ByteBuf 创建一个帧，并返回
+     *
      * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param   buffer          the {@link ByteBuf} from which to read data
      * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
@@ -243,7 +264,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
         if (minDelim != null) {
             int minDelimLength = minDelim.capacity();
             ByteBuf frame;
-
+            //丢弃太长的帧，默认值是false
             if (discardingTooLongFrame) {
                 // We've just finished discarding a very large frame.
                 // Go back to the initial state.
@@ -264,7 +285,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
                 fail(minFrameLength);
                 return null;
             }
-
+            //读取帧长度
             if (stripDelimiter) {
                 frame = buffer.readRetainedSlice(minFrameLength);
                 buffer.skipBytes(minDelimLength);

@@ -20,6 +20,11 @@ import io.netty.buffer.ByteBuf;
 /**
  * Combine the {@link HttpRequest} and {@link FullHttpMessage}, so the request is a <i>complete</i> HTTP
  * request.
+ *
+ * httpRequest 和 FullHttpMessage 的组合， 代表一个完整的请求
+ * @see DefaultFullHttpRequest
+ * @see io.netty.handler.codec.http.HttpObjectAggregator.AggregatedFullHttpRequest
+ * @see io.netty.handler.codec.http.multipart.HttpPostRequestEncoder.WrappedFullHttpRequest
  */
 public interface FullHttpRequest extends HttpRequest, FullHttpMessage {
     @Override

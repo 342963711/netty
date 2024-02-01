@@ -95,10 +95,10 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     private static final AtomicReferenceFieldUpdater<SingleThreadEventExecutor, ThreadProperties> PROPERTIES_UPDATER =
             AtomicReferenceFieldUpdater.newUpdater(
                     SingleThreadEventExecutor.class, ThreadProperties.class, "threadProperties");
-    //任务队列
+    //任务队列,多生产者，单消费者任务队列
     private final Queue<Runnable> taskQueue;
     /**
-     * {@link #doStartThread()} . 任务执行线程
+     * {@link #doStartThread()} . 任务执行线程,也就{@link #executor 中的线程}
      */
     private volatile Thread thread;
     @SuppressWarnings("unused")
@@ -215,7 +215,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * calls on the this {@link Queue} it may make sense to {@code @Override} this and return some more performant
      * implementation that does not support blocking operations at all.
      *
-     * 创建一个新的 Queue，将保存要执行的任务。此默认实现将返回LinkedBlockingQueue。 但如果SingleThreadEventExecutor的子类 在这个队列上不会进行阻塞调用。那么重写并返回完全不支持阻塞的更高性能实现
+     * 创建一个新的 Queue，将保存要执行的任务。此默认实现将返回LinkedBlockingQueue。 但如果SingleThreadEventExecutor的子类
+     * 在这个队列上不会进行阻塞调用。那么重写并返回完全不支持阻塞的更高性能实现
      * 是有意义的
      */
     protected Queue<Runnable> newTaskQueue(int maxPendingTasks) {
@@ -494,7 +495,10 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * Poll all tasks from the task queue and run them via {@link Runnable#run()} method.
      * This method stops running the tasks in the task queue and returns if it ran longer than {@code timeoutNanos}.
      * 从队列中拉取所有任务，通过run 方法 运行他们
-     * 此方法停止运行任务队列中的任务，并在运行时间超过 timeoutNanos的时候 返回
+     * 并在运行时间超过 timeoutNanos的时候 此方法停止运行任务队列中的任务，并返回
+     *
+     * 当且仅当 只要一个任务被执行的时候 返回 true
+     *
      */
     protected boolean runAllTasks(long timeoutNanos) {
         fetchFromScheduledTaskQueue();

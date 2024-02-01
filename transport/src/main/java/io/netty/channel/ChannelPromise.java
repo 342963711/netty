@@ -23,6 +23,11 @@ import io.netty.util.concurrent.Promise;
  * Special {@link ChannelFuture} which is writable.
  *
  * 可写的 特殊 ChannelFuture，
+ *
+ * @see ChannelProgressivePromise
+ * @see DefaultChannelPromise
+ * @see DelegatingChannelPromiseNotifier
+ * @see VoidChannelPromise
  */
 public interface ChannelPromise extends ChannelFuture, Promise<Void> {
 
@@ -54,6 +59,10 @@ public interface ChannelPromise extends ChannelFuture, Promise<Void> {
     @Override
     ChannelPromise sync() throws InterruptedException;
 
+    /**
+     * 等待非中断的 完成
+     * @return
+     */
     @Override
     ChannelPromise syncUninterruptibly();
 

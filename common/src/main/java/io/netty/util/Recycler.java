@@ -44,7 +44,6 @@ import static java.lang.Math.min;
 public abstract class Recycler<T> {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(Recycler.class);
 
-
     private static final Handle<?> NOOP_HANDLE = new Handle<Object>() {
         @Override
         public void recycle(Object object) {
@@ -344,7 +343,6 @@ public abstract class Recycler<T> {
          * 块 数量
          */
         private final int chunkSize;
-
 
         private final ArrayDeque<DefaultHandle<T>> batch;
         private volatile Thread owner;

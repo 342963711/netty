@@ -46,6 +46,7 @@ public class HttpMethod implements Comparable<HttpMethod> {
     /**
      * The HEAD method is identical to GET except that the server MUST NOT return a message-body
      * in the response.
+     * HEAD方法与GET相同，只是服务器在响应中不得返回消息正文。
      */
     public static final HttpMethod HEAD = new HttpMethod("HEAD");
 
@@ -82,6 +83,8 @@ public class HttpMethod implements Comparable<HttpMethod> {
     /**
      * This specification reserves the method name CONNECT for use with a proxy that can dynamically
      * switch to being a tunnel
+     *
+     * 此规范保留方法名称CONNECT，以便与可以动态切换为隧道的代理一起使用
      */
     public static final HttpMethod CONNECT = new HttpMethod("CONNECT");
 

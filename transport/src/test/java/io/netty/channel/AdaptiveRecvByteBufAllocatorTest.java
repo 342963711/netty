@@ -42,6 +42,15 @@ public class AdaptiveRecvByteBufAllocatorTest {
     }
 
     @Test
+    public void testSize(){
+        int a = 0x80-00-00-00;
+        int b = 0xffffffff;
+
+        System.out.println(Integer.toBinaryString(-1));
+        AdaptiveRecvByteBufAllocator recvByteBufAllocator = new AdaptiveRecvByteBufAllocator();
+    }
+
+    @Test
     public void rampUpBeforeReadCompleteWhenLargeDataPending() {
         // Simulate that there is always more data when we attempt to read so we should always ramp up.
         allocReadExpected(handle, alloc, 512);

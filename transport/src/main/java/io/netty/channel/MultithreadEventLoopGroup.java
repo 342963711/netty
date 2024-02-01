@@ -33,6 +33,8 @@ import java.util.concurrent.ThreadFactory;
  * EventLoopGroup的基类实现。该实现同时使用多个线程处理任务
  * 多线程事件循环组
  *
+ * @see DefaultEventLoopGroup
+ *
  */
 public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup implements EventLoopGroup {
 

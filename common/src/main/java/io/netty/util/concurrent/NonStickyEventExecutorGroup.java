@@ -40,7 +40,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * <p>The {@link EventExecutorGroup#next()} for the wrapped {@link EventExecutorGroup} must <strong>NOT</strong> return
  * executors of type {@link OrderedEventExecutor}.
  *
- * 包装的 EventExecutorGroup 的 next() 方法不能返回 类型为 {@link OrderedEventExecutor} 的执行器 查看{@link NonStickyEventExecutorGroup#next()}
+ * 包装的 EventExecutorGroup 的 next() 方法不能返回 类型为 {@link OrderedEventExecutor}
+ * 的执行器 查看{@link NonStickyEventExecutorGroup#next()}
  */
 @UnstableApi
 public final class NonStickyEventExecutorGroup implements EventExecutorGroup {

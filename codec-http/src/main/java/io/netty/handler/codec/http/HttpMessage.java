@@ -19,10 +19,15 @@ package io.netty.handler.codec.http;
 /**
  * An interface that defines an HTTP message, providing common properties for
  * {@link HttpRequest} and {@link HttpResponse}.
+ * Http 消息的标记接口，为HttpRequest 和 HttpResponse 提供公共属性
+ *
  *
  * @see HttpResponse
- * @see HttpRequest
- * @see HttpHeaders
+ * @see HttpRequest http 的请求
+ * @see FullHttpMessage
+ * @see DefaultHttpMessage 默认抽象类实现
+ *
+ * 提供http版本和http头
  */
 public interface HttpMessage extends HttpObject {
 
@@ -34,6 +39,7 @@ public interface HttpMessage extends HttpObject {
 
     /**
      * Returns the protocol version of this {@link HttpMessage}
+     * http 版本
      */
     HttpVersion protocolVersion();
 
@@ -44,6 +50,7 @@ public interface HttpMessage extends HttpObject {
 
     /**
      * Returns the headers of this message.
+     * http 消息头
      */
     HttpHeaders headers();
 }

@@ -54,6 +54,13 @@ import java.net.StandardSocketOptions;
  * <td>{@link ChannelOption#ALLOW_HALF_CLOSURE}</td><td>{@link #setAllowHalfClosure(boolean)}</td>
  * </tr>
  * </table>
+ *
+ *
+ * @see DefaultSocketChannelConfig
+ * @see io.netty.channel.socket.oio.OioSocketChannelConfig
+ *
+ * @see io.netty.channel.epoll.EpollSocketChannelConfig
+ * @see io.netty.channel.kqueue.KQueueSocketChannelConfig
  */
 public interface SocketChannelConfig extends DuplexChannelConfig {
 

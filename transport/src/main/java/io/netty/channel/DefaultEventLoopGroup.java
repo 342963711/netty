@@ -71,7 +71,7 @@ public class DefaultEventLoopGroup extends MultithreadEventLoopGroup {
 
     /**
      * 创建事件循环
-     * @param executor
+     * @param executor 默认值 是{@link io.netty.util.concurrent.ThreadPerTaskExecutor}. 或者是 本构造函数传递的参数
      * @param args
      * @return
      * @throws Exception

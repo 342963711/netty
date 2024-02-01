@@ -23,22 +23,48 @@ import static io.netty.handler.codec.http.HttpConstants.*;
 /**
  * Encodes an {@link HttpResponse} or an {@link HttpContent} into
  * a {@link ByteBuf}.
+ *
+ * 编码 一个 HttpResponse 或者 HttpContent 到 ByteBuf 中。
+ *
+ * 用于将服务端的输出的响应进行编码
+ *
+ * @see io.netty.handler.codec.http.HttpServerCodec.HttpServerResponseEncoder
  */
 public class HttpResponseEncoder extends HttpObjectEncoder<HttpResponse> {
 
+    /**
+     * 出栈类型判断
+     * @param msg
+     * @return
+     * @throws Exception
+     */
     @Override
     public boolean acceptOutboundMessage(Object msg) throws Exception {
         return super.acceptOutboundMessage(msg) && !(msg instanceof HttpRequest);
     }
 
+    /**
+     * 对响应的第一行写入到缓冲区中
+     * @param buf
+     * @param response
+     * @throws Exception
+     */
     @Override
     protected void encodeInitialLine(ByteBuf buf, HttpResponse response) throws Exception {
         response.protocolVersion().encode(buf);
+        //写入空格
         buf.writeByte(SP);
+        //写入状态码
         response.status().encode(buf);
+        //写入换行
         ByteBufUtil.writeShortBE(buf, CRLF_SHORT);
     }
 
+    /**
+     * 清除Http 头，在编码前
+     * @param msg
+     * @param isAlwaysEmpty
+     */
     @Override
     protected void sanitizeHeadersBeforeEncode(HttpResponse msg, boolean isAlwaysEmpty) {
         if (isAlwaysEmpty) {
@@ -65,6 +91,11 @@ public class HttpResponseEncoder extends HttpObjectEncoder<HttpResponse> {
         }
     }
 
+    /**
+     * 根据状态码 来判断 响应 是否有 响应内容
+     * @param msg the message to test
+     * @return
+     */
     @Override
     protected boolean isContentAlwaysEmpty(HttpResponse msg) {
         // Correctly handle special cases as stated in:
@@ -72,7 +103,7 @@ public class HttpResponseEncoder extends HttpObjectEncoder<HttpResponse> {
         HttpResponseStatus status = msg.status();
 
         if (status.codeClass() == HttpStatusClass.INFORMATIONAL) {
-
+            //判断是否是ws头
             if (status.code() == HttpResponseStatus.SWITCHING_PROTOCOLS.code()) {
                 // We need special handling for WebSockets version 00 as it will include an body.
                 // Fortunally this version should not really be used in the wild very often.

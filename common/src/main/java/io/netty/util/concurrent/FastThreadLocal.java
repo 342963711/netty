@@ -46,8 +46,10 @@ import static io.netty.util.internal.InternalThreadLocalMap.VARIABLES_TO_REMOVE_
  * </p>
  *
  *
- * 若要利用此线程局部变量，您的线程必须是｛@link FastThreadLocalThread｝或其子类型。由于这个原因，默认情况下，由{@link DefaultThreadFactory}创建的所有线程都是{@link FastThreadLocalThread}。
- * 请注意，快速路径只能在扩展{@link FastThreadLocalThread}的线程上使用，因为它需要一个特殊的字段来存储必要的状态。任何其他类型的线程的访问都会返回到常规的｛@link ThreadLocal｝。
+ * 若要利用此线程局部变量，您的线程必须是｛@link FastThreadLocalThread｝或其子类型。由于这个原因，
+ * 默认情况下，由{@link DefaultThreadFactory}创建的所有线程都是{@link FastThreadLocalThread}。
+ * 请注意，快速路径只能在扩展{@link FastThreadLocalThread}的线程上使用，因为它需要一个特殊的字段来存储必要的状态。
+ * 任何其他类型的线程的访问都会返回到常规的｛@link ThreadLocal｝。
  *
  * @param <V> the type of the thread-local variable
  * @see ThreadLocal

@@ -18,10 +18,14 @@ package io.netty.handler.codec;
 import io.netty.util.Signal;
 import io.netty.util.internal.ObjectUtil;
 
+/**
+ * 解码结果
+ */
 public class DecoderResult {
 
     protected static final Signal SIGNAL_UNFINISHED = Signal.valueOf(DecoderResult.class, "UNFINISHED");
     protected static final Signal SIGNAL_SUCCESS = Signal.valueOf(DecoderResult.class, "SUCCESS");
+
 
     public static final DecoderResult UNFINISHED = new DecoderResult(SIGNAL_UNFINISHED);
     public static final DecoderResult SUCCESS = new DecoderResult(SIGNAL_SUCCESS);

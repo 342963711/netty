@@ -26,6 +26,13 @@ import io.netty.channel.ChannelPipeline;
  * is 'chunked.  If you prefer not to receive {@link HttpContent} in your handler,
  * place {@link HttpObjectAggregator} after {@link HttpObjectDecoder} in the
  * {@link ChannelPipeline}.
+ *
+ * http 的分块对象，当http进行分块编码传输时。
+ * {@link HttpObjectDecoder} 在{@link HttpMessage} 之后生成{@link HttpContent}.当内容太大或者内容编码被分块。
+ * 如果您不希望在处理程序中接收{@link HttpContent}，将 {@link HttpObjectAggregator} 放在{@link ChannelPipeline} 中{@link HttpObjectDecoder} 之后。
+ *
+ * @see DefaultHttpContent 默认实现
+ * @see LastHttpContent
  */
 public interface HttpContent extends HttpObject, ByteBufHolder {
     @Override

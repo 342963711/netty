@@ -37,6 +37,8 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 
 /**
  * The default {@link ServerSocketChannelConfig} implementation.
+ * 默认的服务端通道的配置类
+ * @see io.netty.channel.socket.nio.NioServerSocketChannel.NioServerSocketChannelConfig
  */
 public class DefaultServerSocketChannelConfig extends DefaultChannelConfig
                                               implements ServerSocketChannelConfig {

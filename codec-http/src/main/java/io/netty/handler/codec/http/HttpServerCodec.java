@@ -31,12 +31,17 @@ import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_MAX_INITIAL_
  * A combination of {@link HttpRequestDecoder} and {@link HttpResponseEncoder}
  * which enables easier server side HTTP implementation.
  *
+ * {@link HttpRequestDecoder}和{@link HttpResponseEncoder}的组合,这使得能够更容易地实现服务器端HTTP。
+ *
  * @see HttpClientCodec
  */
 public final class HttpServerCodec extends CombinedChannelDuplexHandler<HttpRequestDecoder, HttpResponseEncoder>
         implements HttpServerUpgradeHandler.SourceCodec {
 
     /** A queue that is used for correlating a request and a response. */
+    /**
+     * 用来关联，请求和响应的队列
+     */
     private final Queue<HttpMethod> queue = new ArrayDeque<HttpMethod>();
 
     /**
@@ -58,6 +63,9 @@ public final class HttpServerCodec extends CombinedChannelDuplexHandler<HttpRequ
 
     /**
      * Creates a new instance with the specified decoder options.
+     * @param maxInitialLineLength  默认值 4096
+     * @param maxHeaderSize 8192
+     * @param maxChunkSize 8192
      */
     public HttpServerCodec(int maxInitialLineLength, int maxHeaderSize, int maxChunkSize, boolean validateHeaders) {
         init(new HttpServerRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize, validateHeaders),
@@ -104,6 +112,9 @@ public final class HttpServerCodec extends CombinedChannelDuplexHandler<HttpRequ
         ctx.pipeline().remove(this);
     }
 
+    /**
+     * Httpserver 对http请求的解码类
+     */
     private final class HttpServerRequestDecoder extends HttpRequestDecoder {
 
         HttpServerRequestDecoder(int maxInitialLineLength, int maxHeaderSize, int maxChunkSize) {
@@ -148,10 +159,18 @@ public final class HttpServerCodec extends CombinedChannelDuplexHandler<HttpRequ
         }
     }
 
+    /**
+     * httpserver 对 http 响应 的编码类
+     */
     private final class HttpServerResponseEncoder extends HttpResponseEncoder {
 
         private HttpMethod method;
 
+        /**
+         * 响应进行编码前 需要清除无用的头节点
+         * @param msg
+         * @param isAlwaysEmpty
+         */
         @Override
         protected void sanitizeHeadersBeforeEncode(HttpResponse msg, boolean isAlwaysEmpty) {
             if (!isAlwaysEmpty && HttpMethod.CONNECT.equals(method)
@@ -165,9 +184,16 @@ public final class HttpServerCodec extends CombinedChannelDuplexHandler<HttpRequ
             super.sanitizeHeadersBeforeEncode(msg, isAlwaysEmpty);
         }
 
+        /**
+         *
+         * @param msg the message to test
+         * @return
+         */
         @Override
         protected boolean isContentAlwaysEmpty(@SuppressWarnings("unused") HttpResponse msg) {
+            //获取当前响应对应的请求方法
             method = queue.poll();
+            // 如果是HEAD 方法，表示 响应内容总是空的
             return HttpMethod.HEAD.equals(method) || super.isContentAlwaysEmpty(msg);
         }
     }

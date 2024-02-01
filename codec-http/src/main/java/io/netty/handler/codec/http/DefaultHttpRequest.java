@@ -21,6 +21,9 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
  * The default {@link HttpRequest} implementation.
+ * http请求的基本属性，包含请求方法，请求路径，以及httpMessage 中 的httpVersion 和 httpHeaders
+ *
+ * @see DefaultFullHttpRequest
  */
 public class DefaultHttpRequest extends DefaultHttpMessage implements HttpRequest {
     private static final int HASH_CODE_PRIME = 31;

@@ -18,6 +18,17 @@ package io.netty.handler.codec.http;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.DecoderResultProvider;
 
+/**
+ * http 协议的标记类
+ *
+ * @see DefaultHttpObject 默认的实现类
+ *
+ * @see HttpMessage http 请求和响应的统一标记类
+ * @see HttpContent http 的内容
+ *
+ *
+ *
+ */
 public interface HttpObject extends DecoderResultProvider {
     /**
      * @deprecated Use {@link #decoderResult()} instead.

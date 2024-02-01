@@ -170,7 +170,6 @@ public class DefaultPromiseTest {
         assertSame(cause, promise.cause());
     }
 
-
     /**
      * 测试取消异常
      */
@@ -205,38 +204,43 @@ public class DefaultPromiseTest {
         assertThat(promise.cause()).isInstanceOf(CancellationException.class);
     }
 
-
     /**
      * 链式调用深度测试，
      * {@link DefaultPromise#setSuccess(Object)} 的循环链式调用
      * 只能是链路深度。因为死循环会进行异常检测。如 testEndlessLoop 方法测试
-     * @throws Exception
      *
-     * todo 理解通知监听者的方法 ，在不同执行器的执行逻辑（压栈方式）
-     * 如果：runTestInExecutorThread 为true。 当调用栈深度为8时，因为使用ImmediateEventExecutor。深度为8的栈进入到延迟队列,作为本次递归调用结束。
-     * 0，7的 链路栈 进行 出栈操作。栈深度为0。当本次任务执行完毕后，开始处理延迟队里。处理逻辑同上。也就是每次到深度为8的时候。本次任务执行通过进入延迟队列结束。同时进行出栈操作。
-     * 出栈完成后，继续处理延迟队列。
-     *
-     * 如果：runTestInExecutorThread 为false。当栈深度为8时，本地执行提交给 eventExecutor来进行执行。此时，栈8运行，调用栈9。栈9执行setSuccess(),同时发现超过站深度8.栈9继续提交给
-     * executor进行执行。此时栈8还在executor#run中执行。所以栈9加入到延迟队列。栈8执行完毕，开始执行延迟队列中的栈9。
-     * 同步以上操作。直到最后一个执行完毕后，调用线程执行出栈操作。
-     * 与true不同的是，栈的深度为 8+1.并且当最后一个执行完毕后，才执行早先的出栈
-     * 而false情况下，是每次到达栈深度，都先处理完以前的栈，然后重新压栈。
+     * @throws Exception todo 理解通知监听者的方法 ，在不同执行器的执行逻辑（压栈方式）
+     *                   如果：runTestInExecutorThread 为true。 当调用栈深度为8时，因为使用ImmediateEventExecutor。
+     *                   深度为8的栈进入到延迟队列,作为本次递归调用结束。
+     *                   0，7的 链路栈 进行 出栈操作。栈深度为0。当本次任务执行完毕后，开始处理延迟队里。处理逻辑同上。
+     *                   也就是每次到深度为8的时候。本次任务执行通过进入延迟队列结束。
+     *                   同时进行出栈操作。
+     *                   出栈完成后，继续处理延迟队列。
+     *                   <p>
+     *                   如果：runTestInExecutorThread 为false。当栈深度为8时，本地执行提交给 eventExecutor来进行执行。此时，栈8运行，调用栈9。
+     *                   栈9执行setSuccess(),
+     *                   同时发现超过站深度8.
+     *                   栈9继续提交给
+     *                   executor进行执行。此时栈8还在executor#run中执行。所以栈9加入到延迟队列。栈8执行完毕，开始执行延迟队列中的栈9。
+     *                   同步以上操作。直到最后一个执行完毕后，调用线程执行出栈操作。
+     *                   与true不同的是，栈的深度为 8+1.并且当最后一个执行完毕后，才执行早先的出栈
+     *                   而false情况下，是每次到达栈深度，都先处理完以前的栈，然后重新压栈。
      */
     @Test
     public void testStackOverflowWithImmediateEventExecutorA() throws Exception {
         // int stackOverflowTestDepth = stackOverflowTestDepth();
-//        logger.info("testStackOverflowWithImmediateEventExecutorA#前置栈深度:{},计算栈深度:{}",stackOverflowDepth,stackOverflowTestDepth);
+//        logger.info("testStackOverflowWithImmediateEventExecutorA#前置栈深度:{},计算栈深度:{}"
+//        ,stackOverflowDepth,stackOverflowTestDepth);
         int stackOverflowTestDepth = 17;
 //        testStackOverFlowChainedFuturesA(stackOverflowTestDepth, ImmediateEventExecutor.INSTANCE, true);
         testStackOverFlowChainedFuturesA(stackOverflowTestDepth, ImmediateEventExecutor.INSTANCE, false);
     }
 
     @Test
-    public void testEndlessLoop(){
+    public void testEndlessLoop() {
         Promise<Void> p = new DefaultPromise(ImmediateEventExecutor.INSTANCE);
         p.setSuccess(null);
-        Assertions.assertThrows(IllegalStateException.class,()->{
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             p.setSuccess(null);
         });
     }
@@ -268,6 +272,7 @@ public class DefaultPromiseTest {
 
     /**
      * 测试 解决栈溢出的第二种情况.由{@link DefaultPromise#addListener(GenericFutureListener)} 引发的链路回调通知
+     *
      * @throws Exception
      */
     @Test
@@ -351,6 +356,7 @@ public class DefaultPromiseTest {
 
     /**
      * 测试 操作完成后的添加的监听会被执行
+     *
      * @throws Exception
      */
     @Test
@@ -476,7 +482,7 @@ public class DefaultPromiseTest {
 
     private static void testStackOverFlowChainedFuturesA(EventExecutor executor, final Promise<Void>[] p,
                                                          final CountDownLatch latch) {
-        for (int i = 0; i < p.length; i ++) {
+        for (int i = 0; i < p.length; i++) {
             final int finalI = i;
             p[i] = new DefaultPromise<Void>(executor);
             p[i].addListener(new FutureListener<Void>() {
@@ -518,7 +524,7 @@ public class DefaultPromiseTest {
 
     private static void testStackOverFlowChainedFuturesB(EventExecutor executor, final Promise<Void>[] p,
                                                          final CountDownLatch latch) {
-        for (int i = 0; i < p.length; i ++) {
+        for (int i = 0; i < p.length; i++) {
             final int finalI = i;
             p[i] = new DefaultPromise<Void>(executor);
             p[i].addListener(new FutureListener<Void>() {
@@ -640,6 +646,7 @@ public class DefaultPromiseTest {
 
     /**
      * 使用 GlobalEventExecutor.INSTANCE 测试 任务执行完毕后，后续添加的监听执行
+     *
      * @param numListenersBefore
      * @throws Exception
      */
@@ -673,7 +680,7 @@ public class DefaultPromiseTest {
         });
 
         assertTrue(latch.await(5, TimeUnit.SECONDS),
-            "Should have notified " + expectedCount + " listeners");
+                   "Should have notified " + expectedCount + " listeners");
         executor.shutdownGracefully().sync();
     }
 
@@ -684,7 +691,7 @@ public class DefaultPromiseTest {
 
         @Override
         protected void run() {
-            for (;;) {
+            for (; ;) {
                 Runnable task = takeTask();
                 if (task != null) {
                     task.run();

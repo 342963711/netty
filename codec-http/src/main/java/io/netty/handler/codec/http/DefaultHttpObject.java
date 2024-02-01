@@ -18,6 +18,12 @@ package io.netty.handler.codec.http;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.util.internal.ObjectUtil;
 
+/**
+ * httpObject 接口的默认实现类
+ *
+ * @see DefaultHttpContent
+ * @see DefaultHttpMessage
+ */
 public class DefaultHttpObject implements HttpObject {
 
     private static final int HASH_CODE_PRIME = 31;

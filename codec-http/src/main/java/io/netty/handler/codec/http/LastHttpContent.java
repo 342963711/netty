@@ -21,11 +21,16 @@ import io.netty.handler.codec.DecoderResult;
 
 /**
  * The last {@link HttpContent} which has trailing headers.
+ * 标记有 尾头 的最后一个 HttpContent
+ * @see ComposedLastHttpContent
+ * @see DefaultLastHttpContent 默认实现
+ * @see FullHttpMessage
  */
 public interface LastHttpContent extends HttpContent {
 
     /**
      * The 'end of content' marker in chunked encoding.
+     * 分块编码中的“内容结束”标记。
      */
     LastHttpContent EMPTY_LAST_CONTENT = new LastHttpContent() {
 

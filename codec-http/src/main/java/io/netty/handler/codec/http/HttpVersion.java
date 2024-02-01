@@ -253,6 +253,10 @@ public class HttpVersion implements Comparable<HttpVersion> {
         return minorVersion() - o.minorVersion();
     }
 
+    /**
+     * 将版本的字符串形式 进行编码后，写入到缓冲区中
+     * @param buf
+     */
     void encode(ByteBuf buf) {
         if (bytes == null) {
             buf.writeCharSequence(text, CharsetUtil.US_ASCII);

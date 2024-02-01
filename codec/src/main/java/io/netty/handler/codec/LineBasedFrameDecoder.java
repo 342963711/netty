@@ -23,6 +23,8 @@ import java.util.List;
 
 /**
  * A decoder that splits the received {@link ByteBuf}s on line endings.
+ *
+ * 一种解码器，用于在行尾分割  接收到{@link ByteBuf}。
  * <p>
  * Both {@code "\n"} and {@code "\r\n"} are handled.
  * <p>

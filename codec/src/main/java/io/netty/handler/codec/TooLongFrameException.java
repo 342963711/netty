@@ -18,6 +18,8 @@ package io.netty.handler.codec;
 /**
  * An {@link DecoderException} which is thrown when the length of the frame
  * decoded is greater than the allowed maximum.
+ *
+ * 当解码的帧长度大于允许的最大值时引发的｛@link DecoderException｝。
  */
 public class TooLongFrameException extends DecoderException {
 

@@ -32,12 +32,16 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 
 /**
  * An abstract {@link ChannelHandler} that aggregates a series of message objects into a single aggregated message.
+ * 一个抽象的{@link ChannelHandler}，它将一系列消息对象聚合为一个聚合消息。
  * <p>
  * 'A series of messages' is composed of the following:
  * <ul>
  * <li>a single start message which optionally contains the first part of the content, and</li>
  * <li>1 or more content messages.</li>
  * </ul>
+ *
+ *
+ *
  * The content of the aggregated message will be the merged content of the start message and its following content
  * messages. If this aggregator encounters a content message where {@link #isLastContentMessage(ByteBufHolder)}
  * return {@code true} for, the aggregator will finish the aggregation and produce the aggregated message and expect

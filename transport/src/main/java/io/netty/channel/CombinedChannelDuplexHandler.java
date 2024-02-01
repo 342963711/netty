@@ -28,16 +28,29 @@ import java.net.SocketAddress;
 
 /**
  *  Combines a {@link ChannelInboundHandler} and a {@link ChannelOutboundHandler} into one {@link ChannelHandler}.
+ *
+ *  组合入栈 和 出栈 到一个 channelHandler
+ *
+ * @see io.netty.handler.codec.http.HttpServerCodec
  */
 public class CombinedChannelDuplexHandler<I extends ChannelInboundHandler, O extends ChannelOutboundHandler>
         extends ChannelDuplexHandler {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(CombinedChannelDuplexHandler.class);
 
+    /**
+     * 入站 channel 处理 代理上下文
+     */
     private DelegatingChannelHandlerContext inboundCtx;
     private DelegatingChannelHandlerContext outboundCtx;
+
+    //handler 是否添加
     private volatile boolean handlerAdded;
 
+
+    /**
+     *
+     */
     private I inboundHandler;
     private O outboundHandler;
 

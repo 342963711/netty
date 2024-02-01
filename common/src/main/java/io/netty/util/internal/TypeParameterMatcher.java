@@ -50,6 +50,13 @@ public abstract class TypeParameterMatcher {
         return matcher;
     }
 
+    /**
+     *
+     * @param object 当前的实例对象
+     * @param parametrizedSuperclass
+     * @param typeParamName
+     * @return
+     */
     public static TypeParameterMatcher find(
             final Object object, final Class<?> parametrizedSuperclass, final String typeParamName) {
 
@@ -99,7 +106,7 @@ public abstract class TypeParameterMatcher {
                 }
 
                 Type[] actualTypeParams = ((ParameterizedType) genericSuperType).getActualTypeArguments();
-
+                //获取真实的参数化类型
                 Type actualTypeParam = actualTypeParams[typeParamIndex];
                 if (actualTypeParam instanceof ParameterizedType) {
                     actualTypeParam = ((ParameterizedType) actualTypeParam).getRawType();

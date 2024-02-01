@@ -44,8 +44,14 @@ import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_VALIDATE_HEA
  * to be done for <tt>HEAD</tt> and <tt>CONNECT</tt> and why
  * {@link HttpResponseDecoder} can not handle it by itself.
  *
+ *
+ *
  * If the {@link Channel} is closed and there are missing responses,
  * a {@link PrematureChannelClosureException} is thrown.
+ *
+ * ｛@link HttpRequestEncoder｝和｛@linkHttpResponseDecoder｝的组合，使客户端HTTP实现更加简单。
+ * ｛@link HttpClientCodec｝为＜tt＞HEAD</tt＞和＜tt＞CONNECT</tt＞请求提供了额外的状态管理，而｛@linkHttpResponseDecoder｝缺少这些状态管理。
+ * 请参阅｛@link HttpResponseDecoder｝，了解需要对＜tt＞HEAD＜/tt＞和＜tt＞CONNECT＜/tt＜进行哪些额外的状态管理，以及为什么｛@linkHttpResponceDecoder〕无法自行处理。
  *
  * @see HttpServerCodec
  */
@@ -55,13 +61,18 @@ public final class HttpClientCodec extends CombinedChannelDuplexHandler<HttpResp
     public static final boolean DEFAULT_PARSE_HTTP_AFTER_CONNECT_REQUEST = false;
 
     /** A queue that is used for correlating a request and a response. */
+    /**
+     * 用来关联 请求和响应的 队列
+     */
     private final Queue<HttpMethod> queue = new ArrayDeque<HttpMethod>();
     private final boolean parseHttpAfterConnectRequest;
 
     /** If true, decoding stops (i.e. pass-through) */
+    //如果true,表示解码停止
     private boolean done;
 
     private final AtomicLong requestResponseCounter = new AtomicLong();
+    //默认值是false,如果没有相应就表示失败
     private final boolean failOnMissingResponse;
 
     /**
@@ -182,10 +193,22 @@ public final class HttpClientCodec extends CombinedChannelDuplexHandler<HttpResp
         return inboundHandler().isSingleDecode();
     }
 
+    /**
+     * 在httpClient 对发送的请求进行编码
+     */
     private final class Encoder extends HttpRequestEncoder {
-
+        //是否需要协议升级
         boolean upgraded;
 
+        /**
+         * 对编码方法的重写
+         * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToMessageEncoder} belongs to
+         * @param msg           the message to encode to an other one
+         * @param out           the {@link List} into which the encoded msg should be added
+         *                      needs to do some kind of aggregation
+         *                      添加编码后的消息到 List,可能需要进行某种聚合
+         * @throws Exception
+         */
         @Override
         protected void encode(
                 ChannelHandlerContext ctx, Object msg, List<Object> out) throws Exception {
@@ -199,11 +222,12 @@ public final class HttpClientCodec extends CombinedChannelDuplexHandler<HttpResp
             if (msg instanceof HttpRequest) {
                 queue.offer(((HttpRequest) msg).method());
             }
-
+            //执行父类的编码逻辑
             super.encode(ctx, msg, out);
 
             if (failOnMissingResponse && !done) {
                 // check if the request is chunked if so do not increment
+                //检查请求是否被分块如果是 则不递增
                 if (msg instanceof LastHttpContent) {
                     // increment as its the last chunk
                     requestResponseCounter.incrementAndGet();
@@ -212,6 +236,9 @@ public final class HttpClientCodec extends CombinedChannelDuplexHandler<HttpResp
         }
     }
 
+    /**
+     * 对httpServer 返回的响应 进行 解码
+     */
     private final class Decoder extends HttpResponseDecoder {
         Decoder(int maxInitialLineLength, int maxHeaderSize, int maxChunkSize, boolean validateHeaders) {
             super(maxInitialLineLength, maxHeaderSize, maxChunkSize, validateHeaders);

@@ -18,6 +18,9 @@ package io.netty.util;
 /**
  * A singleton which is safe to compare via the {@code ==} operator. Created and managed by {@link ConstantPool}.
  * 通过 == 操作进行比较的安全单例。 通过ConstantPool 进行创建和管理
+ *
+ * @see AbstractConstant
+ * @see Signal
  */
 public interface Constant<T extends Constant<T>> extends Comparable<T> {
 

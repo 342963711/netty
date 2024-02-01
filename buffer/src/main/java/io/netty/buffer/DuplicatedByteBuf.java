@@ -31,6 +31,10 @@ import java.nio.channels.ScatteringByteChannel;
  * parent.  It is recommended to use {@link ByteBuf#duplicate()} instead
  * of calling the constructor explicitly.
  *
+ * 一个派生缓冲区，它只是将所有数据访问请求转发给其父缓冲区。
+ * 建议使用｛@link ByteBuf#duplicate（）｝
+ * 而不是显式调用构造函数。
+ *
  * @deprecated Do not use.
  */
 @Deprecated

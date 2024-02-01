@@ -33,7 +33,6 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 /**
  * @date 2023/5/1 08:11
- * @author likai
  * @email likai9376@163.com
  * @desc Promise 的默认实现
  *
@@ -89,7 +88,6 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
      * 线程-同步（this）。我们需要持有监视器才能使用Java的底层wait（）/notifyAll（）。
      */
     private short waiters;
-
 
     /**
      * Threading - synchronized(this). We must prevent concurrent notification and FIFO listener notification if the

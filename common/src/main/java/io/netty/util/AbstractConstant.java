@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Base implementation of {@link Constant}.
+ *
+ * @see AttributeKey
  */
 public abstract class AbstractConstant<T extends AbstractConstant<T>> implements Constant<T> {
 

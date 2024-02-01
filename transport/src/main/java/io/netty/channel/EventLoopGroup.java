@@ -24,8 +24,8 @@ import io.netty.util.concurrent.EventExecutorGroup;
  * 特殊的EventExecutorGroup，它允许注册channel, 这些通道将在事件循环期间进行处理以供稍后选择
  *
  * @see AbstractEventLoopGroup EventLoopGroup 实现的骨架抽象类，重新next返回类型，没有什么作用，非核心，且没有实现类
- * @see EventLoop
- * @see MultithreadEventLoopGroup
+ * @see EventLoop 单线程时间处理实现
+ * @see MultithreadEventLoopGroup  多线程事件处理组
  */
 public interface EventLoopGroup extends EventExecutorGroup {
     /**

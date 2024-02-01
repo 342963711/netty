@@ -22,6 +22,8 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * 默认的事件循环
+ *
+ * 提供现成包装类 {@link DefaultThreadFactory}
  */
 public class DefaultEventLoop extends SingleThreadEventLoop {
 

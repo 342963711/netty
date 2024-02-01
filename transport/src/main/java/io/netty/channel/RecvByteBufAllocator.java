@@ -27,6 +27,9 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  * not to waste its space.
  *
  * 分配一个新的接收缓冲区，其容量可能足够大，可以读取所有入站数据，也足够小，不会浪费空间。
+ *
+ * @see MaxBytesRecvByteBufAllocator
+ * @see MaxMessagesRecvByteBufAllocator
  */
 public interface RecvByteBufAllocator {
     /**
@@ -111,7 +114,7 @@ public interface RecvByteBufAllocator {
         /**
          * Set how many bytes the read operation will (or did) attempt to read.
          * @param bytes How many bytes the read operation will (or did) attempt to read.
-         * 设置读取操作将要城市读取的 字节数量
+         * 设置读取操作将（或已）尝试读取的字节数。（也就是本次缓冲区的大小）
          */
         void attemptedBytesRead(int bytes);
 

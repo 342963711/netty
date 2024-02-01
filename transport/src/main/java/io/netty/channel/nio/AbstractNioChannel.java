@@ -47,8 +47,8 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * 实现了Channel 的抽象基础类，它使用了 了一个 选择器基本操作的
  *
- * @see AbstractNioByteChannel
- * @see AbstractNioMessageChannel
+ * @see AbstractNioByteChannel  主要是针对客户端的抽象类
+ * @see AbstractNioMessageChannel 主要是针对服务端的抽象类
  */
 public abstract class AbstractNioChannel extends AbstractChannel {
 
@@ -56,21 +56,25 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             InternalLoggerFactory.getInstance(AbstractNioChannel.class);
 
     /**
-     * 可路由通道子类
+     * 可路由通道子类，底层通信channel,构建对象的时候 初始化【初始化jdk的channel,可以是客户端，也可以是服务端】
      */
     private final SelectableChannel ch;
 
     /**
-     * 通道操作
+     * keyset 关注的事件类型
+     * 针对客户端，关注的是read
+     * 针对服务端，关注的是accept
      */
     protected final int readInterestOp;
 
     /**
      * 路由通道 注册 到路由器 的对象表示。注册对象标识
+     * 如果 表示 变量ch 注册后，ch 与 复用器的 表示对象
      */
     volatile SelectionKey selectionKey;
 
 
+    //读挂起
     boolean readPending;
     private final Runnable clearReadPendingRunnable = new Runnable() {
         @Override
@@ -208,6 +212,8 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
     /**
      * Special {@link Unsafe} sub-type which allows to access the underlying {@link SelectableChannel}
+     *
+     * 特殊的 Unsafe的子类，允许访问底层的 Channel
      */
     public interface NioUnsafe extends Unsafe {
         /**
@@ -222,12 +228,23 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
         /**
          * Read from underlying {@link SelectableChannel}
+         *
+         * 从底层一直读取数据，此处是从{@link NioEventLoop} 来进行触发。也就是讲通道注册到的事件循环器来进行管理。
+         * {@link NioEventLoop#processSelectedKey(SelectionKey, AbstractNioChannel)}
+         *
+         * 该方法实现 将读取到的信息通过 pipeline.fireChannelRead(byteBuf); 来进行链路通知。
          */
         void read();
 
         void forceFlush();
     }
 
+
+    /**
+     * 所有的子类
+     * @see io.netty.channel.nio.AbstractNioByteChannel.NioByteUnsafe
+     * @see io.netty.channel.nio.AbstractNioMessageChannel.NioMessageUnsafe
+     */
     protected abstract class AbstractNioUnsafe extends AbstractUnsafe implements NioUnsafe {
 
         protected final void removeReadOp() {
@@ -382,6 +399,10 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             super.flush0();
         }
 
+        /**
+         * 是否写挂起
+         * @return 如果不能写，则挂起
+         */
         private boolean isFlushPending() {
             SelectionKey selectionKey = selectionKey();
             return selectionKey.isValid() && (selectionKey.interestOps() & SelectionKey.OP_WRITE) != 0;
@@ -393,11 +414,16 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         return loop instanceof NioEventLoop;
     }
 
+    /**
+     * 底层nio API 类的注册逻辑
+     * @throws Exception
+     */
     @Override
     protected void doRegister() throws Exception {
         boolean selected = false;
         for (; ; ) {
             try {
+                //这里将通道 注册到 eventLoop 中的多路复用器，eventLoop 通过反射获取到IO事件，在EventLoop中触发读取数据事件
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {

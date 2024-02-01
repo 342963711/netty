@@ -280,7 +280,7 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      *   <li>{@link #voidPromise()}</li>
      * </ul>
      *
-     * 从不应从用户代码中调用<em>Unsafe</em>操作。这些方法仅用于实现实际传输，并且必须从I/O线程调用
+     * 不应从用户代码中调用<em>Unsafe</em>操作。这些方法仅用于实现实际传输，并且必须从I/O线程调用
      * 以下方法：
      *
      */

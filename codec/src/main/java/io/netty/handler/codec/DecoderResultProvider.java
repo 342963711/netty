@@ -18,16 +18,28 @@ package io.netty.handler.codec;
 
 /**
  * Provides the accessor methods for the {@link DecoderResult} property of a decoded message.
+ *
+ * 为已经解码的消息 提供{@link DecoderResult} 属性的访问方法
+ *
+ * @see io.netty.handler.codec.http.HttpObject
+ *
+ * 以下可以参考
+ * @see io.netty.handler.codec.memcache.MemcacheObject
+ * @see io.netty.handler.codec.socksx.SocksMessage
+ * @see io.netty.handler.codec.stomp.StompSubframe
  */
 public interface DecoderResultProvider {
     /**
      * Returns the result of decoding this object.
+     * 返回 解码这个对象的结果
      */
     DecoderResult decoderResult();
 
     /**
      * Updates the result of decoding this object. This method is supposed to be invoked by a decoder.
      * Do not call this method unless you know what you are doing.
+     *
+     * 更新 解码这个对象的结果，该方法应该由解码器调用。除非你知道自己在做什么，否则不要调用这个方法。
      */
     void setDecoderResult(DecoderResult result);
 }

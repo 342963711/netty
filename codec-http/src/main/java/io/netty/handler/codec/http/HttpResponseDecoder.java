@@ -102,6 +102,8 @@ import io.netty.channel.ChannelPipeline;
  * use {@link HttpClientCodec} if you are writing an HTTP client that issues a
  * <tt>CONNECT</tt> request.
  * </p>
+ *
+ * 对http响应进行解码，对于http 客户端来说
  */
 public class HttpResponseDecoder extends HttpObjectDecoder {
 

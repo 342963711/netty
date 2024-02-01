@@ -37,6 +37,14 @@ import io.netty.channel.ChannelHandlerMask.Skip;
  * 如果您正在寻找自动释放接收到的消息的{@link ChannelInboundHandler}实现，请参阅{@link SimpleChannelInboundHandler}
  *
  * @see SimpleChannelInboundHandler
+ * @see SimpleUserEventChannelHandler
+ * @see ChannelDuplexHandler
+ * @see ChannelInitializer
+ * @see io.netty.bootstrap.ServerBootstrap.ServerBootstrapAcceptor
+ *
+ * 应用协议的主要使用类，就是编码库中的子类，参考如下
+ * @see io.netty.handler.codec.ByteToMessageDecoder
+ * @see io.netty.handler.codec.MessageToMessageDecoder
  */
 public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler {
 

@@ -2146,6 +2146,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
      * If {@code this.writableBytes} is less than {@code length}, {@link #ensureWritable(int)}
      * will be called in an attempt to expand capacity to accommodate.
      *
+     * 将指定通道的内容从当前{@code writerIndex}开始传输到此缓冲区，并将{@code writerIndex｝增加传输的字节数。
+     * 如果｛@codethis.writableBytes｝小于｛@code length｝，将调用｛@link#ensureWritable（int）以尝试扩展容量以容纳。
+     *
      * @param length the maximum number of bytes to transfer
      *
      * @return the actual number of bytes read in from the specified channel.
@@ -2351,6 +2354,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
      * <p>
      * Also be aware that this method will NOT call {@link #retain()} and so the
      * reference count will NOT be increased.
+     *
+     * 返回此缓冲区的子区域的切片。
+     * 修改返回缓冲区或此缓冲区的内容会影响彼此的内容，同时它们保持单独的索引和标记。此方法不修改的｛@code readerIndex｝或｛@code-writerIndex｝
+     * 这个缓冲区。
      */
     public abstract ByteBuf slice(int index, int length);
 
@@ -2373,6 +2380,11 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
      * each other's content while they maintain separate indexes and marks.
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * this buffer.
+     *
+     * 返回一个共享此缓冲区的整个区域的缓冲区。
+     * 修改返回缓冲区或此缓冲区的内容会影响彼此的内容，同时它们保持单独的索引和标记。
+     * 此方法不会修改此缓冲区的｛@code readerIndex｝或｛@code-writerIndex｝
+     *
      * <p>
      * The reader and writer marks will not be duplicated. Also be aware that this method will
      * NOT call {@link #retain()} and so the reference count will NOT be increased.
@@ -2507,6 +2519,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
     /**
      * Returns the offset of the first byte within the backing byte array of
      * this buffer.
+     *
+     * 返回此缓冲区的后备字节数组中第一个字节的偏移量。
      *
      * @throws UnsupportedOperationException
      *         if there no accessible backing byte array

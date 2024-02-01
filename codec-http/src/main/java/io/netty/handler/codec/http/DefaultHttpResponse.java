@@ -24,6 +24,7 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  */
 public class DefaultHttpResponse extends DefaultHttpMessage implements HttpResponse {
 
+    //响应状态码
     private HttpResponseStatus status;
 
     /**
@@ -55,9 +56,12 @@ public class DefaultHttpResponse extends DefaultHttpMessage implements HttpRespo
      * @param validateHeaders   validate the header names and values when adding them to the {@link HttpHeaders}
      * @param singleFieldHeaders {@code true} to check and enforce that headers with the same name are appended
      * to the same entry and comma separated.
+     *
      * See <a href="https://tools.ietf.org/html/rfc7230#section-3.2.2">RFC 7230, 3.2.2</a>.
      * {@code false} to allow multiple header entries with the same name to
      * coexist.
+     * true 来检查并强制将具有相同名称的标头附加到同一条目并以逗号分隔。
+     * false  允许具有相同名称的多个标头条目共存。
      */
     public DefaultHttpResponse(HttpVersion version, HttpResponseStatus status, boolean validateHeaders,
                                boolean singleFieldHeaders) {

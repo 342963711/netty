@@ -25,6 +25,9 @@ import java.util.List;
 /**
  * A decoder that splits the received {@link ByteBuf}s by the fixed number
  * of bytes. For example, if you received the following four fragmented packets:
+ *
+ * 一种解码器，通过固定的字节数量来拆分缓冲区
+ * 例如，接受到一下4个帧包
  * <pre>
  * +---+----+------+----+
  * | A | BC | DEFG | HI |
@@ -32,6 +35,7 @@ import java.util.List;
  * </pre>
  * A {@link FixedLengthFrameDecoder}{@code (3)} will decode them into the
  * following three packets with the fixed length:
+ * 该解码器 将以上4个包编码通过固定三字节长度 到下面三个包
  * <pre>
  * +-----+-----+-----+
  * | ABC | DEF | GHI |
@@ -63,6 +67,8 @@ public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
     /**
      * Create a frame out of the {@link ByteBuf} and return it.
      *
+     * 从｛@link ByteBuf｝创建一个帧并返回。
+     *
      * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param   in              the {@link ByteBuf} from which to read data
      * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
@@ -70,9 +76,11 @@ public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
      */
     protected Object decode(
             @SuppressWarnings("UnusedParameters") ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+        //如果可读取字节数，小于帧长度，则返回空
         if (in.readableBytes() < frameLength) {
             return null;
         } else {
+            //读取帧包
             return in.readRetainedSlice(frameLength);
         }
     }

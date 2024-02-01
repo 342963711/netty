@@ -40,7 +40,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * (default is 1 second).  Please note it is not scalable to schedule large number of tasks to this executor;
  * use a dedicated executor.
  *
- * 单线程singleton｛@link EventExecutor｝。当任务队列中没有挂起的任务时，它会自动启动线程并停止线程｛@code-io.netty.globalEventExecutor.quietPeriodSeconds｝秒
+ * 单线程singleton｛@link EventExecutor｝。当任务队列中没有挂起的任务时，
+ * 它会自动启动线程并停止线程｛@code-io.netty.globalEventExecutor.quietPeriodSeconds｝秒
  *
  * （默认为1秒）。请注意，向该执行器调度大量任务是不可扩展的；使用专门的执行人。
  */

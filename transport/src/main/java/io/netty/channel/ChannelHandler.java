@@ -117,7 +117,7 @@ import java.lang.annotation.Target;
  *
  * <pre>
  * // Create a new handler instance per channel.
- * 没一个channel 实例都穿件一个新的 处理程序
+ * 每一个channel 实例都创建 一个新的 处理程序
  * // See {@link ChannelInitializer#initChannel(Channel)}.
  * public class DataServerInitializer extends {@link ChannelInitializer}&lt;{@link Channel}&gt; {
  *     {@code @Override}
@@ -237,8 +237,14 @@ public interface ChannelHandler {
     /**
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
      *
-     * 在将｛@link ChannelHandler｝添加到实际上下文并准备好处理事件后调用。
+     * 在将｛@link ChannelHandler｝添加到实际上下文并准备好处理事件后调用。也就是该ChannelHandler 被添加到channelPipeline 之后，
+     * 该方法会被调用
      *
+     * 当该ChannelHandler 所在的 ctx 被调用的时候，该方法后自行。
+     *
+     * 可以查看
+     * {@link DefaultChannelPipeline#addFirst(ChannelHandler)}
+     * {@link DefaultChannelPipeline#callHandlerAdded0(AbstractChannelHandlerContext)}
      */
     void handlerAdded(ChannelHandlerContext ctx) throws Exception;
 

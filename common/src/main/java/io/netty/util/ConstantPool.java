@@ -28,12 +28,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A pool of {@link Constant}s.
  *
  * 常量池
+ * 创建一个常量 T
+ * {@link #newConstant(int, String)}
  *
  * @param <T> the type of the constant
  *           常量类型
  */
 public abstract class ConstantPool<T extends Constant<T>> {
 
+    /**
+     * 常量保存容器
+     */
     private final ConcurrentMap<String, T> constants = PlatformDependent.newConcurrentHashMap();
 
     private final AtomicInteger nextId = new AtomicInteger(1);

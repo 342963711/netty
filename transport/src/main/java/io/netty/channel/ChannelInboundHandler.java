@@ -21,6 +21,9 @@ package io.netty.channel;
  *
  * channelHandler 为状态变更增加了 回调，这使得 用户与状态变化挂钩变得更简单
  *
+ * 通道入栈处理器，包含9种核心方法。
+ *
+ * @see ChannelInboundHandlerAdapter
  */
 public interface ChannelInboundHandler extends ChannelHandler {
 
@@ -57,6 +60,11 @@ public interface ChannelInboundHandler extends ChannelHandler {
      * {@link #channelRead(ChannelHandlerContext, Object)}.  If {@link ChannelOption#AUTO_READ} is off, no further
      * attempt to read an inbound data from the current {@link Channel} will be made until
      * {@link ChannelHandlerContext#read()} is called.
+     *
+     * 当当前读取操作读取的最后一条消息已被{@link  #channelRead（ChannelHandlerContext，Object)}使用时调用。
+     *
+     * 如果｛@link ChannelOption#AUTO_READ｝处于关闭状态，则不会再尝试从当前｛@link Channel｝读取入站数据
+     * 直到调用{@link ChannelHandlerContext#read（）}。
      */
     void channelReadComplete(ChannelHandlerContext ctx) throws Exception;
 
@@ -68,6 +76,8 @@ public interface ChannelInboundHandler extends ChannelHandler {
     /**
      * Gets called once the writable state of a {@link Channel} changed. You can check the state with
      * {@link Channel#isWritable()}.
+     *
+     * 在｛@link Channel｝的可写状态更改后调用。您可以使用｛@link Channel#isWritable（）｝查看状态。
      */
     void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception;
 

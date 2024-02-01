@@ -23,6 +23,11 @@ import java.net.InetSocketAddress;
  * A TCP/IP {@link ServerChannel} which accepts incoming TCP/IP connections.
  *
  * 一个接受传入TCP/IP连接的TCP/IP｛@link ServerChannel｝。
+ *
+ * @see io.netty.channel.socket.nio.NioServerSocketChannel
+ * @see io.netty.channel.socket.oio.OioServerSocketChannel
+ * @see io.netty.channel.epoll.EpollServerSocketChannel
+ * @see io.netty.channel.kqueue.KQueueServerSocketChannel
  */
 public interface ServerSocketChannel extends ServerChannel {
     @Override

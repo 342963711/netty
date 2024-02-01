@@ -36,7 +36,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Decodes {@link ByteBuf}s into {@link HttpMessage}s and
  * {@link HttpContent}s.
  *
+ * 将ByteBuf 编码为 HttpMessage 和 HttpContent
+ *
+ *
  * <h3>Parameters that prevents excessive memory consumption</h3>
+ * 防止内存过度消耗的参数
+ *
  * <table border="1">
  * <tr>
  * <th>Name</th><th>Default value</th><th>Meaning</th>
@@ -49,12 +54,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     If the length of the initial line exceeds this value, a
  *     {@link TooLongHttpLineException} will be raised.</td>
  * </tr>
+ * 默认值是4096
+ * 初始行的最大长度（例如｛@code“GET/HTTP/1.0”｝或｛@ccode“HTTP/1.0 200 OK”｝）如果初始行的长度超过此值，将引发｛@link TooLongHttpLineException｝。
+ *
  * <tr>
  * <td>{@code maxHeaderSize}</td>
  * <td>{@value #DEFAULT_MAX_HEADER_SIZE}</td>
  * <td>The maximum length of all headers.  If the sum of the length of each
  *     header exceeds this value, a {@link TooLongHttpHeaderException} will be raised.</td>
  * </tr>
+ *
+ * 所有标头的最大长度。如果每个头的长度总和超过此值，则将引发｛@link TooLongHttpHeaderException｝。
+ *
+ *
  * <tr>
  * <td>{@code maxChunkSize}</td>
  * <td>{@value #DEFAULT_MAX_CHUNK_SIZE}</td>
@@ -63,9 +75,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     will be split into multiple {@link HttpContent}s whose length is
  *     {@code maxChunkSize} at maximum.</td>
  * </tr>
+ *
+ * 内容或每个区块的最大长度。如果内容长度（或每个区块的长度）超过此值，则内容或区块将被拆分为多个｛@link HttpContent｝，
+ * 其长度最大为｛@code maxChunkSize｝。
  * </table>
  *
+ *
+ *
  * <h3>Parameters that control parsing behavior</h3>
+ *
+ * 控制解析行为的参数
+ *
  * <table border="1">
  * <tr>
  * <th>Name</th><th>Default value</th><th>Meaning</th>
@@ -78,6 +98,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     The duplicated field-values will be replaced with a single valid Content-Length field.
  *     See <a href="https://tools.ietf.org/html/rfc7230#section-3.3.2">RFC 7230, Section 3.3.2</a>.</td>
  * </tr>
+ *
+ * 当设置为｛@code false｝时，将拒绝任何包含多个Content-Length标头字段的消息。
+ * 当设置为｛@code true｝时，只有当多个Content-Length标头都是相同的十进制值时，才允许使用这些标头。重复的字段值将替换为单个有效的“内容长度”字段。参见RFC 7230，第3.3.2节。
+ *
+ *
  * <tr>
  * <td>{@code allowPartialChunks}</td>
  * <td>{@value #DEFAULT_ALLOW_PARTIAL_CHUNKS}</td>
@@ -87,15 +112,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     is set to {@code false}, the {@link ByteBuf} is not decoded into an {@link HttpContent} until
  *     the readable bytes are greater or equal to the chunk size.</td>
  * </tr>
+ *
+ *如果区块的长度超过｛@link ByteBuf｝的可读字节，并且｛@code allowPartialChunks｝设置为｛@code-true｝，则区块将被拆分为多个｛@linkHttpContent｝。
+ * 否则，如果区块大小不超过{@code maxChunkSize}，并且{@code allowPartialChunks}设置为{@code false}，则在可读字节大于或等于区块大小之前，不会将{@link ByteBuf}解码为{@link HttpContent}。
+ *
  * </table>
  *
+ *
+ *
  * <h3>Chunked Content</h3>
+ * 块内容
+ *
  *
  * If the content of an HTTP message is greater than {@code maxChunkSize} or
  * the transfer encoding of the HTTP message is 'chunked', this decoder
  * generates one {@link HttpMessage} instance and its following
  * {@link HttpContent}s per single HTTP message to avoid excessive memory
  * consumption. For example, the following HTTP message:
+ *
+ * 如果HTTP消息的内容大于｛@code maxChunkSize｝，或者HTTP消息的传输编码为“分块”，则此解码器会为每条HTTP消息生成一个｛@link HttpMessage｝实例及其以下｛@link HttpContent｝，以避免过多的内存消耗
+ *
+ * 例如，以下HTTP消息：
+ *
  * <pre>
  * GET / HTTP/1.1
  * Transfer-Encoding: chunked
@@ -109,6 +147,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <i>[blank line]</i>
  * </pre>
  * triggers {@link HttpRequestDecoder} to generate 3 objects:
+ * 触发 HttpRequestDecoder 生成三个对象
  * <ol>
  * <li>An {@link HttpRequest},</li>
  * <li>The first {@link HttpContent} whose content is {@code 'abcdefghijklmnopqrstuvwxyz'},</li>
@@ -121,7 +160,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * {@link ChannelPipeline}.  However, please note that your server might not
  * be as memory efficient as without the aggregator.
  *
+ * 如果为了方便起见，您不想自己处理｛@link HttpContent｝s，请在｛@linkChannelPipeline｝中的解码器后面插入｛@LinkHttpObjectAggregator｝。
+ * 但是，请注意，您的服务器可能不像没有聚合器那样具有内存效率。
+ *
  * <h3>Extensibility</h3>
+ * 可扩展的
  *
  * Please note that this decoder is designed to be extended to implement
  * a protocol derived from HTTP, such as
@@ -129,25 +172,68 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <a href="https://en.wikipedia.org/wiki/Internet_Content_Adaptation_Protocol">ICAP</a>.
  * To implement the decoder of such a derived protocol, extend this class and
  * implement all abstract methods properly.
+ *
+ * 请注意，此解码器是为实现源自HTTP协议 被设计为可扩展的
+ *
+ * 例如
+ * <a href=“https://en.wikipedia.org/wiki/Real_Time_Streaming_Protocol“>RTSP</a>
+ * 和
+ * <a href=“https://en.wikipedia.org/wiki/Internet_Content_Adaptation_Protocol“>ICAP</a>。
+ * 要实现这样一个派生协议的解码器，请扩展此类并正确地实现所有抽象方法。
+ *
+ * @see HttpRequestDecoder
+ * @see HttpResponseDecoder
+ * @see io.netty.handler.codec.rtsp.RtspDecoder
+ * @see io.netty.handler.codec.rtsp.RtspObjectDecoder
  */
 public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
+    /**
+     * //控制解析的默认值
+     */
+
+    //协议大小规范默认限制，防止内存被过度使用
+    /**
+     * 协议第一行长度
+     */
     public static final int DEFAULT_MAX_INITIAL_LINE_LENGTH = 4096;
+    /**
+     * 所有请求的最大长度
+     */
     public static final int DEFAULT_MAX_HEADER_SIZE = 8192;
-    public static final boolean DEFAULT_CHUNKED_SUPPORTED = true;
-    public static final boolean DEFAULT_ALLOW_PARTIAL_CHUNKS = true;
+    /**
+     * 每个块（chunk） 的最大长度
+     */
     public static final int DEFAULT_MAX_CHUNK_SIZE = 8192;
+
+
+    /**
+     * 是否支持分块
+     */
+    public static final boolean DEFAULT_CHUNKED_SUPPORTED = true;
+    /**
+     * content_length 是否允许重复
+     */
+    public static final boolean DEFAULT_ALLOW_DUPLICATE_CONTENT_LENGTHS = false;
+
+    public static final boolean DEFAULT_ALLOW_PARTIAL_CHUNKS = true;
+
     public static final boolean DEFAULT_VALIDATE_HEADERS = true;
     public static final int DEFAULT_INITIAL_BUFFER_SIZE = 128;
-    public static final boolean DEFAULT_ALLOW_DUPLICATE_CONTENT_LENGTHS = false;
+
+
     private final int maxChunkSize;
     private final boolean chunkedSupported;
     private final boolean allowPartialChunks;
     protected final boolean validateHeaders;
     private final boolean allowDuplicateContentLengths;
+
+    //解析暂存缓存区(默认是128)
     private final ByteBuf parserScratchBuffer;
+    //两个解析类，一个解析头节点，一个解析初始化行
     private final HeaderParser headerParser;
     private final LineParser lineParser;
 
+    //解析出来的消息
     private HttpMessage message;
     private long chunkSize;
     private long contentLength = Long.MIN_VALUE;
@@ -170,18 +256,30 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
     /**
      * The internal state of {@link HttpObjectDecoder}.
      * <em>Internal use only</em>.
+     * 内部状态
      */
     private enum State {
+        //跳过控制字符
         SKIP_CONTROL_CHARS,
+        //读取初始行
         READ_INITIAL,
+        //读取头节点
         READ_HEADER,
+        //读取变量长度内容
         READ_VARIABLE_LENGTH_CONTENT,
+        //读取固定长度内容
         READ_FIXED_LENGTH_CONTENT,
+        //读取块大小
         READ_CHUNK_SIZE,
+        //读取块内容
         READ_CHUNKED_CONTENT,
+        //读取块分隔符
         READ_CHUNK_DELIMITER,
+        //读取块 尾
         READ_CHUNK_FOOTER,
+        //坏消息
         BAD_MESSAGE,
+        //升级
         UPGRADED
     }
 
@@ -199,6 +297,10 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
 
     /**
      * Creates a new instance with the specified parameters.
+     * @param maxInitialLineLength 4096
+     * @param maxHeaderSize 8192
+     * @param maxChunkSize 8192
+     * @param chunkedSupported true
      */
     protected HttpObjectDecoder(
             int maxInitialLineLength, int maxHeaderSize, int maxChunkSize, boolean chunkedSupported) {
@@ -238,6 +340,14 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
 
     /**
      * Creates a new instance with the specified parameters.
+     * @param maxInitialLineLength  4096
+     * @param maxHeaderSize 8192
+     * @param maxChunkSize 8192
+     * @param chunkedSupported true
+     * @param validateHeaders true
+     * @param initialBufferSize 128
+     * @param allowDuplicateContentLengths false
+     * @param allowPartialChunks true
      */
     protected HttpObjectDecoder(
             int maxInitialLineLength, int maxHeaderSize, int maxChunkSize,
@@ -257,12 +367,20 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
         this.allowPartialChunks = allowPartialChunks;
     }
 
+    /**
+     * http 协议 进行通用协议内容解析，如果重写，查看是否公用此代码（super.decode(...)）.
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param buffer            the {@link ByteBuf} from which to read data
+     * @param out           the {@link List} to which decoded messages should be added
+     * @throws Exception
+     */
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
+        //重置请求，默认是false
         if (resetRequested.get()) {
             resetNow();
         }
-
+        //判断当前状态
         switch (currentState) {
         case SKIP_CONTROL_CHARS:
             // Fall-through
@@ -275,6 +393,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             assert initialLine.length == 3 : "initialLine::length must be 3";
 
             message = createMessage(initialLine);
+            //开始读取Http头
             currentState = State.READ_HEADER;
             // fall-through
         } catch (Exception e) {
@@ -282,6 +401,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             return;
         }
         case READ_HEADER: try {
+            //读取头信息，并且获取下一个处理状态
             State nextState = readHeaders(buffer);
             if (nextState == null) {
                 return;
@@ -334,6 +454,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             out.add(invalidMessage(buffer, e));
             return;
         }
+        //读取可变内容长度
         case READ_VARIABLE_LENGTH_CONTENT: {
             // Keep reading data as a chunk until the end of connection is reached.
             int toRead = Math.min(buffer.readableBytes(), maxChunkSize);
@@ -343,6 +464,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             }
             return;
         }
+        //读取固定内容长度
         case READ_FIXED_LENGTH_CONTENT: {
             int readLimit = buffer.readableBytes();
 
@@ -375,6 +497,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
         /**
          * everything else after this point takes care of reading chunked content. basically, read chunk size,
          * read chunk, read and ignore the CRLF and repeat until 0
+         * 在这一点之后的所有其他内容都要注意阅读大块的内容。基本上，读取区块大小读取区块，读取并忽略CRLF并重复直到0
          */
         case READ_CHUNK_SIZE: try {
             ByteBuf line = lineParser.parse(buffer);
@@ -413,6 +536,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             }
             currentState = State.READ_CHUNK_DELIMITER;
             // fall-through
+            //执行下一个节点
         }
         case READ_CHUNK_DELIMITER: {
             final int wIdx = buffer.writerIndex();
@@ -625,16 +749,22 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
         return chunk;
     }
 
+    /**
+     * 处理Http 头信息
+     * @param buffer
+     * @return  返回下一个状态
+     */
     private State readHeaders(ByteBuf buffer) {
         final HttpMessage message = this.message;
         final HttpHeaders headers = message.headers();
 
         final HeaderParser headerParser = this.headerParser;
-
+        //使用头解析对象解析，之前解析的字节不会重置
         ByteBuf line = headerParser.parse(buffer);
         if (line == null) {
             return null;
         }
+        //获取本次行长度
         int lineLength = line.readableBytes();
         while (lineLength > 0) {
             final byte[] lineContent = line.array();
@@ -650,10 +780,12 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
                 if (name != null) {
                     headers.add(name, value);
                 }
+                //解析头 的key 和value
                 splitHeader(lineContent, startLine, lineLength);
             }
-
+            //再次从读取的里面解析一行
             line = headerParser.parse(buffer);
+            //直到没有头内容
             if (line == null) {
                 return null;
             }
@@ -670,9 +802,10 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
         value = null;
 
         // Done parsing initial line and headers. Set decoder result.
+        // 已完成对初始行和标头的分析。设置解码器结果。
         HttpMessageDecoderResult decoderResult = new HttpMessageDecoderResult(lineParser.size, headerParser.size);
         message.setDecoderResult(decoderResult);
-
+        //获取内容长度请求头
         List<String> contentLengthFields = headers.getAll(HttpHeaderNames.CONTENT_LENGTH);
         if (!contentLengthFields.isEmpty()) {
             HttpVersion version = message.protocolVersion();
@@ -690,7 +823,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
                 }
             }
         }
-
+        //判断Http 版本来进行内容长度的读取，现在主流HTTP 版本 都是1.1
         if (isContentAlwaysEmpty(message)) {
             HttpUtil.setTransferEncodingChunked(message, false);
             return State.SKIP_CONTROL_CHARS;
@@ -952,14 +1085,15 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
     private static final boolean[] LATIN_WHITESPACE;
 
     static {
-        // See https://tools.ietf.org/html/rfc7230#section-3.5
+        // See https://tools.ietf.org/html/rfc7230#section-3.5,
+        //这里为了健壮性，包含了所有可能的空格
         SP_LENIENT_BYTES = new boolean[256];
         SP_LENIENT_BYTES[128 + ' '] = true;
         SP_LENIENT_BYTES[128 + 0x09] = true;
         SP_LENIENT_BYTES[128 + 0x0B] = true;
         SP_LENIENT_BYTES[128 + 0x0C] = true;
         SP_LENIENT_BYTES[128 + 0x0D] = true;
-        // TO SAVE PERFORMING Character::isWhitespace ceremony
+        // TO SAVE PERFORMING Character::isWhitespace ceremony，并检测java语言中的空白字符
         LATIN_WHITESPACE = new boolean[256];
         for (byte b = Byte.MIN_VALUE; b < Byte.MAX_VALUE; b++) {
             LATIN_WHITESPACE[128 + b] = Character.isWhitespace(b);
@@ -1003,8 +1137,11 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
     }
 
     private static class HeaderParser {
+        //解析内容暂存缓冲区
         protected final ByteBuf seq;
+        //maxHeaderLength 8192
         protected final int maxLength;
+        //
         int size;
 
         HeaderParser(ByteBuf seq, int maxLength) {
@@ -1012,6 +1149,11 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             this.maxLength = maxLength;
         }
 
+        /**
+         * 按照行，每次解析出一行，
+         * @param buffer
+         * @return
+         */
         public ByteBuf parse(ByteBuf buffer) {
             final int readableBytes = buffer.readableBytes();
             final int readerIndex = buffer.readerIndex();
@@ -1021,10 +1163,13 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             // don't remove 2L: it's key to cover maxLength = Integer.MAX_VALUE
             final long maxBodySizeWithCRLF = maxBodySize + 2L;
             final int toProcess = (int) Math.min(maxBodySizeWithCRLF, readableBytes);
+            //找到到处理的全部内容（从可读索引）
             final int toIndexExclusive = readerIndex + toProcess;
             assert toIndexExclusive >= readerIndex;
+            //找到第一个换行符的索引（对于HTTP 来说，头是多行组成的）
             final int indexOfLf = buffer.indexOf(readerIndex, toIndexExclusive, HttpConstants.LF);
             if (indexOfLf == -1) {
+                //如果帧长超过限制，抛出异常
                 if (readableBytes > maxBodySize) {
                     // TODO: Respond with Bad Request and discard the traffic
                     //    or close the connection.
@@ -1032,8 +1177,10 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
                     //       If decoding a response, just throw an exception.
                     throw newException(maxLength);
                 }
+                //如果没有找到换行符，说明需要等待继续接受。
                 return null;
             }
+            //找到本次处理的单行长度
             final int endOfSeqIncluded;
             if (indexOfLf > readerIndex && buffer.getByte(indexOfLf - 1) == HttpConstants.CR) {
                 // Drop CR if we had a CRLF pair
@@ -1042,17 +1189,20 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
                 endOfSeqIncluded = indexOfLf;
             }
             final int newSize = endOfSeqIncluded - readerIndex;
+            //如果行内容为空
             if (newSize == 0) {
                 seq.clear();
                 buffer.readerIndex(indexOfLf + 1);
                 return seq;
             }
+            //记录已经解析字节数
             int size = this.size + newSize;
             if (size > maxLength) {
                 throw newException(maxLength);
             }
             this.size = size;
             seq.clear();
+            //将本次解析内容写入到缓冲区。并返回
             seq.writeBytes(buffer, readerIndex, newSize);
             buffer.readerIndex(indexOfLf + 1);
             return seq;
@@ -1062,11 +1212,19 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             size = 0;
         }
 
+        /**
+         * 帧太长异常
+         * @param maxLength
+         * @return
+         */
         protected TooLongFrameException newException(int maxLength) {
             return new TooLongHttpHeaderException("HTTP header is larger than " + maxLength + " bytes.");
         }
     }
 
+    /**
+     * 按照行来进行解析
+     */
     private final class LineParser extends HeaderParser {
 
         LineParser(ByteBuf seq, int maxLength) {
@@ -1076,6 +1234,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
         @Override
         public ByteBuf parse(ByteBuf buffer) {
             // Suppress a warning because HeaderParser.reset() is supposed to be called
+            // 重置临时存储处理的数量
             reset();
             final int readableBytes = buffer.readableBytes();
             if (readableBytes == 0) {
@@ -1088,9 +1247,18 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             return super.parse(buffer);
         }
 
+        /**
+         * 跳过缓冲区 控制字符
+         * @param buffer
+         * @param readableBytes
+         * @param readerIndex
+         * @return
+         */
         private boolean skipControlChars(ByteBuf buffer, int readableBytes, int readerIndex) {
             assert currentState == State.SKIP_CONTROL_CHARS;
+            //
             final int maxToSkip = Math.min(maxLength, readableBytes);
+            //找到第一个非控制符的索引，
             final int firstNonControlIndex = buffer.forEachByte(readerIndex, maxToSkip, SKIP_CONTROL_CHARS_BYTES);
             if (firstNonControlIndex == -1) {
                 buffer.skipBytes(maxToSkip);
@@ -1101,6 +1269,7 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             }
             // from now on we don't care about control chars
             buffer.readerIndex(firstNonControlIndex);
+            //设置开始读取初始化行
             currentState = State.READ_INITIAL;
             return false;
         }
@@ -1111,15 +1280,22 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
         }
     }
 
+    /**
+     * iso 标准字符集 采用完整的 1字节，可以表示256个字符。
+     */
     private static final boolean[] ISO_CONTROL_OR_WHITESPACE;
 
     static {
         ISO_CONTROL_OR_WHITESPACE = new boolean[256];
         for (byte b = Byte.MIN_VALUE; b < Byte.MAX_VALUE; b++) {
+            // Character.isISOControl(b) 判断的 是  0-31 或者 大于 127 小于 159
             ISO_CONTROL_OR_WHITESPACE[128 + b] = Character.isISOControl(b) || isWhitespace(b);
         }
     }
 
+    /**
+     * 判断是否应该跳过控制符
+     */
     private static final ByteProcessor SKIP_CONTROL_CHARS_BYTES = new ByteProcessor() {
 
         @Override
@@ -1127,4 +1303,9 @@ public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
             return ISO_CONTROL_OR_WHITESPACE[128 + value];
         }
     };
+
+    public static void main(String[] args) {
+        byte[] b = new byte[]{13};
+        System.out.println(new String(b));
+    }
 }

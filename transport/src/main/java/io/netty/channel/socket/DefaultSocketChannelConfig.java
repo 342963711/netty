@@ -33,6 +33,8 @@ import static io.netty.channel.ChannelOption.*;
 
 /**
  * The default {@link SocketChannelConfig} implementation.
+ *
+ * @see io.netty.channel.socket.nio.NioSocketChannel.NioSocketChannelConfig
  */
 public class DefaultSocketChannelConfig extends DefaultChannelConfig
                                         implements SocketChannelConfig {

@@ -28,6 +28,7 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 public class DefaultFullHttpResponse extends DefaultHttpResponse implements FullHttpResponse {
 
     private final ByteBuf content;
+    //请求头类型
     private final HttpHeaders trailingHeaders;
 
     /**
@@ -57,6 +58,14 @@ public class DefaultFullHttpResponse extends DefaultHttpResponse implements Full
         this(version, status, content, validateHeaders, false);
     }
 
+    /**
+     *
+     * @param version
+     * @param status
+     * @param content
+     * @param validateHeaders true
+     * @param singleFieldHeaders false
+     */
     public DefaultFullHttpResponse(HttpVersion version, HttpResponseStatus status,
                                    ByteBuf content, boolean validateHeaders, boolean singleFieldHeaders) {
         super(version, status, validateHeaders, singleFieldHeaders);

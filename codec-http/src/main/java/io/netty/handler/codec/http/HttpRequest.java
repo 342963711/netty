@@ -18,22 +18,43 @@ package io.netty.handler.codec.http;
 /**
  * An HTTP request.
  *
+ * 一个http 的请求
+ *
  * <h3>Accessing Query Parameters and Cookie</h3>
+ * 访问请求参数和cookie
+ *
+ *
+ *
+ *
  * <p>
  * Unlike the Servlet API, a query string is constructed and decomposed by
  * {@link QueryStringEncoder} and {@link QueryStringDecoder}.
  *
+ * 不同于 Servlet API. 一个查询字符串的是由{@link QueryStringEncoder} 和 {@link QueryStringDecoder}
+ * 的构造和分解
+ *
+ *
  * {@link io.netty.handler.codec.http.cookie.Cookie} support is also provided
  * separately via {@link io.netty.handler.codec.http.cookie.ServerCookieDecoder},
+ *
+ * cookie 通过{@link io.netty.handler.codec.http.cookie.ServerCookieDecoder}单独提供支持
+ *
  * {@link io.netty.handler.codec.http.cookie.ClientCookieDecoder},
  * {@link io.netty.handler.codec.http.cookie.ServerCookieEncoder},
  * and {@link io.netty.handler.codec.http.cookie.ClientCookieEncoder}.
+ *
+ *
+ *
  *
  * @see HttpResponse
  * @see io.netty.handler.codec.http.cookie.ServerCookieDecoder
  * @see io.netty.handler.codec.http.cookie.ClientCookieDecoder
  * @see io.netty.handler.codec.http.cookie.ServerCookieEncoder
  * @see io.netty.handler.codec.http.cookie.ClientCookieEncoder
+ *
+ * @see DefaultHttpRequest
+ * @see FullHttpRequest
+ * @see io.netty.handler.codec.http.multipart.HttpPostRequestEncoder.WrappedHttpRequest
  */
 public interface HttpRequest extends HttpMessage {
 

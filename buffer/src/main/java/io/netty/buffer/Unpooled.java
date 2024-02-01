@@ -90,7 +90,7 @@ public final class Unpooled {
 
     /**
      * Big endian byte order.
-     *
+     * 大端字节序
      */
     public static final ByteOrder BIG_ENDIAN = ByteOrder.BIG_ENDIAN;
 

@@ -31,6 +31,11 @@ import java.util.List;
 
 /**
  * {@link AbstractNioChannel} base class for {@link Channel}s that operate on messages.
+ *  在channel 中 对消息进行操作的AbstractNioChannel 的基础类，
+ *  该类的实现类 主要是accept SocketChannel 通过pipeline 下发到其他上下文中
+ *
+ *
+ * @see io.netty.channel.socket.nio.NioServerSocketChannel
  */
 public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
     boolean inputShutdown;
@@ -59,6 +64,10 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
         return allocHandle.continueReading();
     }
 
+
+    /**
+     * 该方法主要是是处理服务端的接受到的客户端 通道对象
+     */
     private final class NioMessageUnsafe extends AbstractNioUnsafe {
 
         private final List<Object> readBuf = new ArrayList<Object>();
@@ -94,6 +103,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 int size = readBuf.size();
                 for (int i = 0; i < size; i ++) {
                     readPending = false;
+                    //如何将创建出来的SocketChannel进行管理
                     pipeline.fireChannelRead(readBuf.get(i));
                 }
                 readBuf.clear();

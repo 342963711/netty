@@ -320,7 +320,7 @@ public class LoggingHandler extends ChannelDuplexHandler {
 
     /**
      * Formats an event and returns the formatted message.
-     *
+     * 格式化事件，并且返回格式化后的消息
      * @param eventName the name of the event
      * @param arg       the argument of the event
      */
@@ -369,6 +369,7 @@ public class LoggingHandler extends ChannelDuplexHandler {
         } else {
             int outputLength = chStr.length() + 1 + eventName.length() + 2 + 10 + 1;
             if (byteBufFormat == ByteBufFormat.HEX_DUMP) {
+                //4 表示的是 行向画格线
                 int rows = length / 16 + (length % 15 == 0? 0 : 1) + 4;
                 int hexDumpLength = 2 + rows * 80;
                 outputLength += hexDumpLength;

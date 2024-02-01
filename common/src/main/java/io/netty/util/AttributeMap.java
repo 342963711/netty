@@ -20,6 +20,8 @@ package io.netty.util;
  * 持有Attribute ，可以通过AttributeKey 进行访问
  * Implementations must be Thread-safe.
  * 实现必须是线程安全的
+ *
+ * @see DefaultAttributeMap
  */
 public interface AttributeMap {
     /**

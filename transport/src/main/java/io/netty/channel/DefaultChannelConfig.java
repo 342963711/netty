@@ -45,6 +45,9 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
  * The default {@link ChannelConfig} implementation.
  *
  * ChannelConfig 的默认实现
+ *
+ * @see io.netty.channel.socket.DefaultSocketChannelConfig
+ * @see io.netty.channel.socket.DefaultServerSocketChannelConfig
  */
 public class DefaultChannelConfig implements ChannelConfig {
     private static final MessageSizeEstimator DEFAULT_MSG_SIZE_ESTIMATOR = DefaultMessageSizeEstimator.DEFAULT;
@@ -77,6 +80,11 @@ public class DefaultChannelConfig implements ChannelConfig {
         this(channel, new AdaptiveRecvByteBufAllocator());
     }
 
+    /**
+     * 针对服务端的特殊设置 {@link io.netty.channel.socket.DefaultServerSocketChannelConfig#}
+     * @param channel
+     * @param allocator
+     */
     protected DefaultChannelConfig(Channel channel, RecvByteBufAllocator allocator) {
         setRecvByteBufAllocator(allocator, channel.metadata());
         this.channel = channel;

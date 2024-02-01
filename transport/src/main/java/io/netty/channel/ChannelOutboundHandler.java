@@ -21,6 +21,11 @@ import java.net.SocketAddress;
  * {@link ChannelHandler} which will get notified for IO-outbound-operations.
  *
  * ｛@link ChannelHandler｝，它将收到IO出站操作的通知。
+ * 个人理解，这个出栈 主要是 说外部I/O操作。
+ *
+ * @see ChannelOutboundHandlerAdapter
+ * @see ChannelDuplexHandler
+ * @see io.netty.channel.DefaultChannelPipeline.HeadContext
  */
 public interface ChannelOutboundHandler extends ChannelHandler {
     /**

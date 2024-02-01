@@ -35,7 +35,9 @@ public interface ResourceLeak {
      * Records the caller's current stack trace and the specified additional arbitrary information
      * so that the {@link ResourceLeakDetector} can tell where the leaked resource was accessed lastly.
      *
-     * Records the caller's current stack trace and the specified additional arbitrary information so that the {@link ResourceLeakDetector} can tell where the leaked resource was accessed lastly.
+     * Records the caller's current stack trace and the specified additional
+     * arbitrary information so that the {@link ResourceLeakDetector} can tell where
+     * the leaked resource was accessed lastly.
      */
     void record(Object hint);
 

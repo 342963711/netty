@@ -24,6 +24,9 @@ import java.util.Map;
 /**
  * Skeleton implementation of a {@link ChannelHandler}.
  * ChannelHandler 的基本骨架，主要处理 Sharable 注解。
+ *
+ * @see ChannelInboundHandlerAdapter
+ * @see ChannelOutboundHandlerAdapter
  */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
 

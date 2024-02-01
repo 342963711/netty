@@ -42,31 +42,54 @@ import static io.netty.handler.codec.http.HttpConstants.LF;
  * Encodes an {@link HttpMessage} or an {@link HttpContent} into
  * a {@link ByteBuf}.
  *
+ * 编码一个 HttpMessage 或 HttpContent 到 ByteBuf
+ *
  * <h3>Extensibility</h3>
+ * 扩展性
  *
  * Please note that this encoder is designed to be extended to implement
  * a protocol derived from HTTP, such as
+ *
  * <a href="https://en.wikipedia.org/wiki/Real_Time_Streaming_Protocol">RTSP</a> and
  * <a href="https://en.wikipedia.org/wiki/Internet_Content_Adaptation_Protocol">ICAP</a>.
  * To implement the encoder of such a derived protocol, extend this class and
  * implement all abstract methods properly.
+ *
+ * 注意：这个编码被设计为可扩展 是为了扩展实现Http的衍生协议
+ * 例如 RTSP 和 ICAP 协议实现了 衍生协议编码。
+ *
+ * @see HttpRequestEncoder
+ * @see HttpResponseEncoder
  */
 public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageToMessageEncoder<Object> {
+    //回车换行的 两字节表示
     static final int CRLF_SHORT = (CR << 8) | LF;
+
     private static final int ZERO_CRLF_MEDIUM = ('0' << 16) | CRLF_SHORT;
+
     private static final byte[] ZERO_CRLF_CRLF = { '0', CR, LF, CR, LF };
+    //回车换行
     private static final ByteBuf CRLF_BUF = unreleasableBuffer(
             directBuffer(2).writeByte(CR).writeByte(LF)).asReadOnly();
+    // 尾部补充后，进行两次回车换行，也就是有一个空行
     private static final ByteBuf ZERO_CRLF_CRLF_BUF = unreleasableBuffer(
             directBuffer(ZERO_CRLF_CRLF.length).writeBytes(ZERO_CRLF_CRLF)).asReadOnly();
+
     private static final float HEADERS_WEIGHT_NEW = 1 / 5f;
     private static final float HEADERS_WEIGHT_HISTORICAL = 1 - HEADERS_WEIGHT_NEW;
     private static final float TRAILERS_WEIGHT_NEW = HEADERS_WEIGHT_NEW;
     private static final float TRAILERS_WEIGHT_HISTORICAL = HEADERS_WEIGHT_HISTORICAL;
 
+    /**
+     * 编码状态
+     */
+    //初始化
     private static final int ST_INIT = 0;
+    //内容非块
     private static final int ST_CONTENT_NON_CHUNK = 1;
+    //内容是块
     private static final int ST_CONTENT_CHUNK = 2;
+    //内容总是空的
     private static final int ST_CONTENT_ALWAYS_EMPTY = 3;
 
     @SuppressWarnings("RedundantFieldInitialization")
@@ -84,22 +107,34 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
      */
     private float trailersEncodedSizeAccumulator = 256;
 
+    /**
+     * 出栈对象
+     */
     private final List<Object> out = new ArrayList<Object>();
 
     private static boolean checkContentState(int state) {
         return state == ST_CONTENT_CHUNK || state == ST_CONTENT_NON_CHUNK || state == ST_CONTENT_ALWAYS_EMPTY;
     }
 
+    /**
+     * 重写父类的 出栈 方法模板，
+     * @param ctx               the {@link ChannelHandlerContext} for which the write operation is made
+     * @param msg               the message to write
+     * @param promise           the {@link ChannelPromise} to notify once the operation completes
+     * @throws Exception
+     */
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         try {
             if (acceptOutboundMessage(msg)) {
+                //对写的内容进行编码
                 encode(ctx, msg, out);
                 if (out.isEmpty()) {
                     throw new EncoderException(
                             StringUtil.simpleClassName(this) + " must produce at least one message.");
                 }
             } else {
+                //如果Http 的所有对象都不是，进行下传
                 ctx.write(msg, promise);
             }
         } catch (EncoderException e) {
@@ -145,6 +180,14 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         combiner.finish(promise);
     }
 
+    /**
+     * 模板方法，根据编码对象的不同，去实现不同的编码器，或者提供一个模板，可以可以重写，并且使用该类进行自定义
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToMessageEncoder} belongs to
+     * @param msg           the message to encode to an other one
+     * @param out           the {@link List} into which the encoded msg should be added
+     *                      needs to do some kind of aggregation
+     * @throws Exception
+     */
     @Override
     @SuppressWarnings("ConditionCoveredByFurtherCondition")
     protected void encode(ChannelHandlerContext ctx, Object msg, List<Object> out) throws Exception {
@@ -158,10 +201,17 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         // mechanism, is https://bugs.openjdk.org/browse/JDK-8180450.
         // https://github.com/netty/netty/issues/12708 contains more detail re how the previous version of this
         // code was interacting with the JIT instanceof optimizations.
+        /**
+         * 我们之所以按此顺序执行instanceof检查，
+         * 通过复制一些代码，并且不依赖ReferenceCountUtil:：release作为通用发布机制https://bugs.openjdk.org/browse/JDK-8180450.
+         * https://github.com/netty/netty/issues/12708包含有关此代码的前一版本如何与JIT优化实例交互的更多详细信息。
+         */
+        // 如果是完整的消息体
         if (msg instanceof FullHttpMessage) {
             encodeFullHttpMessage(ctx, msg, out);
             return;
         }
+        // 如果是HTTP协议的基本内容
         if (msg instanceof HttpMessage) {
             final H m;
             try {
@@ -170,14 +220,18 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
                 ReferenceCountUtil.release(msg);
                 throw rethrow;
             }
+            //如果协议同时也包含最后的内容，则进行内容编码
             if (m instanceof LastHttpContent) {
                 encodeHttpMessageLastContent(ctx, m, out);
+            //判断是否也是最后的内容体
             } else if (m instanceof HttpContent) {
                 encodeHttpMessageNotLastContent(ctx, m, out);
             } else {
+                //如果不包含内容，则只对协议本身进行编码
                 encodeJustHttpMessage(ctx, m, out);
             }
         } else {
+            //对不是httpMessage 的内容类型进行编码
             encodeNotHttpMessageContentTypes(ctx, msg, out);
         }
     }
@@ -198,9 +252,19 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         }
     }
 
+    /**
+     * 对HTTP协议的内容进行编码
+     * @param state
+     * @param ctx
+     * @param buf
+     * @param content
+     * @param trailingHeaders
+     * @param out
+     */
     private void encodeByteBufHttpContent(int state, ChannelHandlerContext ctx, ByteBuf buf, ByteBuf content,
                                           HttpHeaders trailingHeaders, List<Object> out) {
         switch (state) {
+            //如果没有分块
             case ST_CONTENT_NON_CHUNK:
                 if (encodeContentNonChunk(out, buf, content)) {
                     break;
@@ -220,6 +284,13 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         }
     }
 
+    /**
+     * 对不是最后的内容进行编码
+     * @param ctx
+     * @param m
+     * @param out
+     * @throws Exception
+     */
     private void encodeHttpMessageNotLastContent(ChannelHandlerContext ctx, H m, List<Object> out) throws Exception {
         assert m instanceof HttpContent;
         assert !(m instanceof LastHttpContent);
@@ -238,6 +309,13 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         }
     }
 
+    /**
+     * 对httpMessage 的最后一个内容进行编码
+     * @param ctx
+     * @param m
+     * @param out
+     * @throws Exception
+     */
     private void encodeHttpMessageLastContent(ChannelHandlerContext ctx, H m, List<Object> out) throws Exception {
         assert m instanceof LastHttpContent;
         final LastHttpContent httpContent = (LastHttpContent) m;
@@ -256,6 +334,13 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
             httpContent.release();
         }
     }
+
+    /**
+     * 对不是HttpMessage 类型的消息内容类型进行编码
+     * @param ctx
+     * @param msg
+     * @param out
+     */
     @SuppressWarnings("ConditionCoveredByFurtherCondition")
     private void encodeNotHttpMessageContentTypes(ChannelHandlerContext ctx, Object msg, List<Object> out) {
         assert !(msg instanceof HttpMessage);
@@ -296,6 +381,13 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         }
     }
 
+    /**
+     * 对全部的http 进行编码，包含协议基本内容，请求头，请求内容
+     * @param ctx
+     * @param o
+     * @param out
+     * @throws Exception
+     */
     private void encodeFullHttpMessage(ChannelHandlerContext ctx, Object o, List<Object> out)
             throws Exception {
         assert o instanceof FullHttpMessage;
@@ -308,20 +400,20 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
             final H m = (H) o;
 
             final ByteBuf buf = ctx.alloc().buffer((int) headersEncodedSizeAccumulator);
-
+            //进行Http 协议的初始化，
             encodeInitialLine(buf, m);
-
+            //检查编码对象的状态
             final int state = isContentAlwaysEmpty(m) ? ST_CONTENT_ALWAYS_EMPTY :
                     HttpUtil.isTransferEncodingChunked(m) ? ST_CONTENT_CHUNK : ST_CONTENT_NON_CHUNK;
-
+            //编码前对请求头进行清除
             sanitizeHeadersBeforeEncode(m, state == ST_CONTENT_ALWAYS_EMPTY);
-
+            //对HTTP 头 进行编码
             encodeHeaders(m.headers(), buf);
             ByteBufUtil.writeShortBE(buf, CRLF_SHORT);
 
             headersEncodedSizeAccumulator = HEADERS_WEIGHT_NEW * padSizeForAccumulation(buf.readableBytes()) +
                     HEADERS_WEIGHT_HISTORICAL * headersEncodedSizeAccumulator;
-
+            //对httpContent 进行编码
             encodeByteBufHttpContent(state, ctx, buf, msg.content(), msg.trailingHeaders(), out);
         } finally {
             msg.release();
@@ -465,12 +557,22 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         }
     }
 
+    /**
+     * 对HTTP 分块内容进行编码
+     * @param ctx
+     * @param content
+     * @param trailingHeaders
+     * @param out
+     */
     private void encodeChunkedHttpContent(ChannelHandlerContext ctx, ByteBuf content, HttpHeaders trailingHeaders,
                                           List<Object> out) {
         final int contentLength = content.readableBytes();
         if (contentLength > 0) {
+            //增加编码大小
             addEncodedLengthHex(ctx, contentLength, out);
+            //增加编码内容
             out.add(content.retain());
+            //增加换行
             out.add(CRLF_BUF.duplicate());
         }
         if (trailingHeaders != null) {
@@ -539,6 +641,7 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         }
     }
 
+    //增加编码长度
     private static void addEncodedLengthHex(ChannelHandlerContext ctx, long contentLength, List<Object> out) {
         String lengthHex = Long.toHexString(contentLength);
         ByteBuf buf = ctx.alloc().buffer(lengthHex.length() + 2);
@@ -549,6 +652,8 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
 
     /**
      * Allows to sanitize headers of the message before encoding these.
+     *
+     * 允许在对邮件标头进行编码之前对其进行清理。
      */
     protected void sanitizeHeadersBeforeEncode(@SuppressWarnings("unused") H msg, boolean isAlwaysEmpty) {
         // noop
@@ -557,9 +662,10 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
     /**
      * Determine whether a message has a content or not. Some message may have headers indicating
      * a content without having an actual content, e.g the response to an HEAD or CONNECT request.
-     *
+     *  确定消息是否包含内容。
+     * 某些消息可能具有指示没有实际内容的内容的报头，例如对HEAD或CONNECT请求的响应。
      * @param msg the message to test
-     * @return {@code true} to signal the message has no content
+     * @return {@code true} to signal the message has no content 如果为true，表示没有内容
      */
     protected boolean isContentAlwaysEmpty(@SuppressWarnings("unused") H msg) {
         return false;
@@ -593,5 +699,19 @@ public abstract class HttpObjectEncoder<H extends HttpMessage> extends MessageTo
         buf.writeCharSequence(s, CharsetUtil.US_ASCII);
     }
 
+    /**
+     * 编码第一行
+     * @param buf
+     * @param message
+     * @throws Exception
+     */
     protected abstract void encodeInitialLine(ByteBuf buf, H message) throws Exception;
+
+
+    public static void main(String[] args) {
+//        byte[] array = ZERO_CRLF_CRLF_BUF.array();
+        System.out.print("a");
+        System.out.print(new String(ZERO_CRLF_CRLF));
+        System.out.print("---");
+    }
 }

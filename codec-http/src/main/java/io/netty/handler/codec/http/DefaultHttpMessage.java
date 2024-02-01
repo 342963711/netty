@@ -21,6 +21,9 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
  * The default {@link HttpMessage} implementation.
+ *
+ * @see DefaultHttpRequest
+ * @see DefaultHttpResponse
  */
 public abstract class DefaultHttpMessage extends DefaultHttpObject implements HttpMessage {
     private static final int HASH_CODE_PRIME = 31;

@@ -41,6 +41,12 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 /**
  * Provides the constants for the standard HTTP header names and values and
  * commonly used utility methods that accesses an {@link HttpMessage}.
+ *
+ * 提供标准HTTP标头名称和值的常量，以及访问｛@link HttpMessage｝的常用实用程序方法。
+ *
+ * @see DefaultHttpHeaders
+ * @see EmptyHttpHeaders
+ * @see ReadOnlyHttpHeaders
  */
 public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>> {
     /**

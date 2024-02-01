@@ -30,19 +30,34 @@ import io.netty.channel.ChannelHandlerContext;
  * value of the length field in the message.  It is particularly useful when you
  * decode a binary message which has an integer header field that represents the
  * length of the message body or the whole message.
+ *
+ * 一种解码器，通过消息中长度字段的值动态拆分接收到的｛@link ByteBuf｝。
+ * 当您解码具有整数标头字段的二进制消息时，它特别有用，该字段表示消息正文或整个消息的长度。
+ *
  * <p>
  * {@link LengthFieldBasedFrameDecoder} has many configuration parameters so
  * that it can decode any message with a length field, which is often seen in
  * proprietary client-server protocols. Here are some example that will give
  * you the basic idea on which option does what.
  *
+ * ｛@link LengthFieldBasedFrameDecoder｝有许多配置参数，因此它可以解码任何带有长度字段的消息，这在专有的客户端-服务器协议中经常出现。下面是一些例子，它将给你关于哪个选项做什么的基本想法
+ *
+ *
+ *
  * <h3>2 bytes length field at offset 0, do not strip header</h3>
+ *
+ * 1：偏移量0处的2字节长度字段，不删除头
  *
  * The value of the length field in this example is <tt>12 (0x0C)</tt> which
  * represents the length of "HELLO, WORLD".  By default, the decoder assumes
  * that the length field represents the number of the bytes that follows the
  * length field.  Therefore, it can be decoded with the simplistic parameter
  * combination.
+ *
+ * 此示例中的长度字段的值为<tt>12（0x0C）</tt>
+ * 表示“HELLO，WORLD”的长度。
+ * 默认情况下，解码器假定长度字段表示长度字段后面的字节数。因此，可以通过简单的参数组合对其进行解码。
+ *
  * <pre>
  * <b>lengthFieldOffset</b>   = <b>0</b>
  * <b>lengthFieldLength</b>   = <b>2</b>
@@ -57,12 +72,16 @@ import io.netty.channel.ChannelHandlerContext;
  * </pre>
  *
  * <h3>2 bytes length field at offset 0, strip header</h3>
+ * 2：在偏移量为0 的两字节字段长度，删除头
  *
  * Because we can get the length of the content by calling
  * {@link ByteBuf#readableBytes()}, you might want to strip the length
  * field by specifying <tt>initialBytesToStrip</tt>.  In this example, we
  * specified <tt>2</tt>, that is same with the length of the length field, to
  * strip the first two bytes.
+ *
+ * 我们可以通过 {@link ByteBuf#readableBytes()} 来获取内容长度。您可能希望通过指定＜tt＞initialBytesToStep＜/tt＞来剥离长度字段。
+ * 在本例中，我们指定了与长度字段的长度相同的<tt>2</tt>来剥离前两个字节。
  * <pre>
  * lengthFieldOffset   = 0
  * lengthFieldLength   = 2
@@ -76,8 +95,13 @@ import io.netty.channel.ChannelHandlerContext;
  * +--------+----------------+      +----------------+
  * </pre>
  *
+ *
+ *
  * <h3>2 bytes length field at offset 0, do not strip header, the length field
  *     represents the length of the whole message</h3>
+ *
+ * 3：偏移量为0的2字节长度字段，不剥离标头，长度字段表示整个消息的长度
+ *
  *
  * In most cases, the length field represents the length of the message body
  * only, as shown in the previous examples.  However, in some protocols, the
@@ -86,6 +110,15 @@ import io.netty.channel.ChannelHandlerContext;
  * <tt>lengthAdjustment</tt>.  Because the length value in this example message
  * is always greater than the body length by <tt>2</tt>, we specify <tt>-2</tt>
  * as <tt>lengthAdjustment</tt> for compensation.
+ *
+ * 在大多数情况下，长度字段仅表示消息正文的长度，如前面的示例所示。
+ *
+ * 然而，在一些协议中，长度字段表示整个消息的长度，包括消息头。
+ * 在这种情况下，我们指定一个非零的＜tt＞lengthAdjustment</tt＞。
+ * 由于此示例消息中的长度值总是比正文长度大<tt>2</tt>，因此我们将<tt>-2</tt>指定为<tt>lengthAdjustment</tt>进行补偿。
+ *
+ * 也就是说长度表示整个消息体的长度，需要一个字段表示头长度，然后计算出消息内容长度
+ * lengthAdjustment 字段表示要修正的 消息内容的长度
  * <pre>
  * lengthFieldOffset   =  0
  * lengthFieldLength   =  2
@@ -101,10 +134,14 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * <h3>3 bytes length field at the end of 5 bytes header, do not strip header</h3>
  *
+ * 4：在5字节标头 末尾的3字节长度字段，不要剥离标头
+ *
  * The following message is a simple variation of the first example.  An extra
  * header value is prepended to the message.  <tt>lengthAdjustment</tt> is zero
  * again because the decoder always takes the length of the prepended data into
  * account during frame length calculation.
+ *
+ *
  * <pre>
  * <b>lengthFieldOffset</b>   = <b>2</b> (= the length of Header 1)
  * <b>lengthFieldLength</b>   = <b>3</b>
@@ -119,6 +156,7 @@ import io.netty.channel.ChannelHandlerContext;
  * </pre>
  *
  * <h3>3 bytes length field at the beginning of 5 bytes header, do not strip header</h3>
+ * 5：5字节头结点的开始3字节长度字段，不要剥离标头
  *
  * This is an advanced example that shows the case where there is an extra
  * header between the length field and the message body.  You have to specify a
@@ -140,6 +178,9 @@ import io.netty.channel.ChannelHandlerContext;
  * <h3>2 bytes length field at offset 1 in the middle of 4 bytes header,
  *     strip the first header field and the length field</h3>
  *
+ * 6：4字节标题中间偏移1处的2字节长度字段，去掉第一个头字段和长度字段
+ *
+ *
  * This is a combination of all the examples above.  There are the prepended
  * header before the length field and the extra header after the length field.
  * The prepended header affects the <tt>lengthFieldOffset</tt> and the extra
@@ -147,6 +188,13 @@ import io.netty.channel.ChannelHandlerContext;
  * <tt>initialBytesToStrip</tt> to strip the length field and the prepended
  * header from the frame.  If you don't want to strip the prepended header, you
  * could specify <tt>0</tt> for <tt>initialBytesToSkip</tt>.
+ *
+ * 这是上面所有示例的组合。
+ * 在长度字段之前有一个预置的标头，在长度字段之后有一个额外的标头。
+ * 预处理的标头会影响<tt>lengthFieldOffset</tt>，而额外的标头则会影响<tt>lengthAdjustment</tt>。
+ * 我们还指定了一个非零的＜tt＞initialBytesToStep</tt＞来从帧中去除长度字段和预处理的标头。
+ * 如果您不想去掉预先准备好的头，可以为＜tt＞initialBytesToSkip＜/tt＞指定＜tt＞0＜/tt＜。
+ *
  * <pre>
  * lengthFieldOffset   = 1 (= the length of HDR1)
  * lengthFieldLength   = 2
@@ -160,9 +208,14 @@ import io.netty.channel.ChannelHandlerContext;
  * +------+--------+------+----------------+      +------+----------------+
  * </pre>
  *
+ *
+ *
  * <h3>2 bytes length field at offset 1 in the middle of 4 bytes header,
  *     strip the first header field and the length field, the length field
  *     represents the length of the whole message</h3>
+ *
+ * 7：4字节头中间偏移1处的2字节长度字段，去掉第一个头字段和长度字段，长度字段表示整个消息的长度
+ *
  *
  * Let's give another twist to the previous example.  The only difference from
  * the previous example is that the length field represents the length of the
@@ -170,6 +223,14 @@ import io.netty.channel.ChannelHandlerContext;
  * We have to count the length of HDR1 and Length into <tt>lengthAdjustment</tt>.
  * Please note that we don't need to take the length of HDR2 into account
  * because the length field already includes the whole header length.
+ *
+ * 让我们对前面的例子再做一个改动。
+ * 与前一个示例的唯一区别是，长度字段表示整个消息的长度，而不是消息正文，就像第三个示例一样。
+ * 我们必须将HDR1的长度和length计算到<tt>lengthAdjustment</tt>中。
+ * 请注意，我们不需要考虑HDR2的长度
+ * 因为长度字段已经包括整个报头长度
+ *
+ *
  * <pre>
  * lengthFieldOffset   =  1
  * lengthFieldLength   =  2
@@ -388,6 +449,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
 
     /**
      * Create a frame out of the {@link ByteBuf} and return it.
+     * 从ByteBuf 中创建一个帧，并返回
      *
      * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param   in              the {@link ByteBuf} from which to read data
@@ -402,17 +464,21 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
                 discardingTooLongFrame(in);
             }
 
+            //如果可读字节小于帧长度字段设置，说明帧头都不全，无法获取消息内容长度，所以直接返回
             if (in.readableBytes() < lengthFieldEndOffset) {
                 return null;
             }
-
+            //否则，可以获取帧长度字段信息
+            //帧长度信息 所在的的索引值
             int actualLengthFieldOffset = in.readerIndex() + lengthFieldOffset;
+            //获取到帧消息内容长度信息
             frameLength = getUnadjustedFrameLength(in, actualLengthFieldOffset, lengthFieldLength, byteOrder);
 
             if (frameLength < 0) {
                 failOnNegativeLengthField(in, frameLength, lengthFieldEndOffset);
             }
 
+            //本次帧的完整 长度
             frameLength += lengthAdjustment + lengthFieldEndOffset;
 
             if (frameLength < lengthFieldEndOffset) {
@@ -436,10 +502,12 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
 
         // extract frame
         int readerIndex = in.readerIndex();
+        //获取到修剪后的帧长度
         int actualFrameLength = frameLengthInt - initialBytesToStrip;
         ByteBuf frame = extractFrame(ctx, in, readerIndex, actualFrameLength);
         in.readerIndex(readerIndex + actualFrameLength);
         frameLengthInt = -1; // start processing the next frame
+        //返回帧信息
         return frame;
     }
 
@@ -454,6 +522,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
     protected long getUnadjustedFrameLength(ByteBuf buf, int offset, int length, ByteOrder order) {
         buf = buf.order(order);
         long frameLength;
+        //帧长度信息不可能占用超过8字节，也就是帧的消息内容字节数不能大于Long类型的最大值
         switch (length) {
         case 1:
             frameLength = buf.getUnsignedByte(offset);

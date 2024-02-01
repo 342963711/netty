@@ -20,6 +20,12 @@ import io.netty.buffer.ByteBuf;
 /**
  * Combination of a {@link HttpResponse} and {@link FullHttpMessage}.
  * So it represent a <i>complete</i> http response.
+ * 包含了 {@link HttpResponse} 和 {@link FullHttpMessage}
+ *
+ * 因此它包含了全部的http响应
+ *
+ * @see DefaultFullHttpResponse
+ * @see io.netty.handler.codec.http.HttpObjectAggregator.AggregatedFullHttpResponse
  */
 public interface FullHttpResponse extends HttpResponse, FullHttpMessage {
     @Override

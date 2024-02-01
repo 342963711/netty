@@ -679,6 +679,7 @@ public final class ByteBufUtil {
 
     /**
      * Sets a big-endian 16-bit short integer to the buffer.
+     * 按照大端序 写入字节到缓冲区
      */
     @SuppressWarnings("deprecation")
     public static ByteBuf setShortBE(ByteBuf buf, int index, int shortValue) {
@@ -1486,6 +1487,8 @@ public final class ByteBufUtil {
 
             // Generate the lookup table for byte-to-char conversion
             for (i = 0; i < BYTE2CHAR.length; i ++) {
+                //如果<=31 或者大于等于127 ，显示为.
+                //ASCII 编码中，<=31,或等于127 为硬件控制符，这里直接展示为.
                 if (i <= 0x1f || i >= 0x7f) {
                     BYTE2CHAR[i] = '.';
                 } else {
@@ -1545,6 +1548,13 @@ public final class ByteBufUtil {
             }
         }
 
+        /**
+         * 格式化16进制转存储
+         * @param dump
+         * @param buf
+         * @param offset
+         * @param length
+         */
         private static void appendPrettyHexDump(StringBuilder dump, ByteBuf buf, int offset, int length) {
             if (isOutOfBounds(offset, length, buf.capacity())) {
                 throw new IndexOutOfBoundsException(
@@ -1563,20 +1573,21 @@ public final class ByteBufUtil {
             final int remainder = length & 0xF;
 
             // Dump the rows which have 16 bytes.
+            // 16字节为一行进行存储
             for (int row = 0; row < fullRows; row ++) {
                 int rowStartIndex = (row << 4) + offset;
 
-                // Per-row prefix.
+                // Per-row prefix. 格式为 \n|00000000|
                 appendHexDumpRowPrefix(dump, row, rowStartIndex);
 
-                // Hex dump
+                // Hex dump. 二进制进行16进制编码 ' 'BYTE2HEX，获取到的就是填充完的字符串，前缀有空格
                 int rowEndIndex = rowStartIndex + 16;
                 for (int j = rowStartIndex; j < rowEndIndex; j ++) {
                     dump.append(BYTE2HEX[buf.getUnsignedByte(j)]);
                 }
                 dump.append(" |");
 
-                // ASCII dump
+                // ASCII dump, 进行ascII 编码
                 for (int j = rowStartIndex; j < rowEndIndex; j ++) {
                     dump.append(BYTE2CHAR[buf.getUnsignedByte(j)]);
                 }
@@ -1584,6 +1595,7 @@ public final class ByteBufUtil {
             }
 
             // Dump the last row which has less than 16 bytes.
+            // 准备最后一行，不足16字节的存储
             if (remainder != 0) {
                 int rowStartIndex = (fullRows << 4) + offset;
                 appendHexDumpRowPrefix(dump, fullRows, rowStartIndex);
@@ -1608,6 +1620,7 @@ public final class ByteBufUtil {
                         "+--------+-------------------------------------------------+----------------+");
         }
 
+        //追加16进制的行前缀
         private static void appendHexDumpRowPrefix(StringBuilder dump, int row, int rowStartIndex) {
             if (row < HEXDUMP_ROWPREFIXES.length) {
                 dump.append(HEXDUMP_ROWPREFIXES[row]);

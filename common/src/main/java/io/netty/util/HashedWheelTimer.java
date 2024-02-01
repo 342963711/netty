@@ -53,7 +53,8 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
  * check if there are any {@link TimerTask}s behind the schedule and execute
  * them.
  * 如“近似”所述，此计时器未按时执行计划的｛@link TimerTask｝。
- * {@link HashedWheelTimer}, on every tick, will check if there are any {@link TimerTask}s behind the schedule and execute them.
+ * {@link HashedWheelTimer}, on every tick, will check if there are any {@link TimerTask}s behind
+ * the schedule and execute them.
  *
  *
  * <p>

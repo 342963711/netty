@@ -32,10 +32,12 @@ import java.util.concurrent.TimeUnit;
  *
  * @see MultithreadEventExecutorGroup
  * {@link EventExecutor} 接口 增强了 {@link EventExecutorGroup} 接口能力，是一个特殊的子接口
- * {@link io.netty.channel.EventLoopGroup#next()}  是允许注册 channel 的一种特殊 EventExecutorGroup，并返回 {@link io.netty.channel.EventLoop}
+ * {@link io.netty.channel.EventLoopGroup#next()}  是允许注册 channel 的一种特殊
+ * EventExecutorGroup，并返回 {@link io.netty.channel.EventLoop}
  * {@link NonStickyEventExecutorGroup} 一个非顺序性的默认实现
  *
- * @see AbstractEventExecutorGroup 是 简单对 EventExecutorGroup的基本实现抽象类,将方法调用委托给 {@link EventExecutorGroup#next()}方法返回的 EventExecutor 去具体执行
+ * @see AbstractEventExecutorGroup 是 简单对 EventExecutorGroup的基本实现抽象类,
+ * 将方法调用委托给 {@link EventExecutorGroup#next()}方法返回的 EventExecutor 去具体执行
  * @see EventExecutor 是被EventExecutorGroup管理的类对象
  * @see io.netty.channel.EventLoopGroup
  */

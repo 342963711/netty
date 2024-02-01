@@ -46,10 +46,13 @@ import java.util.Map;
  * NIO selector based implementation to accept new connections.
  *
  * 一个 {@link io.netty.channel.socket.ServerSocketChannel} 实现，它使用基于NIO选择器的实现来接受新的连接。
+ *
+ * 初始化底层jdk 的 {@link ServerSocketChannel}  并将jdk 的channel 传递到上层
  */
 public class NioServerSocketChannel extends AbstractNioMessageChannel
                              implements io.netty.channel.socket.ServerSocketChannel {
 
+    //读取数 元数据配置
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
     private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
@@ -151,6 +154,12 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         javaChannel().close();
     }
 
+    /**
+     * 执行接受链接channel
+     * @param buf
+     * @return
+     * @throws Exception
+     */
     @Override
     protected int doReadMessages(List<Object> buf) throws Exception {
         SocketChannel ch = SocketUtils.accept(javaChannel());

@@ -151,6 +151,12 @@ public interface ChannelConfig {
      * It is similar to what a spin lock is used for in concurrency programming.
      * It improves memory utilization and write throughput depending on
      * the platform that JVM runs on.  The default value is {@code 16}.
+     *
+     * 返回写操作的最大循环计数，直到
+     * ｛@link WritableByteChannel#write（ByteBuffer）｝返回一个非零值。
+     * 它类似于在并发编程中使用旋转锁。
+     * 它提高了内存利用率和写入吞吐量，具体取决于
+     * JVM运行的平台。默认值为{@code16}。
      */
     int getWriteSpinCount();
 
@@ -219,6 +225,11 @@ public interface ChannelConfig {
      * Returns the high water mark of the write buffer.  If the number of bytes
      * queued in the write buffer exceeds this value, {@link Channel#isWritable()}
      * will start to return {@code false}.
+     * 返回写入缓冲区的高水位线。如果字节数
+     *
+     * 在写入缓冲区中排队超过此值，｛@link Channel#isWritable（）｝
+     *
+     * 将开始返回｛@code false｝。
      */
     int getWriteBufferHighWaterMark();
 

@@ -16,6 +16,7 @@
 package io.netty.channel;
 
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.nio.NioEventLoop;
 import io.netty.channel.socket.ChannelOutputShutdownEvent;
 import io.netty.channel.socket.ChannelOutputShutdownException;
 import io.netty.util.DefaultAttributeMap;
@@ -49,8 +50,8 @@ import java.util.concurrent.RejectedExecutionException;
  *
  * AbstractChannel 具体实现的参考类参考下面的
  *
- * @see AbstractServerChannel
- * @see io.netty.channel.nio.AbstractNioChannel
+ * @see AbstractServerChannel  服务端的抽象通道类（没什么使用，只是为了本地channel来进行的实现，不进行实际通信）
+ * @see io.netty.channel.nio.AbstractNioChannel  NIO 抽象通道类
  *
  * //以下可以进行参考
  * @see io.netty.channel.epoll.AbstractEpollChannel
@@ -85,6 +86,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     private volatile SocketAddress remoteAddress;
 
     //事件循环，统一在Unsafe 类来进行管理
+    //表示 此channel 注册到的 eventLoop
     private volatile EventLoop eventLoop;
 
     //注册
@@ -470,6 +472,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     /**
      * {@link Unsafe} implementation which sub-classes must extend and use.
      * Unsafe 的一个子类必须继承和使用的一个实现类
+     * 子类只 需要实现 {@link #connect(SocketAddress, SocketAddress, ChannelPromise)} 方法
      *
      */
     protected abstract class AbstractUnsafe implements Unsafe {
@@ -527,10 +530,13 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             AbstractChannel.this.eventLoop = eventLoop;
 
+            //如果当前线程是事件循环线程。则执行执行注册。 这里保证 注册操作 在异步任务中执行， 避免并发注册可能引发的问题，
+            // 同时也是开始 开始EventLoop 处理开始一直处理任务，将注册作为任务提交到EventLoop中执行
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
                 try {
+                    //否则，交给事件循环线程去处理
                     eventLoop.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -548,7 +554,12 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
-        //执行注册
+        /**
+         * 该方法在 异步执行器中执行。以任务的方法进行执行，该方法应该是EventLoop 的第一个任务，以
+         * {@link NioEventLoop#run()} 为例，此时该类中多路复用器还没有注册通道，所以不会获取到该通道I/O事件
+         * 注意：如果该任务所在的EventLoop 有较多的活跃通道，那么当新的客户端需要被注册的时候，可能会出现注册延迟。
+         * @param promise
+         */
         private void register0(ChannelPromise promise) {
             try {
                 // check if the channel is still open as it could be closed in the mean time when the register
@@ -557,6 +568,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
+                //由底层执行注册，对于NIO来说，是将channel注册到复用器上。
                 doRegister();
                 neverRegistered = false;
                 registered = true;
@@ -565,13 +577,18 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 // user may already fire events through the pipeline in the ChannelFutureListener.
                 //确保在实际通知promise之前调用handlerAdded（…）.
                 //这是必要的，因为用户可能已经通过ChannelFutureListener中的管道触发了事件
+                //如果没有该方法，那么如果执行了safeSetSuccess(promise);那么外部的future 可能就会进行一些事件，但是handler还没有添加。该函数的作用就是将
+                //在channel初始化阶段添加的handler 添加到 pipeline 链路中。
                 pipeline.invokeHandlerAddedIfNeeded();
 
+                //设置注册成功标识
                 safeSetSuccess(promise);
-                //I/O操作 下发到链路
+                // 触发，此处是过滤器模式。 链路调用查看pipeline的实现,这里调用channelRegistered 也是提交任务的方式
                 pipeline.fireChannelRegistered();
                 // Only fire a channelActive if the channel has never been registered. This prevents firing
                 // multiple channel actives if the channel is deregistered and re-registered.
+
+                // 只有在通道从未注册的情况下才激发通道Active . 如果通道被注销并重新注册，这将防止触发多个通道活动。
                 if (isActive()) {
                     if (firstRegistration) {
                         pipeline.fireChannelActive();
@@ -881,11 +898,14 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             });
         }
 
+        /**
+         * 在注册完成后，如果配置了自动读取，则调用该方法
+         */
         @Override
         public final void beginRead() {
             assertEventLoop();
-
             try {
+                //委托给channel 中的方法进行实现
                 doBeginRead();
             } catch (final Exception e) {
                 invokeLater(new Runnable() {
@@ -983,6 +1003,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
 
             try {
+                //写出数据
                 doWrite(outboundBuffer);
             } catch (Throwable t) {
                 handleWriteError(t);
@@ -1130,7 +1151,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Is called after the {@link Channel} is registered with its {@link EventLoop} as part of the register process.
-     * 在｛@link Channel｝向其｛@linkEventLoop｝注册后调用，作为注册过程的一部分。
+     * 在｛@link Channel｝向其｛@link EventLoop｝注册后调用，作为注册过程的一部分。
+     *
      * Sub-classes may override this method
      */
     protected void doRegister() throws Exception {

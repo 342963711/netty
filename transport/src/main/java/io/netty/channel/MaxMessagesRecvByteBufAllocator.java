@@ -20,6 +20,8 @@ package io.netty.channel;
  * is attempted by the event loop.
  *
  * ｛@link RecvByteBufAllocator｝，用于限制事件循环尝试读取操作时将尝试的读取操作数。
+ *
+ * @see DefaultMaxMessagesRecvByteBufAllocator
  */
 public interface MaxMessagesRecvByteBufAllocator extends RecvByteBufAllocator {
     /**

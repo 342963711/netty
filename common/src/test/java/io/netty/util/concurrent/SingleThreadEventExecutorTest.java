@@ -45,7 +45,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @date 2023/5/26 17:12
- * @author likai
  * @email likai9376@163.com
  * @desc 测试 单线程事件处理器
  */

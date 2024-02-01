@@ -397,6 +397,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             }
 
             // Ensure the pending writes are made of ByteBufs only.
+            //确保挂起的写入仅由ByteBufs构成。
             int maxBytesPerGatheringWrite = ((NioSocketChannelConfig) config).getMaxBytesPerGatheringWrite();
             ByteBuffer[] nioBuffers = in.nioBuffers(1024, maxBytesPerGatheringWrite);
             int nioBufferCnt = in.nioBufferCount();
@@ -517,6 +518,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             return super.getOptions();
         }
 
+        //功能类似设置sendBufferSize ， 是sendBufferSize的两倍。 留出多余的空间，防止os写入比应用写入的快，而无法达到最大利用率
         void setMaxBytesPerGatheringWrite(int maxBytesPerGatheringWrite) {
             this.maxBytesPerGatheringWrite = maxBytesPerGatheringWrite;
         }
@@ -527,6 +529,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
         private void calculateMaxBytesPerGatheringWrite() {
             // Multiply by 2 to give some extra space in case the OS can process write data faster than we can provide.
+            // 乘以2可以提供一些额外的空间，以防操作系统处理写数据的速度比我们提供的更快。
             int newSendBufferSize = getSendBufferSize() << 1;
             if (newSendBufferSize > 0) {
                 setMaxBytesPerGatheringWrite(newSendBufferSize);

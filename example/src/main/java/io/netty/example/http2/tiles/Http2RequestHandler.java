@@ -42,6 +42,12 @@ import java.util.concurrent.TimeUnit;
  * which has been converted by a {@link InboundHttp2ToHttpAdapter} before it
  * arrived here. For further details, check {@link Http2OrHttpHandler} where the
  * pipeline is setup.
+ *
+ * 处理所有数据请求。它接收一个{@link FullHttpRequest}，
+ * 它在到达这里之前已经被{@link InboundHttp2ToHttpAdapter}转换。
+ *
+ * 有关更多详细信息，请查看{@link Http2OrHttpHandler}，其中
+ * 管道已设置。
  */
 public class Http2RequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
@@ -55,7 +61,9 @@ public class Http2RequestHandler extends SimpleChannelInboundHandler<FullHttpReq
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         QueryStringDecoder queryString = new QueryStringDecoder(request.uri());
         String streamId = streamId(request);
+        //延迟
         int latency = toInt(firstValue(queryString, LATENCY_FIELD_NAME), 0);
+        //如果延迟非法
         if (latency < MIN_LATENCY || latency > MAX_LATENCY) {
             sendBadRequest(ctx, streamId);
             return;
@@ -69,12 +77,26 @@ public class Http2RequestHandler extends SimpleChannelInboundHandler<FullHttpReq
         }
     }
 
+    /**
+     * 返回客户端错误响应体
+     * @param ctx
+     * @param streamId
+     */
     private static void sendBadRequest(ChannelHandlerContext ctx, String streamId) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST, EMPTY_BUFFER);
         streamId(response, streamId);
         ctx.writeAndFlush(response);
     }
 
+    /**
+     * 处理图片
+     * @param x
+     * @param y
+     * @param ctx
+     * @param streamId
+     * @param latency
+     * @param request
+     */
     private void handleImage(String x, String y, ChannelHandlerContext ctx, String streamId, int latency,
             FullHttpRequest request) {
         ByteBuf image = ImageCache.INSTANCE.image(parseInt(x), parseInt(y));
@@ -83,6 +105,13 @@ public class Http2RequestHandler extends SimpleChannelInboundHandler<FullHttpReq
         sendResponse(ctx, streamId, latency, response, request);
     }
 
+    /**
+     * 处理页面
+     * @param ctx
+     * @param streamId
+     * @param latency
+     * @param request
+     */
     private void handlePage(ChannelHandlerContext ctx, String streamId, int latency, FullHttpRequest request) {
         byte[] body = Html.body(latency);
         ByteBuf content = ctx.alloc().buffer(Html.HEADER.length + body.length + Html.FOOTER.length);
@@ -94,6 +123,14 @@ public class Http2RequestHandler extends SimpleChannelInboundHandler<FullHttpReq
         sendResponse(ctx, streamId, latency, response, request);
     }
 
+    /**
+     * 发送响应体
+     * @param ctx
+     * @param streamId
+     * @param latency 延迟时间
+     * @param response
+     * @param request
+     */
     protected void sendResponse(final ChannelHandlerContext ctx, String streamId, int latency,
             final FullHttpResponse response, final FullHttpRequest request) {
         setContentLength(response, response.content().readableBytes());
@@ -113,6 +150,8 @@ public class Http2RequestHandler extends SimpleChannelInboundHandler<FullHttpReq
     private static void streamId(FullHttpResponse response, String streamId) {
         response.headers().set(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), streamId);
     }
+
+
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

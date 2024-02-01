@@ -21,6 +21,8 @@ import io.netty.util.internal.StringUtil;
 
 /**
  * The default {@link HttpContent} implementation.
+ *
+ * @see DefaultLastHttpContent
  */
 public class DefaultHttpContent extends DefaultHttpObject implements HttpContent {
 

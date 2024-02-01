@@ -26,10 +26,16 @@ import java.util.List;
 /**
  * A Codec for on-the-fly encoding/decoding of message.
  *
+ * 一种用于动态编码/解码消息的编解码器。
+ *
  * This can be thought of as a combination of {@link MessageToMessageDecoder} and {@link MessageToMessageEncoder}.
+ *
+ * 这可以被认为是 MessageToMessageDecoder 和 MessageToMessageEncoder 的组合
  *
  * Here is an example of a {@link MessageToMessageCodec} which just decode from {@link Integer} to {@link Long}
  * and encode from {@link Long} to {@link Integer}.
+ *
+ * 下面是一个 MessageToMessageCodec 的 示例，仅仅是从Long 到 Integer 的编码，并且是 Integer 到 Long 的解码。
  *
  * <pre>
  *     public class NumberCodec extends
@@ -51,6 +57,11 @@ import java.util.List;
  * Be aware that you need to call {@link ReferenceCounted#retain()} on messages that are just passed through if they
  * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageCodec} will call
  * {@link ReferenceCounted#release()} on encoded / decoded messages.
+ *
+ * 请注意，如果消息类型为｛@link ReferenceCount｝，则需要对刚传递的消息调用｛@linkReferenceCount#retain（）｝。
+ * 这是必需的，因为｛@link MessageToMessageCodec｝将调用
+ *
+ * ｛@link ReferenceCount#release（）｝。
  */
 public abstract class MessageToMessageCodec<INBOUND_IN, OUTBOUND_IN> extends ChannelDuplexHandler {
 

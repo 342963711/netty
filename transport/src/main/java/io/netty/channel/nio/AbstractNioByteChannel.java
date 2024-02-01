@@ -32,6 +32,7 @@ import io.netty.channel.socket.SocketChannelConfig;
 import io.netty.util.internal.StringUtil;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 
@@ -142,7 +143,9 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 return;
             }
             final ChannelPipeline pipeline = pipeline();
+            //获取默认的字节缓冲区分配器
             final ByteBufAllocator allocator = config.getAllocator();
+            //接受缓冲区  的 处理器
             final RecvByteBufAllocator.Handle allocHandle = recvBufAllocHandle();
             allocHandle.reset(config);
 
@@ -152,6 +155,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 do {
                     byteBuf = allocHandle.allocate(allocator);
                     allocHandle.lastBytesRead(doReadBytes(byteBuf));
+                    //没有读取到数据
                     if (allocHandle.lastBytesRead() <= 0) {
                         // nothing was read. release the buffer.
                         byteBuf.release();
@@ -159,13 +163,16 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                         close = allocHandle.lastBytesRead() < 0;
                         if (close) {
                             // There is nothing left to read as we received an EOF.
+                            // 没有数据可读，读挂起更改为false
                             readPending = false;
                         }
                         break;
                     }
-
+                    //读取次数+1
                     allocHandle.incMessagesRead(1);
+                    // 读取挂起为false.
                     readPending = false;
+                    //通知管道进行消息处理
                     pipeline.fireChannelRead(byteBuf);
                     byteBuf = null;
                 } while (allocHandle.continueReading());
@@ -317,7 +324,9 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
     /**
      * Read bytes into the given {@link ByteBuf} and return the amount.
-     *
+     * 这里的本质是
+     * {@link java.nio.channels.ReadableByteChannel#read(ByteBuffer)}
+     * 也就是将此通道中的数据传输到 字节缓冲区
      * 读取字节到给定的 {@link ByteBuf} 并返回字节数量
      */
     protected abstract int doReadBytes(ByteBuf buf) throws Exception;

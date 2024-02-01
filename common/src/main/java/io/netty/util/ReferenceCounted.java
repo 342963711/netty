@@ -34,7 +34,7 @@ package io.netty.util;
  * 如果实现了ReferenceCounted 是一个包含其他实现了ReferenceCounted 对象的容器。 当容器的引用计数为0的时候，它包含的对象也将通过release()来进行释放
  *
  *
- * @see AbstractReferenceCounted
+ * @see AbstractReferenceCounted 默认抽象类
  * @see ReferenceCountUpdater
  */
 public interface ReferenceCounted {

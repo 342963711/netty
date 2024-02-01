@@ -23,12 +23,14 @@ import io.netty.util.AttributeMap;
 import io.netty.util.concurrent.EventExecutor;
 
 /**
- * Enables a {@link ChannelHandler} to interact with its {@link ChannelPipeline}
- * and other handlers. Among other things a handler can notify the next {@link ChannelHandler} in the
- * {@link ChannelPipeline} as well as modify the {@link ChannelPipeline} it belongs to dynamically.
  *
- * 使｛@link ChannelHandler｝能够与其｛@linkChannelPipeline｝和其他处理程序（ChannelHandler）进行交互。此外，
- * 处理程序可以通知｛@link ChannelPipeline｝中的下一个｛@linkChannelHandler｝，并动态修改其所属的｛@link ChannelPiperine｝
+ * Enables a {@link  io.netty.channel.ChannelHandler} to interact with its {@link io.netty.channel.ChannelPipeline}
+ * and other handlers. Among other things a handler can notify the next {@link ChannelHandler} in the
+ * {@link io.netty.channel.ChannelPipeline} as well as modify the {@link io.netty.channel.ChannelPipeline} it belongs to dynamically.
+ *
+ * 使 ChannelHandler能够与其 ChannelPipeline和其他处理程序（ChannelHandler）进行交互。此外，
+ * 处理程序可以通知 ChannelPipeline中的下一个ChannelHandler，并动态修改其所属的 ChannelPipeline
+ *
  *
  *
  * <h3>Notify</h3>
@@ -38,8 +40,7 @@ import io.netty.util.concurrent.EventExecutor;
  * You can notify the closest handler in the same {@link ChannelPipeline} by calling one of the various methods
  * provided here.
  *
- * 您可以在同一｛@link ChannelPipeline｝中通知最近的处理程序 通过调用此处提供的各种方法之一
- *
+ * 您可以在同一 ChannelPipeline 中通知最近的handler 通过调用此处提供的各种方法之一。
  *
  * Please refer to {@link ChannelPipeline} to understand how an event flows.
  *
@@ -92,7 +93,7 @@ import io.netty.util.concurrent.EventExecutor;
  *
  * <h3>A handler can have more than one {@link ChannelHandlerContext}</h3>
  *
- * 5.一个处理程序可以有多个 ChannelHandlerContext
+ * 5.一个handler可以有多个 ChannelHandlerContext
  *
  *
  * Please note that a {@link ChannelHandler} instance can be added to more than
@@ -103,9 +104,9 @@ import io.netty.util.concurrent.EventExecutor;
  * Also note that a {@link ChannelHandler} that is supposed to be added to multiple {@link ChannelPipeline}s should
  * be marked as {@link io.netty.channel.ChannelHandler.Sharable}.
  *
- * 请注意，｛@link ChannelHandler｝实例可以添加到多个｛@linkChannelPipeline｝中。
- * 这意味着一个｛@link ChannelHandler｝实例可以有多个｛@link ChannelHandlerContext｝，
- * 因此，如果将单个实例多次添加到一个或多个{@link Channel Pipeline｝中，则可以使用不同的｛@link ChannelHandler Context｝调用该实例。
+ * 请注意，{@link io.netty.channel.ChannelHandler}实例可以添加到多个{@link io.netty.channel.ChannelPipeline}中。
+ * 这意味着一个{@link io.netty.channel.ChannelHandler}实例可以有多个{@link io.netty.channel.ChannelPipeline}，
+ * 因此，如果将单个实例多次添加到一个或多个{@link io.netty.channel.ChannelPipeline}中，则可以使用不同的{@link io.netty.channel.ChannelHandlerContext}调用该实例。
  *
  * <h3>Additional resources worth reading</h3>
  * 6.其他值得阅读的资源
@@ -116,11 +117,14 @@ import io.netty.util.concurrent.EventExecutor;
  * what fundamental differences they have, how they flow in a  pipeline,  and how to handle
  * the operation in your application.
  *
- * 请参阅｛@link ChannelHandler｝和｛@link ChannelPipeline｝，
+ * 请参阅{@link io.netty.channel.ChannelHandler}和{@link io.netty.channel.ChannelPipeline}，
  * 以了解有关入站和出站操作的更多信息，它们有哪些基本区别，它们在管道中的流动方式，以及如何在应用程序中处理操作。
  *
+ * 该类重新定义了 {@link io.netty.channel.ChannelInboundInvoker }的方法，修改返回值为当前接口。
  *
+ * @see AbstractChannelHandlerContext
  */
+
 public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvoker, ChannelOutboundInvoker {
 
     /**

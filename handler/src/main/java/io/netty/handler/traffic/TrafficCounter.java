@@ -28,12 +28,21 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Counts the number of read and written bytes for rate-limiting traffic.
+ *
+ * 统计速率限制通信的读取和写入字节数。
  * <p>
  * It computes the statistics for both inbound and outbound traffic periodically at the given
  * {@code checkInterval}, and calls the {@link AbstractTrafficShapingHandler#doAccounting(TrafficCounter)} method back.
  * If the {@code checkInterval} is {@code 0}, no accounting will be done and statistics will only be computed at each
  * receive or write operation.
  * </p>
+ *
+ * <p>
+ *     它以给定的{@code checkInterval}周期性地计算入站和出站流量的统计信息，并调用{@link AbstractTrafficShapingHandler#doAccounting（TrafficCounter）}方法
+ *     如果｛@code checkInterval｝为｛@code 0｝，则不会进行任何记帐，并且只在每次接收或写入操作时计算统计信息。
+ * </p>
+ *
+ *
  */
 public class TrafficCounter {
 

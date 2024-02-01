@@ -21,10 +21,12 @@ import static io.netty.util.ByteProcessorUtils.SPACE;
 
 /**
  * Provides a mechanism to iterate over a collection of bytes.
+ * 提供一种对字节集合进行迭代的机制
  */
 public interface ByteProcessor {
     /**
      * A {@link ByteProcessor} which finds the first appearance of a specific byte.
+     * 查找特定字节的首次出现的{@link ByteProcessor}。
      */
     class IndexOfProcessor implements ByteProcessor {
         private final byte byteToFind;
@@ -41,6 +43,8 @@ public interface ByteProcessor {
 
     /**
      * A {@link ByteProcessor} which finds the first appearance which is not of a specific byte.
+     *
+     * 一个｛@link ByteProcessor｝，它查找第一个出现的不是特定字节
      */
     class IndexNotOfProcessor implements ByteProcessor {
         private final byte byteToNotFind;
@@ -143,6 +147,9 @@ public interface ByteProcessor {
     /**
      * @return {@code true} if the processor wants to continue the loop and handle the next byte in the buffer.
      *         {@code false} if the processor wants to stop handling bytes and abort the loop.
+     *
+     *         true : 如果处理器想继续循环并处理缓冲区中的下一个字节
+     *         false: 如果处理器想要停止处理字节并中止循环。
      */
     boolean process(byte value) throws Exception;
 }

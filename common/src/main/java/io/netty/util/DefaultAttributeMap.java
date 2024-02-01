@@ -172,7 +172,6 @@ public class DefaultAttributeMap implements AttributeMap {
                 AtomicReferenceFieldUpdater.newUpdater(DefaultAttribute.class,
                                                        DefaultAttributeMap.class, "attributeMap");
 
-
         private static final long serialVersionUID = -2661411462200283011L;
 
         private volatile DefaultAttributeMap attributeMap;

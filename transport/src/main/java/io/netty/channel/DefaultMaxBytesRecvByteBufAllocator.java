@@ -27,6 +27,9 @@ import java.util.Map.Entry;
 /**
  * The {@link RecvByteBufAllocator} that yields a buffer size prediction based upon decrementing the value from
  * the max bytes per read.
+ *
+ * ｛@link RecvByteBufAllocator｝，它根据每次读取的最大字节数递减值来生成缓冲区大小预测。
+ * 暂时没有找到使用类
  */
 public class DefaultMaxBytesRecvByteBufAllocator implements MaxBytesRecvByteBufAllocator {
     private volatile int maxBytesPerRead;

@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 
 public class ResourceLeakDetectorTest {
     @SuppressWarnings("unused")
@@ -76,7 +75,7 @@ public class ResourceLeakDetectorTest {
                 }
 
                 private boolean closeResources(boolean checkClosed) {
-                    for (;;) {
+                    for (; ;) {
                         LeakAwareResource r = resources.poll();
                         if (r == null) {
                             return false;
@@ -84,7 +83,8 @@ public class ResourceLeakDetectorTest {
                         boolean closed = r.close();
                         if (checkClosed && !closed) {
                             error.compareAndSet(null,
-                                    new AssertionError("ResourceLeak.close() returned 'false' but expected 'true'"));
+                                                new AssertionError(
+                                                        "ResourceLeak.close() returned 'false' but expected 'true'"));
                             return true;
                         }
                     }
@@ -95,7 +95,7 @@ public class ResourceLeakDetectorTest {
         }
 
         // Just wait until all threads are done.
-        for (Thread t: threads) {
+        for (Thread t : threads) {
             t.join();
         }
 
@@ -139,7 +139,7 @@ public class ResourceLeakDetectorTest {
     }
 
     // Mimic the way how we implement our classes that should help with leak detection
-    private static final  class LeakAwareResource implements Resource {
+    private static final class LeakAwareResource implements Resource {
         private final Resource resource;
         private final ResourceLeakTracker<Resource> leak;
 
@@ -219,6 +219,7 @@ public class ResourceLeakDetectorTest {
 
     /**
      * 创建 记录泄露 探测
+     *
      * @param <T>
      */
     private static final class CreationRecordLeakDetector<T> extends ResourceLeakDetector<T> {
@@ -243,7 +244,7 @@ public class ResourceLeakDetectorTest {
 
         @Override
         protected void reportTracedLeak(String resourceType, String records) {
-            super.reportTracedLeak(resourceType,records);
+            super.reportTracedLeak(resourceType, records);
             if (!records.contains(canaryString)) {
                 reportError(new AssertionError("Leak records did not contain canary string"));
             }
@@ -263,6 +264,7 @@ public class ResourceLeakDetectorTest {
 
         /**
          * 设置初始提示
+         *
          * @param resourceType
          * @return
          */
@@ -280,24 +282,22 @@ public class ResourceLeakDetectorTest {
         }
     }
 
-
-    public static class MyResource{
+    public static class MyResource {
         private byte[] array = new byte[1024];
     }
 
-    static ResourceLeakDetector<MyResource> myResourceResourceLeakDetector = ResourceLeakDetectorFactory.instance().newResourceLeakDetector(MyResource.class, 1);
+    static ResourceLeakDetector<MyResource> myResourceResourceLeakDetector =
+            ResourceLeakDetectorFactory.instance().newResourceLeakDetector(MyResource.class, 1);
 
-
-    public void useResource(){
+    public void useResource() {
         MyResource myResource = new MyResource();
         ResourceLeakTracker<MyResource> track = myResourceResourceLeakDetector.track(myResource);
-
     }
 
     @Test
     public void testResourceDetect() throws InterruptedException {
         useResource();
-        int i=0;
+        int i = 0;
         do {
             System.gc();
             Thread.sleep(500);
@@ -306,8 +306,6 @@ public class ResourceLeakDetectorTest {
             track.record("hello");
             track.close(myResource);
             i++;
-        }while (i<=1);
-
-
+        } while (i <= 1);
     }
 }

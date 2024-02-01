@@ -20,6 +20,10 @@ import java.util.Map.Entry;
 /**
  * {@link RecvByteBufAllocator} that limits a read operation based upon a maximum value per individual read
  * and a maximum amount when a read operation is attempted by the event loop.
+ *
+ * ｛@link RecvByteBufAllocator｝，它根据每次读取的最大值和事件循环尝试读取操作时的最大数量来限制读取操作。
+ *
+ * @see DefaultMaxBytesRecvByteBufAllocator
  */
 public interface MaxBytesRecvByteBufAllocator extends RecvByteBufAllocator {
     /**

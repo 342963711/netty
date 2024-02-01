@@ -25,6 +25,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.util.AttributeKey;
@@ -129,6 +130,10 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         return this;
     }
 
+    /**
+     * 此处是对 类似于{@link io.netty.channel.socket.nio.NioServerSocketChannel}的进行的初始化
+     * @param channel
+     */
     @Override
     void init(Channel channel) {
         setChannelOptions(channel, newOptionsArray(), logger);
@@ -141,15 +146,23 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         final Entry<ChannelOption<?>, Object>[] currentChildOptions = newOptionsArray(childOptions);
         final Entry<AttributeKey<?>, Object>[] currentChildAttrs = newAttributesArray(childAttrs);
 
+        //此处添加添加默认的handler，此处的handler 在EventLoop 异步注册中会调用initChannel方法执行，如下方法进行触发
+        /**
+         * {@link io.netty.channel.AbstractChannel.AbstractUnsafe#register0(ChannelPromise)}
+         */
         p.addLast(new ChannelInitializer<Channel>() {
             @Override
             public void initChannel(final Channel ch) {
+                //此处执行完毕后，serverSocketChannel 的过滤链路 为
+                // pipeline.head->config.handler->ServerBootstrapAcceptor->tail
                 final ChannelPipeline pipeline = ch.pipeline();
                 ChannelHandler handler = config.handler();
                 if (handler != null) {
+                    //外部参数不为空，执行添加到链路中
                     pipeline.addLast(handler);
                 }
-
+                //在底层注册前，在调用 fireChannelRegistered之前 提交一个添加handler的任务,该handler用于在读取到有客户端链接的时候，
+                // 进行channel 的时间注册
                 ch.eventLoop().execute(new Runnable() {
                     @Override
                     public void run() {
@@ -159,6 +172,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                 });
             }
         });
+
     }
 
     @Override
@@ -174,6 +188,13 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         return this;
     }
 
+    /**
+     * 作为 server 端 处理入栈请求的 处理类，处理的真实类为
+     * {@link io.netty.channel.socket.nio.NioSocketChannel}
+     *
+     * 服务端客户端的 启动的核心逻辑都是，初始化，注册。
+     * 客户端多出的核心逻辑是出栈操作。 包括数据读取，数据写出
+     */
     private static class ServerBootstrapAcceptor extends ChannelInboundHandlerAdapter {
 
         private final EventLoopGroup childGroup;
@@ -203,17 +224,23 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             };
         }
 
+        /**
+         * 这里的调用由 accept I/O事件进行触发
+         * @param ctx 当前channelHandler 执行的上下文
+         * @param msg 类似于{@link io.netty.channel.socket.nio.NioSocketChannel}, 由 accept 接受到的响应值
+         */
         @Override
         @SuppressWarnings("unchecked")
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
             final Channel child = (Channel) msg;
-
+            //此处是讲SocketChannel ，添加
             child.pipeline().addLast(childHandler);
 
             setChannelOptions(child, childOptions, logger);
             setAttributes(child, childAttrs);
 
             try {
+                //对读取到的客户端进行注册，注册到对应group中其中的一个EventLoop中
                 childGroup.register(child).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {

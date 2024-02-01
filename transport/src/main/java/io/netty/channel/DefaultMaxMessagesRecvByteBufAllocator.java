@@ -24,6 +24,10 @@ import io.netty.util.UncheckedBooleanSupplier;
 /**
  * Default implementation of {@link MaxMessagesRecvByteBufAllocator} which respects {@link ChannelConfig#isAutoRead()}
  * and also prevents overflow.
+ *
+ * @see AdaptiveRecvByteBufAllocator 客户端
+ * @see ServerChannelRecvByteBufAllocator 服务端
+ * @see FixedRecvByteBufAllocator
  */
 public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessagesRecvByteBufAllocator {
     private final boolean ignoreBytesRead;
@@ -73,6 +77,8 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
     }
 
     /**
+     * 如果我们认为没有更多数据，则获取{@link#newHandle（）}实例是否将停止读取。
+     *
      * Get if future instances of {@link #newHandle()} will stop reading if we think there is no more data.
      * @return
      * <ul>
@@ -82,6 +88,11 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
      *     <li>{@code false} to keep reading (up to {@link #maxMessagesPerRead()}) or until there is no data when we
      *          attempt to read.</li>
      * </ul>
+     *
+     * 这可能会保存从套接字读取的系统调用，但如果数据以活泼的方式到达，我们可能会放弃{@link#maxMessagesPerRead（）}量，
+     * 并不得不等待选择器通知我们更多数据。
+     *
+     * ｛@code false｝以继续读取（最多｛@link#maxMessagesPerRead（）｝），或者直到我们尝试读取时没有数据为止。
      */
     public final boolean respectMaybeMoreData() {
         return respectMaybeMoreData;
@@ -93,11 +104,16 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
     public abstract class MaxMessageHandle implements ExtendedHandle {
         private ChannelConfig config;
         private int maxMessagePerRead;
+        //已经读取次数
         private int totalMessages;
+        //已经读取的字节总数
         private int totalBytesRead;
+        //从通道中尝试读取的字节数
         private int attemptedBytesRead;
+        //本次读取的字节数
         private int lastBytesRead;
         private final boolean respectMaybeMoreData = DefaultMaxMessagesRecvByteBufAllocator.this.respectMaybeMoreData;
+        //判断是否有更多数据
         private final UncheckedBooleanSupplier defaultMaybeMoreSupplier = new UncheckedBooleanSupplier() {
             @Override
             public boolean get() {

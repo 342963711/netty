@@ -19,21 +19,32 @@ import io.netty.util.ReferenceCounted;
 
 /**
  * A packet which is send or receive.
+ *
+ * 发送或接收的数据包。
+ *
+ * 主要用于各种协议内容的传输
+ *
+ * 例如：
+ * @see io.netty.handler.codec.http.HttpContent
  */
 public interface ByteBufHolder extends ReferenceCounted {
 
     /**
      * Return the data which is held by this {@link ByteBufHolder}.
+     * 返回被 字节缓冲持有的内容
      */
     ByteBuf content();
 
     /**
      * Creates a deep copy of this {@link ByteBufHolder}.
+     * 创建这个对象的深度copy
      */
     ByteBufHolder copy();
 
     /**
      * Duplicates this {@link ByteBufHolder}. Be aware that this will not automatically call {@link #retain()}.
+     *
+     * 复制此对象，注意不会调用retain 来增加引用
      */
     ByteBufHolder duplicate();
 
