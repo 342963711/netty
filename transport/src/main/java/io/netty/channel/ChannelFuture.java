@@ -157,6 +157,7 @@ import java.util.concurrent.TimeUnit;
  *
  * 尽管存在上述缺点，但是在某些情况下，调用 await更方便。 在这种情况下，请确保不在要在I/O现成中调用 await。否则，将引发 BlockingOperationException 以防止死锁
  *
+ *
  * <h3>Do not confuse I/O timeout and await timeout</h3>
  * 不要混淆 I/O超时 和等待超时
  *
@@ -212,6 +213,7 @@ public interface ChannelFuture extends Future<Void> {
      * Returns a channel where the I/O operation associated with this
      * future takes place.
      * 返回于此 future 关联的 I/O 操作发生的通道
+     * 需要关注 ChannelFuture 在 channel 通道中的表现。
      */
     Channel channel();
 
@@ -254,6 +256,8 @@ public interface ChannelFuture extends Future<Void> {
      * </ul>
      *
      * 如果此 channelfuture 是一个void future, 返回true. 并且不能调用以下任何方法
+     *
+     *
      *
      */
     boolean isVoid();

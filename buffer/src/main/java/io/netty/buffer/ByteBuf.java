@@ -1415,6 +1415,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * this buffer.
      *
+     * 传输指定源通道的内容到 该缓冲区。从指定的index，开始。
+     *
      * @param length the maximum number of bytes to transfer
      *
      * @return the actual number of bytes read in from the specified channel.
@@ -2325,6 +2327,11 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
      * identical to {@code buf.slice(buf.readerIndex(), buf.readableBytes())}.
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * this buffer.
+     *
+     * 返回此缓冲区的可读字节的一部分。
+     * 修改返回缓冲区或此缓冲区的内容会影响彼此的内容，同时它们保持单独的索引和标记。
+     * 这个方法与{@code buf.slice（buf.readerIndex（），buf.readableBytes（））}相同。
+     * 此方法不会修改此缓冲区的｛@code readerIndex｝或｛@code-writerIndex｝。
      * <p>
      * Also be aware that this method will NOT call {@link #retain()} and so the
      * reference count will NOT be increased.
@@ -2391,6 +2398,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf>, 
      * @return A buffer whose readable content is equivalent to the buffer returned by {@link #slice()}.
      * However this buffer will share the capacity of the underlying buffer, and therefore allows access to all of the
      * underlying content if necessary.
+     *
+     * 读取器和写入器标记不会重复。还要注意，此方法不会调用{@link#retain（）}，因此引用计数不会增加。
+     * @return一个缓冲区，其可读内容相当于{@link#slice（）}返回的缓冲区。
+     * 然而，该缓冲区将共享底层缓冲区的容量，因此在必要时允许访问所有底层内容。
      */
     public abstract ByteBuf duplicate();
 

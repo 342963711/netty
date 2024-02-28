@@ -28,9 +28,9 @@ import java.util.List;
 /**
  * {@link ChannelInboundHandlerAdapter} which decodes from one message to an other message.
  *
- * 将一个消息编码外两外一个消息类型
+ * 将一个消息编码成另外一个消息类型
  *
- * For example here is an implementation which decodes a {@link String} to an {@link Integer} which represent
+ * For example here is an implementation which decodes a {@link String} to an {@link Integer} which represent
  * the length of the {@link String}.
  *
  *
@@ -50,6 +50,9 @@ import java.util.List;
  * Be aware that you need to call {@link ReferenceCounted#retain()} on messages that are just passed through if they
  * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageDecoder} will call
  * {@link ReferenceCounted#release()} on decoded messages.
+ *
+ * 请注意，如果消息的类型为｛@link ReferenceCount｝，则需要对刚传递的消息调用｛@linkReferenceCount#retain（）｝。
+ * 这是必需的，因为｛@link MessageToMessageDecoder｝将对解码的消息调用｛@linkReferenceCounted#release（）｝。
  *
  */
 public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAdapter {

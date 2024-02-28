@@ -53,6 +53,9 @@ import java.lang.annotation.Target;
  * </ul>
  * </p>
  * 相对应的，以下适配类给你提供便利。
+ * ChannelInboundHandlerAdapter
+ * ChannelOutboundHandlerAdapter
+ * ChannelDuplexHandler
  *
  * <p>
  * For more information, please refer to the documentation of each subtype.
@@ -226,7 +229,6 @@ import java.lang.annotation.Target;
  * 它们有哪些基本区别，它们在管道中的流动方式，以及如何在应用程序中处理操作
  *
  * {@link ChannelHandlerAdapter}
- *
  * {@link ChannelInboundHandler}
  * {@link ChannelOutboundHandler}
  *
@@ -237,7 +239,7 @@ public interface ChannelHandler {
     /**
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
      *
-     * 在将｛@link ChannelHandler｝添加到实际上下文并准备好处理事件后调用。也就是该ChannelHandler 被添加到channelPipeline 之后，
+     * 在将｛@link ChannelHandler｝添加到实际上下文 并准备好处理事件后调用。也就是该ChannelHandler 被添加到channelPipeline 之后，
      * 该方法会被调用
      *
      * 当该ChannelHandler 所在的 ctx 被调用的时候，该方法后自行。

@@ -32,6 +32,8 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
  * The {@link PlatformDependent} operations which requires access to {@code sun.misc.*}.
+ *
+ * 需要访问 的 {@code sun.misc.*} 的 PlatformDependent操作
  */
 @SuppressJava6Requirement(reason = "Unsafe access is guarded")
 final class PlatformDependent0 {
@@ -83,19 +85,23 @@ final class PlatformDependent0 {
      * 对unsafe类的状态判断
      */
     static {
+        //分配的直接内存的类型
         final ByteBuffer direct;
+        //Buffer.class.getDeclaredField("address");
         Field addressField = null;
         Method allocateArrayMethod = null;
         Throwable unsafeUnavailabilityCause = null;
         Unsafe unsafe;
         Object internalUnsafe = null;
         boolean storeFenceAvailable = false;
+        //显示设置  unsafe 的不能使用
         if ((unsafeUnavailabilityCause = EXPLICIT_NO_UNSAFE_CAUSE) != null) {
             direct = null;
             addressField = null;
             unsafe = null;
             internalUnsafe = null;
         } else {
+            //分配1字节 直接内存，用于查找内存地址
             direct = ByteBuffer.allocateDirect(1);
 
             // attempt to access field Unsafe#theUnsafe

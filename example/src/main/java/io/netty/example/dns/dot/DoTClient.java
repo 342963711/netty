@@ -47,10 +47,15 @@ import io.netty.util.NetUtil;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * DNS over TLS  (DoT)
+ * DNS over HTTPS (DoH)
+ *
+ */
 public final class DoTClient {
     private static final String QUERY_DOMAIN = "www.example.com";
     private static final int DNS_SERVER_PORT = 853;
-    private static final String DNS_SERVER_HOST = "8.8.8.8";
+    private static final String DNS_SERVER_HOST = "114.114.114.114";
 
     private DoTClient() {
     }

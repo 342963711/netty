@@ -30,6 +30,10 @@ public class HexDumpProxyInitializer extends ChannelInitializer<SocketChannel> {
         this.remotePort = remotePort;
     }
 
+    /**
+     * 用于初始化处理客户端的 handler
+     * @param ch            the {@link Channel} which was registered.
+     */
     @Override
     public void initChannel(SocketChannel ch) {
         ch.pipeline().addLast(

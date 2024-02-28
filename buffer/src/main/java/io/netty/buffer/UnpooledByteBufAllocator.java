@@ -23,11 +23,32 @@ import java.nio.ByteBuffer;
 
 /**
  * Simplistic {@link ByteBufAllocator} implementation that does not pool anything.
+ *
+ * ByteBufAllocator 的 简单实现，不会池化任何东西
+ *
+ * 内部类 都是 ByteBuf 的子类。
+ * 
+ * @see InstrumentedUnpooledDirectByteBuf
+ * @see InstrumentedUnpooledUnsafeDirectByteBuf
+ * - 是通过ByteBuffer.allocateDirect(initialCapacity); 来创建的 ByteBuffer
+ * @see InstrumentedUnpooledUnsafeNoCleanerDirectByteBuf
+ * - 可以通过 new
+ *
+ * @see InstrumentedUnpooledHeapByteBuf
+ * @see InstrumentedUnpooledUnsafeHeapByteBuf
+ *
+ * @see UnpooledByteBufAllocatorMetric
+ *
+ *
  */
 public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator implements ByteBufAllocatorMetricProvider {
 
     private final UnpooledByteBufAllocatorMetric metric = new UnpooledByteBufAllocatorMetric();
+
+    //禁用内存泄露探测
     private final boolean disableLeakDetector;
+    //没有 cleaner,也就是可以直接创建直接内存的构造函数，ByteBuffer(long address,int cap)
+    // ByteBuffer
     private final boolean noCleaner;
 
     /**
@@ -236,6 +257,9 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
     /**
      * 与
      * @see InstrumentedUnpooledUnsafeDirectByteBuf 的方法实现基本花一样。细节差别需要在各自的父类中进行查看
+     *
+     * 含义：有导航功能的 非池化直接直接字节缓冲，也就是有
+     * @see UnpooledByteBufAllocatorMetric 指标类的信息统计
      */
     private static final class InstrumentedUnpooledDirectByteBuf extends UnpooledDirectByteBuf {
         InstrumentedUnpooledDirectByteBuf(

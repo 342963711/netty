@@ -23,9 +23,11 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
 public class HexDumpProxyFrontendHandler extends ChannelInboundHandlerAdapter {
-
+    //被代理的客户端
     private final String remoteHost;
     private final int remotePort;
 
@@ -38,6 +40,7 @@ public class HexDumpProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         this.remotePort = remotePort;
     }
 
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         final Channel inboundChannel = ctx.channel();
@@ -46,8 +49,11 @@ public class HexDumpProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         Bootstrap b = new Bootstrap();
         b.group(inboundChannel.eventLoop())
          .channel(ctx.channel().getClass())
+         //在处理后端服务器的响应时，需要将客户端的通道传递到后面，以便将被代理服务器的响应数据写到客户端。
+         .handler(new LoggingHandler(LogLevel.INFO))
          .handler(new HexDumpProxyBackendHandler(inboundChannel))
          .option(ChannelOption.AUTO_READ, false);
+        //当客户端链接到本代理器时，本代理需要作为客户端 连接到被代理服务器
         ChannelFuture f = b.connect(remoteHost, remotePort);
         outboundChannel = f.channel();
         f.addListener(new ChannelFutureListener() {

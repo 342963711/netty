@@ -32,6 +32,8 @@ public enum DnsSection {
     ANSWER,
     /**
      * The section that contains the authority {@link DnsRecord}s.
+     *
+     * 包含权限｛@link DnsRecord｝s的部分。
      */
     AUTHORITY,
     /**
