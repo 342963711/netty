@@ -16,11 +16,15 @@
 package io.netty.buffer;
 
 import io.netty.util.CharsetUtil;
+import io.netty.util.internal.SystemPropertyUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
+import sun.misc.Unsafe;
+import sun.misc.VM;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ScatteringByteChannel;
@@ -30,9 +34,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import static io.netty.buffer.Unpooled.*;
 import static io.netty.util.internal.EmptyArrays.*;
+import static io.netty.util.internal.PlatformDependent.estimateMaxDirectMemory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -64,7 +70,10 @@ public class UnpooledTest {
         assertEquals(12 + 512, buffer.readableBytes());
         assertEquals(2, buffer.nioBufferCount());
 
+        System.out.println("before:head:"+header.refCnt()+",payload:"+payload.refCnt()+",buf:"+buffer.refCnt());
+        //合并后，只能通过合并后的对象进行释放
         buffer.release();
+        System.out.println("after:head:"+header.refCnt()+",payload:"+payload.refCnt()+",buf:"+buffer.refCnt());
     }
 
     @Test
@@ -817,5 +826,99 @@ public class UnpooledTest {
         b.writeLongLE(0x0102030405060708L);
         assertEquals(0x0102030405060708L, b.getLongLE(0));
         assertEquals(0x0807060504030201L, b.getLong(0));
+    }
+
+
+    static int MB_100 = 100*1024*1024;
+
+    @Test
+    public void testUnpooledHeapMemory() throws InterruptedException {
+        List<ByteBuf> list = new ArrayList<ByteBuf>();
+        //使用的是堆内存
+        for(int i=0;i<100;i++){
+            ByteBuf buffer = buffer(MB_100);
+            list.add(buffer);
+            Thread.sleep(10000);
+        }
+    }
+
+    /**
+     * MaxDirectMemorySize 参数不设置，默认值为Xmx的值
+     * @throws InterruptedException
+     */
+    @Test
+    public void testUnpooledDirectMemory() throws InterruptedException {
+//        System.getProperties().put("io.netty.maxDirectMemory","0");
+        List<ByteBuf> directByteBufs = new ArrayList<ByteBuf>();
+        List<ByteBuf> headpByteBuf = new ArrayList<ByteBuf>();
+        for(int i=0;i<100;i++){
+//            ByteBuf buffer = buffer(MB_100);
+//            headpByteBuf.add(buffer);
+            ByteBuf directBuf = directBuffer(MB_100);
+            System.out.println("分配次数："+i);
+            directByteBufs.add(directBuf);
+            Thread.sleep(100000);
+        }
+
+    }
+
+//    @Test
+//    public void testUnpooledDirectMemory02() throws InterruptedException {
+//        List<ByteBuf> directByteBufs = new ArrayList<ByteBuf>();
+//        List<ByteBuf> headpByteBuf = new ArrayList<ByteBuf>();
+//        for(int i=0;i<100;i++){
+//            ByteBuf buffer = buffer(MB_100);
+//            headpByteBuf.add(buffer);
+//            ByteBuf directBuf = directBuffer(MB_100);
+//            directByteBufs.add(directBuf);
+//            Thread.sleep(10000);
+//        }
+//
+//    }
+
+
+
+
+    /**
+     * 测试-Xmx
+     * -XX:MaxDirectMemorySize 无配置，直接内存的限制为-Xmx 设置的值
+     * ，通过ByteBuffer.allocateDirect 创建的可以被直接观察
+     * @throws InterruptedException
+     */
+    @Test
+    public void testDirectMemory() throws InterruptedException {
+        List<ByteBuffer> heapByteBuffer = new ArrayList<ByteBuffer>();
+        List<ByteBuffer> directByteBuffer = new ArrayList<ByteBuffer>();
+
+        for(int i=0;i<1000;i++){
+            ByteBuffer byteBuffer = ByteBuffer.allocate(MB_100);
+            heapByteBuffer.add(byteBuffer);
+            //通过ByteBuffer创建的直接内存，可以通过 java.nio.BufferPool 来进行监控到
+            ByteBuffer directBuffer = ByteBuffer.allocateDirect(MB_100);
+            directByteBuffer.add(directBuffer);
+            Thread.sleep(10000);
+            System.out.println("堆栈分配次数："+i);
+        }
+    }
+
+    /**
+     * 通过反射来创建直接内存
+     * @throws InterruptedException
+     */
+    @Test
+    public void testDirectMemory02() throws InterruptedException {
+        List<ByteBuffer> heapByteBuffer = new ArrayList<ByteBuffer>();
+        List<ByteBuffer> directByteBuffer = new ArrayList<ByteBuffer>();
+
+        for(int i=0;i<1000;i++){
+            ByteBuffer byteBuffer = ByteBuffer.allocate(MB_100);
+            heapByteBuffer.add(byteBuffer);
+            //通过ByteBuffer创建的直接内存，可以通过 java.nio.BufferPool 来进行监控到
+            //todo
+            ByteBuffer directBuffer = ByteBuffer.allocateDirect(MB_100);
+            directByteBuffer.add(directBuffer);
+            Thread.sleep(10000);
+            System.out.println("堆栈分配次数："+i);
+        }
     }
 }
