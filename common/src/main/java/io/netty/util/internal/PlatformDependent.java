@@ -92,6 +92,9 @@ public final class PlatformDependent {
 
     private static final Throwable UNSAFE_UNAVAILABILITY_CAUSE = unsafeUnavailabilityCause0();
     private static final boolean DIRECT_BUFFER_PREFERRED;
+    /**
+     * jvm 参数
+     */
     private static final long MAX_DIRECT_MEMORY = estimateMaxDirectMemory();
 
     private static final int MPSC_CHUNK_SIZE =  1024;
@@ -116,8 +119,11 @@ public final class PlatformDependent {
     private static final boolean IS_IVKVM_DOT_NET = isIkvmDotNet0();
 
     private static final int ADDRESS_SIZE = addressSize0();
+    //有直接内存的构造函数DirectByteBuffer（address,cap）
     private static final boolean USE_DIRECT_BUFFER_NO_CLEANER;
+    //直接内存的使用统计，如果jvm参数&netty参数设置<0,则为空
     private static final AtomicLong DIRECT_MEMORY_COUNTER;
+    //或者是设置 netty 参数设置的内存大小，或者是jvm的直接内存大小
     private static final long DIRECT_MEMORY_LIMIT;
     private static final ThreadLocalRandomProvider RANDOM_PROVIDER;
     private static final Cleaner CLEANER;
@@ -161,20 +167,29 @@ public final class PlatformDependent {
         // * >  0  - Don't use cleaner. This will limit Netty's total direct memory
         //           (note: that JDK's direct memory limit is independent of this).
 
-        //<0 , 不使用cleaner，从java继承最大的直接内存，在这种情况下，真实的最大内存为 jdk定义的最大内存*2(默认值)
-        //=0 ，netty 将不会限制最大内存。而由JDK 继续决定
-        //>0 ，Don't use cleaner，这个将限制netty的总直接内存，jdk的总直接限制不依赖这个。
-        // maxDirectMemory默认值是-1，默认行为默认是jdk的最大内存*2
+        //<0 , 不使用cleaner，从java继承最大的直接内存，在这种情况下，真实的最大内存为 jdk定义的最大内存*2(默认值)。因为直接内存总量=jvm的直接内存+netty的直接内存
+              //（默认情况）在这种情况下：java进程可占用最大总内存。-Xmx +2*DirectMemory
+
+        //=0 ，当且仅当 io.netty.maxDirectMemory 设置为0.使用DirectBuffer 的 cleaner。
+            //建议使用这种，也可以被监控到。最大内存占用为 —Xmx+DirectMemory
+
+        //>0 ，不使用 cleaner，这个将限制netty的总直接内存，jdk的总直接限制不依赖这个。
+            // netty内存使用量会被netty管理，不占用jvm的直接内存
         long maxDirectMemory = SystemPropertyUtil.getLong("io.netty.maxDirectMemory", -1);
 
         if (maxDirectMemory == 0 || !hasUnsafe() || !PlatformDependent0.hasDirectBufferNoCleanerConstructor()) {
             USE_DIRECT_BUFFER_NO_CLEANER = false;
             DIRECT_MEMORY_COUNTER = null;
         } else {
+            //在jdk8走以下逻辑
             USE_DIRECT_BUFFER_NO_CLEANER = true;
+            //如果io.netty.maxDirectMemory 小于0
             if (maxDirectMemory < 0) {
+                //如果没有设置netty的值，则默认值获取jvm的直接内存大小
                 maxDirectMemory = MAX_DIRECT_MEMORY;
+                //如果jvm设置的直接内存小于0
                 if (maxDirectMemory <= 0) {
+                    //直接内存计数器，为空
                     DIRECT_MEMORY_COUNTER = null;
                 } else {
                     DIRECT_MEMORY_COUNTER = new AtomicLong();
@@ -184,6 +199,7 @@ public final class PlatformDependent {
             }
         }
         logger.debug("-Dio.netty.maxDirectMemory: {} bytes", maxDirectMemory);
+        //直接内存的限制：
         DIRECT_MEMORY_LIMIT = maxDirectMemory >= 1 ? maxDirectMemory : MAX_DIRECT_MEMORY;
 
         int tryAllocateUninitializedArray =
@@ -203,6 +219,7 @@ public final class PlatformDependent {
                 CLEANER = CleanerJava6.isSupported() ? new CleanerJava6() : NOOP;
             }
         } else {
+            // 安卓环境，默认不使用直接内存
             CLEANER = NOOP;
         }
 
@@ -330,6 +347,12 @@ public final class PlatformDependent {
         return PlatformDependent0.hasDirectBufferNoCleanerConstructor();
     }
 
+
+    /**
+     * 分配未初始化的数组，测试执行（jdk8） ：UNINITIALIZED_ARRAY_ALLOCATION_THRESHOLD 为-1，所以无法创建未初始化的数组
+     * @param size
+     * @return
+     */
     public static byte[] allocateUninitializedArray(int size) {
         return UNINITIALIZED_ARRAY_ALLOCATION_THRESHOLD < 0 || UNINITIALIZED_ARRAY_ALLOCATION_THRESHOLD > size ?
                 new byte[size] : PlatformDependent0.allocateUninitializedArray(size);
@@ -381,7 +404,7 @@ public final class PlatformDependent {
     /**
      * Return {@code true} if {@code sun.misc.Unsafe} was found on the classpath and can be used for accelerated
      * direct memory access.
-     * Unsafe 在类加载器中存在，用于加速直接内存访问
+     * Unsafe 在类加载器中存在，用于加速直接内存访问,在mac机型上测试，默认是true
      */
     public static boolean hasUnsafe() {
         return UNSAFE_UNAVAILABILITY_CAUSE == null;
@@ -531,6 +554,8 @@ public final class PlatformDependent {
     /**
      * Try to deallocate the specified direct {@link ByteBuffer}. Please note this method does nothing if
      * the current platform does not support this operation or the specified buffer is not a direct buffer.
+     * 
+     * {@link #freeDirectNoCleaner(ByteBuffer)}
      */
     public static void freeDirectBuffer(ByteBuffer buffer) {
         CLEANER.freeDirectBuffer(buffer);
@@ -816,6 +841,9 @@ public final class PlatformDependent {
     /**
      * This method <strong>MUST</strong> only be called for {@link ByteBuffer}s that were allocated via
      * {@link #allocateDirectNoCleaner(int)}.
+     *
+     * 当释放的直接内存的时候需要判断，执行该方法还是
+     * {@link #freeDirectBuffer(ByteBuffer)}
      */
     public static void freeDirectNoCleaner(ByteBuffer buffer) {
         assert USE_DIRECT_BUFFER_NO_CLEANER;
@@ -870,6 +898,12 @@ public final class PlatformDependent {
         }
     }
 
+    /**
+     * 如果为true,则会交给netty去管理。否则会交给jvm给管理。
+     * 默认jdk8 下环境为返回true.
+     * 可以通过参数  io.netty.maxDirectMemory
+     * @return
+     */
     public static boolean useDirectBufferNoCleaner() {
         return USE_DIRECT_BUFFER_NO_CLEANER;
     }
@@ -1209,11 +1243,14 @@ public final class PlatformDependent {
 
     /**
      * Compute an estimate of the maximum amount of direct memory available to this JVM.
+     * // 计算此JVM可用的最大直接内存量的估计值。
      * <p>
      * The computation is not cached, so you probably want to use {@link #maxDirectMemory()} instead.
+     * 计算未缓存，因此您可能希望使用{@link #maxDirectMemory()}
      * <p>
      * This will produce debug log output when called.
-     *
+     * 这将在调用时生成调试日志输出。
+     * // jvm的直接内存 是从 -XX:MaxDirectMemorySize 来配置的，如果没有配置，则默认值为 —Xmx的大小
      * @return The estimated max direct memory, in bytes.
      */
     public static long estimateMaxDirectMemory() {

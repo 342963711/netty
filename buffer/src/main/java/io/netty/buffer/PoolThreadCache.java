@@ -151,6 +151,12 @@ final class PoolThreadCache {
     }
 
     // val > 0
+
+    /**
+     * 求 val 的 对数，向下取整。
+     * @param val
+     * @return
+     */
     static int log2(int val) {
         return INTEGER_SIZE_MINUS_ONE - Integer.numberOfLeadingZeros(val);
     }

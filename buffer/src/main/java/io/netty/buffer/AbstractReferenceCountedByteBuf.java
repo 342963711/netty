@@ -29,6 +29,7 @@ import io.netty.util.internal.ReferenceCountUpdater;
  *
  * @see PooledByteBuf
  *
+ *---------非池化的字节缓冲区实现
  * @see UnpooledDirectByteBuf
  * @see UnpooledHeapByteBuf
  */

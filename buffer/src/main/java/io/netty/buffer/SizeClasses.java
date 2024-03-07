@@ -38,7 +38,7 @@ import static io.netty.buffer.PoolThreadCache.*;
  *     nDelta: Delta multiplier.  增量的倍数
  *     isMultiPageSize: 'yes' if a multiple of the page size, 'no' otherwise.  如果求得size 为page size 的倍数。 则返回true,否则，返回false.
  *     isSubPage: 'yes' if a subpage size class, 'no' otherwise.  如果是 子页大小类型，则返回true，否则，返回false.
- *     log2DeltaLookup: Same as log2Delta if a lookup table size class, 'no'  . 如果是一个查找表大小类型，返回true,否则，返回false.
+ *     log2DeltaLookup: Same as log2Delta if a lookup table size class, 'no'  . 或者与log2Delta相同，或者为 no
  *                      otherwise.
  * <p>
  *   nSubpages: Number of subpages size classes.  是 子页 sizeclass 的数量
@@ -97,9 +97,11 @@ import static io.netty.buffer.PoolThreadCache.*;
  */
 abstract class SizeClasses implements SizeClassesMetric {
 
+    //定量的对数
     static final int LOG2_QUANTUM = 4;
 
-    private static final int LOG2_SIZE_CLASS_GROUP = 2;
+    //每组的数量的对数
+    static final int LOG2_SIZE_CLASS_GROUP = 2;
 
     /**
      * 对应的 max_lookup_size 是 4096。
@@ -184,24 +186,31 @@ abstract class SizeClasses implements SizeClassesMetric {
     private final int[] size2idxTab;
 
     protected SizeClasses(int pageSize, int pageShifts, int chunkSize, int directMemoryCacheAlignment) {
+        //也就是 每次定量 2^(LOG2_QUANTUM+LOG2_SIZE_CLASS_GROUP),这个值就是chunkSize 的最小值，否则group 为0，无法生成查找的二维表
+        //也就是 每两个条目的增量定量是16（LOG2_QUANTUM），每个组的大小是4个条目（LOG2_SIZE_CLASS_GROUP）
+        // 这里是数学的 对数 和差公式 group = log2(chunkSize/QUANTUM/SIZE_CLASS_GROUP)
         int group = log2(chunkSize) - LOG2_QUANTUM - LOG2_SIZE_CLASS_GROUP + 1;
 
         //generate size classes
         //[index, log2Group, log2Delta, nDelta, isMultiPageSize, isSubPage, log2DeltaLookup]
+        //根据组数量，组数量*4（每个组的条目个数），生成二维查找表
+        // 是因为对数运算可以有效地将连续的整数大小范围映射到连续的索引值上，group 为分组数量。
         short[][] sizeClasses = new short[group << LOG2_SIZE_CLASS_GROUP][7];
 
         int normalMaxSize = -1;
-        // 计算大小的索引值
+        // size class 的 索引值
         int nSizes = 0;
+        //
         int size = 0;
 
         int log2Group = LOG2_QUANTUM;
         int log2Delta = LOG2_QUANTUM;
         int ndeltaLimit = 1 << LOG2_SIZE_CLASS_GROUP; // 限制 ，每4个为一组
 
-        //First small group, nDelta start at 0.
-        //first size class is 1 << LOG2_QUANTUM
+        //First small group, nDelta start at 0.  第一个小组，nDelta 从0开始
+        //first size class is 1 << LOG2_QUANTUM  第一个 size class 是 16
         for (int nDelta = 0; nDelta < ndeltaLimit; nDelta++, nSizes++) {
+            //计算每个 size class 的 数据
             short[] sizeClass = newSizeClass(nSizes, log2Group, log2Delta, nDelta, pageShifts);
             sizeClasses[nSizes] = sizeClass;
             size = sizeOf(sizeClass, directMemoryCacheAlignment);
@@ -211,8 +220,9 @@ abstract class SizeClasses implements SizeClassesMetric {
 
         //All remaining groups, nDelta start at 1.
 
-        //所有剩余的组，nDelta从1开始。
+        //剩余的组，
         for (; size < chunkSize; log2Group++, log2Delta++) {
+            //每一组的 size class 计算，nDelta从1开始。4个条目为一组。
             for (int nDelta = 1; nDelta <= ndeltaLimit && size < chunkSize; nDelta++, nSizes++) {
                 short[] sizeClass = newSizeClass(nSizes, log2Group, log2Delta, nDelta, pageShifts);
                 sizeClasses[nSizes] = sizeClass;
@@ -254,9 +264,11 @@ abstract class SizeClasses implements SizeClassesMetric {
 
 
 
-        //generate lookup tables，生成查找表
+        //generate lookup tables，生成查找表[保存每个条目的 对应大小]
         sizeIdx2sizeTab = newIdx2SizeTab(sizeClasses, nSizes, directMemoryCacheAlignment);
+        //求条目中是页大小的 条目大小
         pageIdx2sizeTab = newPageIdx2sizeTab(sizeClasses, nSizes, nPSizes, directMemoryCacheAlignment);
+        //size大小到索引的 映射表
         size2idxTab = newSize2idxTab(lookupMaxSize, sizeClasses);
 
         System.out.println("============sizeClasses[init]===============");
@@ -265,41 +277,63 @@ abstract class SizeClasses implements SizeClassesMetric {
         for(int i=0;i<sizeClasses.length;i++){
             System.out.println(Arrays.toString(sizeClasses[i])+"，size:"+sizeIdx2sizeTab[i]);
         }
+        System.out.println("----------------------------------");
+        System.out.println("size2idxTab:"+Arrays.toString(size2idxTab));
         System.out.println("============sizeClasses[end]===============");
     }
 
     /**
-     * 大小类，核心计算方法
-     * @param index
-     * @param log2Group
-     * @param log2Delta
-     * @param nDelta
+     * 创建一个新的 size class，核心计算方法
+     * @param index size class 所在索引
+     * @param log2Group 第一小组固定值 4，后面的组从6开始，每组递增1 （组的基础大小，每组递增1个位）
+     * @param log2Delta 第一小组固定值 4，后面的组从4开始，每个组递增1，（增量大小，每组递增1个位）
+     * @param nDelta 第一小组从0开始，递增【0,3】，后面的每个小组从1开始，递增4次【1，4】（当前组内的条目数）
      * @param pageShifts
+     *
+     *
+     * 计算每个条目的大小。从第二个小组开始 ：log2group = log2Delta+2
+     * size=(1 << log2Group) + (nDelta << log2Delta);
+     * 等化为
+     * size=(1<< log2Delta+2) + (nDelta << log2Delta);
+     * size = (nDelta+2^LOG2_SIZE_CLASS_GROUP)*(1<<log2Delta) 可以看出，
+     *
+     * size 的大小永远是log2Delta的倍数。且倍数 在同组内分别为 5，6，7，8
+     * ==》可以知道 同一组内，相邻两个数据之间增量为 1<<log2Delta
+     * ==》相邻两组之间，比如第二组第一条目跟 第三组第一条目，大小翻倍。
+     *
      * @return
      */
     //calculate size class
-    private static short[] newSizeClass(int index, int log2Group, int log2Delta, int nDelta, int pageShifts) {
+    protected static short[] newSizeClass(int index, int log2Group, int log2Delta, int nDelta, int pageShifts) {
         short isMultiPageSize;
+        //如果增量对象>每个页的移位，那么，肯定是多个页的大小
         if (log2Delta >= pageShifts) {
             isMultiPageSize = yes;
         } else {
+            //如果增量 小于 页的移位
+            //计算页大小
             int pageSize = 1 << pageShifts;
+            //计算当前条目大小
             int size = calculateSize(log2Group, nDelta, log2Delta);
             //如果 size 是  1<< pageShifts 的整数倍，返回true,
             isMultiPageSize = size == size / pageSize * pageSize? yes : no;
         }
-
+        //获取组内条目（1，4）或者（0，3）的近似对数
         int log2Ndelta = nDelta == 0? 0 : log2(nDelta);
-
+        //只有当 nDelta==3 的时候，remove为yes
         byte remove = 1 << log2Ndelta < nDelta? yes : no;
-
+        //计算  log2Size的大小
+        // 这里使用位运算思路。也就是log2Delta与log2Ndelta相加是否如果等于log2Group的话，那么logSize 就是 log2Group+1。
+        // 否则，log2Size 为上一个组的值。标记为yes.
+        //如果 增量的 相关的 位数 跟 log2Group 不相等。 log2Size=log2Group
         int log2Size = log2Delta + log2Ndelta == log2Group? log2Group + 1 : log2Group;
         if (log2Size == log2Group) {
             remove = yes;
         }
 
+        //判断子页。当前的log2Size 如果小于 pageShifts 页位移+定值 ，则是子页
         short isSubpage = log2Size < pageShifts + LOG2_SIZE_CLASS_GROUP? yes : no;
-
+        //参考上面的注释：log2DeltaLookup 当log2Size也就是 size < 4096 log2DeltaLookup等于 log2Delta ，否则
         int log2DeltaLookup = log2Size < LOG2_MAX_LOOKUP_SIZE ||
                               log2Size == LOG2_MAX_LOOKUP_SIZE && remove == no
                 ? log2Delta : no;
@@ -322,9 +356,9 @@ abstract class SizeClasses implements SizeClassesMetric {
 
     /**
      * 计算大小
-     * @param log2Group
-     * @param nDelta
-     * @param log2Delta
+     * @param log2Group 当前组的基础大小
+     * @param nDelta 当前组的条目
+     * @param log2Delta 当前组的增量大小
      * @return
      */
     private static int calculateSize(int log2Group, int nDelta, int log2Delta) {
@@ -360,6 +394,14 @@ abstract class SizeClasses implements SizeClassesMetric {
         return pageIdx2sizeTab;
     }
 
+    /**
+     * 计算 以 16为 大小 进行分组 计算 可得到的所有索引。
+     * 也就是计算，每次的开始索引 从 0-> 对应到 sizeClasses 的索引，也就是把sizeClasses中每个索引的数字进行展开计算。比如说。
+     * 230，246，在 size2idxTab 分别对应的索引为14，15, [14,15]索引对应的值都是11.11是sizeClasses的索引。对应的值为256.
+     * @param lookupMaxSize
+     * @param sizeClasses
+     * @return
+     */
     private static int[] newSize2idxTab(int lookupMaxSize, short[][] sizeClasses) {
         int[] size2idxTab = new int[lookupMaxSize >> LOG2_QUANTUM];
         int idx = 0;
@@ -394,16 +436,20 @@ abstract class SizeClasses implements SizeClassesMetric {
      */
     @Override
     public int sizeIdx2sizeCompute(int sizeIdx) {
+        //计算所在组
         int group = sizeIdx >> LOG2_SIZE_CLASS_GROUP;
+        //计算在组内的 偏移。从偏移从0开始。
         int mod = sizeIdx & (1 << LOG2_SIZE_CLASS_GROUP) - 1;
-
+        //计算所在组的基础大小
         int groupSize = group == 0? 0 :
                 1 << LOG2_QUANTUM + LOG2_SIZE_CLASS_GROUP - 1 << group;
-
+        //计算组内 偏移
         int shift = group == 0? 1 : group;
+        // 计算当前组的增量
         int lgDelta = shift + LOG2_QUANTUM - 1;
+        //计算所在组的偏移量的大小
         int modSize = mod + 1 << lgDelta;
-
+        //所在组的大小为 组的基础大小+组内偏移量的大小
         return groupSize + modSize;
     }
 
@@ -457,16 +503,18 @@ abstract class SizeClasses implements SizeClassesMetric {
             //size-1 / MIN_TINY
             return size2idxTab[size - 1 >> LOG2_QUANTUM];
         }
-
+        //向上求取对数，-1，避免size正好是2的指数次幂 时候，x翻倍。 也就是size的对数，x也就是size在二进制中的偏移
         int x = log2((size << 1) - 1);
+        //计算 size 大小所在的分组
         int shift = x < LOG2_SIZE_CLASS_GROUP + LOG2_QUANTUM + 1
                 ? 0 : x - (LOG2_SIZE_CLASS_GROUP + LOG2_QUANTUM);
-
+        //计算组开始所在索引
         int group = shift << LOG2_SIZE_CLASS_GROUP;
-
+        //计算组的增量对数
         int log2Delta = x < LOG2_SIZE_CLASS_GROUP + LOG2_QUANTUM + 1
                 ? LOG2_QUANTUM : x - LOG2_SIZE_CLASS_GROUP - 1;
 
+        //计算出 增量的倍数，并且求余可知道组内的偏移量。
         int mod = size - 1 >> log2Delta & (1 << LOG2_SIZE_CLASS_GROUP) - 1;
 
         return group + mod;
@@ -566,5 +614,28 @@ abstract class SizeClasses implements SizeClassesMetric {
         int delta = 1 << log2Delta;
         int delta_mask = delta - 1;
         return size + delta_mask & ~delta_mask;
+    }
+
+
+    public static void main(String[] args) {
+        //测试对数
+        int i = log2(32);
+        System.out.println(i);
+
+        for(int nDelta=0;nDelta<=4;nDelta++){
+            int log2Ndelta = nDelta == 0? 0 : log2(nDelta);
+            //如果
+            byte remove = 1 << log2Ndelta < nDelta? yes : no;
+            System.out.println("nDelta:"+nDelta+",log2Ndelta:"+log2Ndelta+",remove:"+remove);
+        }
+
+        int group = log2(256) - LOG2_QUANTUM - LOG2_SIZE_CLASS_GROUP + 1;
+        System.out.println("group:"+group);
+
+        SizeClasses sizeClasses = new SizeClasses(8192, 13, 64, 0){};
+
+
+        int calculateSize = calculateSize(4, 0, 4);
+        System.out.println("calculateSize:"+calculateSize);
     }
 }

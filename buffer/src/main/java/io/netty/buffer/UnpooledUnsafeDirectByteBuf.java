@@ -27,7 +27,8 @@ import java.nio.ByteBuffer;
  * {@link UnpooledByteBufAllocator#directBuffer(int, int)}, {@link Unpooled#directBuffer(int)} and
  * {@link Unpooled#wrappedBuffer(ByteBuffer)} instead of calling the constructor explicitly.}
  *
- * ，Unsafe 比 UnpooledDirectByteBuf 多了一个memory 属性。
+ * ，Unsafe 比 UnpooledDirectByteBuf 多了一个memory 属性。为其子类UnpooledUnsafeNoCleanerDirectByteBuf（反射创建底层直接依赖保存属性）
+ *
  */
 public class UnpooledUnsafeDirectByteBuf extends UnpooledDirectByteBuf {
 

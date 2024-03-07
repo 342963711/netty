@@ -83,6 +83,9 @@ public abstract class AbstractByteBuf extends ByteBuf {
     int writerIndex;
     private int markedReaderIndex;
     private int markedWriterIndex;
+    /**
+     * 子类构造进行初始化，在PooledByteBuf 的实现子类中，该值默认是0
+     */
     private int maxCapacity;
 
     protected AbstractByteBuf(int maxCapacity) {

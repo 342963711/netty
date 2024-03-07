@@ -1,0 +1,1 @@
+package io.netty.buffer.manager;import javax.management.MXBean;/** * @author likai * @date 2024/3/7 15:17 * @email likai9376@163.com * @desc */@MXBeanpublic interface ByteBufAllocatorMetricMBean {    long getDirectMemory();    long getHeapMemory();}

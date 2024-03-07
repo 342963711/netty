@@ -21,7 +21,7 @@ import io.netty.util.Recycler;
  * Light-weight object pool.
  * 轻量级的 对象池
  *
- * @param <T> the type of the pooled object
+ * @param <T> the type of the pooled object 。
  */
 public abstract class ObjectPool<T> {
 
@@ -30,12 +30,18 @@ public abstract class ObjectPool<T> {
     /**
      * Get a {@link Object} from the {@link ObjectPool}. The returned {@link Object} may be created via
      * {@link ObjectCreator#newObject(Handle)} if no pooled {@link Object} is ready to be reused.
+     *
+     * 从 ObjectPool获取 一个对象 。 如果没有池化的Object 准备好被复用，返回的对象应该是通过 {@link ObjectCreator#newObject(Handle)}穿件返回的
      */
     public abstract T get();
 
     /**
      * Handle for an pooled {@link Object} that will be used to notify the {@link ObjectPool} once it can
      * reuse the pooled {@link Object} again.
+     *
+     * 池化对象的句柄，一旦池化对象可以被复用。将通知ObjectPool.
+     * @see io.netty.util.Recycler.DefaultHandle
+     * @see io.netty.util.Recycler.Handle
      * @param <T>
      */
     public interface Handle<T> {
@@ -58,7 +64,15 @@ public abstract class ObjectPool<T> {
          * Creates an returns a new {@link Object} that can be used and later recycled via
          * {@link Handle#recycle(Object)}.
          *
-         * 创建一个对象，可以被使用并在之后 通过 Handler 来进行回收
+         * 创建一个对象，可以被使用并在之后 通过 Handler 来进行对象管理。被管理的资源一般都是
+         *
+         * ObjectCreator<DemoResource></> objectCreator = new ObjectCreator() {
+         *             @Override
+         *             public DemoResource newObject(Handle handle) {
+         *                 return DemoResource(handle);
+         *             }
+         * };
+         * 将该 创建器 交给 RecyclerObjectPool<DemoResource> obejctPool = new RecyclerObjectPool(objectCreator);
          *
          * @param handle can NOT be null.
          */
@@ -74,12 +88,14 @@ public abstract class ObjectPool<T> {
     }
 
     /**
-     * 可回收对象池
+     * 对象池ObjectPool的默认实现，
+     * 需要 1.ObjectCreator 来进行 对象池的初始化，
+     * 需要 2.考虑对象回收机制。也就是 Handle 的实现类（交给 RecyclerObjectPool来实现）
      * @param <T>
      */
     private static final class RecyclerObjectPool<T> extends ObjectPool<T> {
 
-        //回收期，匿名类对 ObjectCreator 进行包装。 可以进行对象创建，同时，创建出来的对象都有Handler 可以进行自身回收
+        //回收器，匿名类对 ObjectCreator 进行包装。 可以进行对象创建，同时，创建出来的对象都有Handler 可以进行自身回收
         private final Recycler<T> recycler;
 
         RecyclerObjectPool(final ObjectCreator<T> creator) {
@@ -96,4 +112,5 @@ public abstract class ObjectPool<T> {
             return recycler.get();
         }
     }
+
 }

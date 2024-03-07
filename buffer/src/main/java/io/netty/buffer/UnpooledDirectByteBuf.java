@@ -34,13 +34,17 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
  * A NIO {@link ByteBuffer} based buffer. It is recommended to use
  * {@link UnpooledByteBufAllocator#directBuffer(int, int)}, {@link Unpooled#directBuffer(int)} and
  * {@link Unpooled#wrappedBuffer(ByteBuffer)} instead of calling the constructor explicitly.
- * 一个基于 NIO bytebuffer 的缓冲区，建议使用  UnpooledByteBufAllocator Unpooled Unpooled 而不是直接的调用构造函数
+ * 一个基于 NIO bytebuffer 的缓冲区，建议使用  UnpooledByteBufAllocator和Unpooled创建 ByteBuf,而不是使用UnpooledDirectByteBuf构造函数来进行创建
  *
+ *
+ * 底层存储初始化的核心方法{@link #allocateDirect(int)}.在构造方法中执行
  * @see UnpooledUnsafeDirectByteBuf
  * @see io.netty.buffer.UnpooledByteBufAllocator.InstrumentedUnpooledDirectByteBuf
+ *
+ *
  */
 public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
-
+    //该类的分配器
     private final ByteBufAllocator alloc;
     //对NIO buffer 的包装来进行实现的
     ByteBuffer buffer; // accessed by UnpooledUnsafeNoCleanerDirectByteBuf.reallocateDirect()

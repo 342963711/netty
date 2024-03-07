@@ -15,10 +15,19 @@
  */
 package io.netty.buffer;
 
+import io.netty.buffer.manager.ByteBufAllocatorMetircMBeanService;
+import io.netty.buffer.manager.ByteBufAllocatorMetricMBean;
 import io.netty.util.internal.LongCounter;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.StringUtil;
 
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 
 /**
@@ -32,7 +41,7 @@ import java.nio.ByteBuffer;
  * @see InstrumentedUnpooledUnsafeDirectByteBuf
  * - 是通过ByteBuffer.allocateDirect(initialCapacity); 来创建的 ByteBuffer
  * @see InstrumentedUnpooledUnsafeNoCleanerDirectByteBuf
- * - 可以通过 new
+ *  可以通过 Constructor<?> constructor = direct.getClass().getDeclaredConstructor(long.class, int.class); 使用反射来进行创建
  *
  * @see InstrumentedUnpooledHeapByteBuf
  * @see InstrumentedUnpooledUnsafeHeapByteBuf
@@ -58,6 +67,28 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
     public static final UnpooledByteBufAllocator DEFAULT =
             new UnpooledByteBufAllocator(PlatformDependent.directBufferPreferred());
 
+
+    static {
+        MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+        //创建MBean
+        ByteBufAllocatorMetricMBean byteBufAllocatorMetricMBean = new ByteBufAllocatorMetircMBeanService();
+
+        //注册
+        ObjectName objectName = null;
+        try {
+            objectName = new ObjectName("io.netty.buffer.manager:type=unpool, name=unpooledByteBuf");
+            platformMBeanServer.registerMBean(byteBufAllocatorMetricMBean, objectName);
+        } catch (MalformedObjectNameException e) {
+            throw new RuntimeException(e);
+        } catch (NotCompliantMBeanException e) {
+            throw new RuntimeException(e);
+        } catch (InstanceAlreadyExistsException e) {
+            throw new RuntimeException(e);
+        } catch (MBeanRegistrationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Create a new instance which uses leak-detection for direct buffers.
      * 创建一个队直接内存使用泄露检测的新实例
@@ -78,6 +109,7 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
      *                            direct buffers when not explicit released.
      */
     public UnpooledByteBufAllocator(boolean preferDirect, boolean disableLeakDetector) {
+        //
         this(preferDirect, disableLeakDetector, PlatformDependent.useDirectBufferNoCleaner());
     }
 
@@ -91,7 +123,8 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
      *                            direct buffers when not explicit released.
      * @param tryNoCleaner {@code true} if we should try to use {@link PlatformDependent#allocateDirectNoCleaner(int)}
      *                            to allocate direct memory.
-     *                                 如果是true 的话，应该使用allocateDirectNoCleaner来进行分配内存
+     *                                 如果是true 的话，应该使用allocateDirectNoCleaner来进行分配内存,
+     *                                 //io.netty.maxDirectMemory设置为0是，该值会为false.
      */
     public UnpooledByteBufAllocator(boolean preferDirect, boolean disableLeakDetector, boolean tryNoCleaner) {
         super(preferDirect);
@@ -111,9 +144,11 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
     protected ByteBuf newDirectBuffer(int initialCapacity, int maxCapacity) {
         final ByteBuf buf;
         if (PlatformDependent.hasUnsafe()) {
+            //这里noCleaner 测试为true,创建的内存将不能MBean观察到：
             buf = noCleaner ? new InstrumentedUnpooledUnsafeNoCleanerDirectByteBuf(this, initialCapacity, maxCapacity) :
                     new InstrumentedUnpooledUnsafeDirectByteBuf(this, initialCapacity, maxCapacity);
         } else {
+            //直接通过ByteBuffer.allocateDirect(initialCapacity) 创建
             buf = new InstrumentedUnpooledDirectByteBuf(this, initialCapacity, maxCapacity);
         }
         return disableLeakDetector ? buf : toLeakAwareBuffer(buf);
@@ -157,6 +192,9 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
         metric.heapCounter.add(-amount);
     }
 
+    /**
+     * 堆内存默认创建
+     */
     private static final class InstrumentedUnpooledUnsafeHeapByteBuf extends UnpooledUnsafeHeapByteBuf {
         InstrumentedUnpooledUnsafeHeapByteBuf(UnpooledByteBufAllocator alloc, int initialCapacity, int maxCapacity) {
             super(alloc, initialCapacity, maxCapacity);

@@ -18,6 +18,7 @@ package io.netty.util;
 import io.netty.util.concurrent.FastThreadLocal;
 import io.netty.util.concurrent.FastThreadLocalThread;
 import io.netty.util.internal.ObjectPool;
+import io.netty.util.internal.ObjectPool.Handle;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.SystemPropertyUtil;
 import io.netty.util.internal.logging.InternalLogger;
@@ -35,15 +36,24 @@ import static java.lang.Math.min;
 
 /**
  * Light-weight object pool based on a thread-local stack.
- * 基于本地线程栈 的重量级 对象池
+ * 基于本地线程栈 的轻量 对象池
  *
  * 池对象创建，回收，核心控制类
+ *
+ * 回收的三大类
+ * @see ObjectPool#get()
+ * @see ObjectPool.Handle#recycle(Object)
+ * @see ObjectPool.ObjectCreator#newObject(ObjectPool.Handle) ;
+ *
+ * 默认实现类：
+ * @see ObjectPool.RecyclerObjectPool() 方法中的匿名类实现
  *
  * @param <T> the type of the pooled object ， 池对象的类型
  */
 public abstract class Recycler<T> {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(Recycler.class);
 
+    //创建空的回收类
     private static final Handle<?> NOOP_HANDLE = new Handle<Object>() {
         @Override
         public void recycle(Object object) {
@@ -203,6 +213,12 @@ public abstract class Recycler<T> {
         this(maxCapacityPerThread, ratio, DEFAULT_QUEUE_CHUNK_SIZE_PER_THREAD);
     }
 
+    /**
+     *
+     * @param maxCapacityPerThread 4096
+     * @param ratio 8
+     * @param chunkSize 32
+     */
     protected Recycler(int maxCapacityPerThread, int ratio, int chunkSize) {
         interval = max(0, ratio);
         if (maxCapacityPerThread <= 0) {
@@ -221,13 +237,17 @@ public abstract class Recycler<T> {
         }
         //是一个消费端。
         LocalPool<T> localPool = threadLocal.get();
-        //申请一个handler，用于创建可回收对象
+        //申请一个handler，返回的handler 中持有的对象肯定是可以被使用的。（否则为空）
+        /**
+         * @see DefaultHandle#recycle(Object) 如果创建对象，不执行该方法，则存储 Handler的数组会越来越大
+         */
         DefaultHandle<T> handle = localPool.claim();
         T obj;
         if (handle == null) {
-            //方法用于控制创建可回收对象的频率
+            //创建一个handle。（如果不满足频率，为空）
             handle = localPool.newHandle();
             if (handle != null) {
+                //开始创建对象，并委托给handle
                 obj = newObject(handle);
                 handle.set(obj);
             } else {
@@ -260,7 +280,10 @@ public abstract class Recycler<T> {
     }
 
     /**
-     * @param handle can NOT be null.
+     * @param handle can NOT be null. 用于管理创建的对象
+     * 创建的具体实现，委托给对象创建器。在业务层获取对象时候，去判断是否应该创建对象
+     * @see ObjectPool.ObjectCreator 去实现
+     *
      */
     protected abstract T newObject(Handle<T> handle);
 
@@ -276,10 +299,10 @@ public abstract class Recycler<T> {
      * @param <T>
      */
     private static final class DefaultHandle<T> implements Handle<T> {
-        //初始化为可回收状态
+        //初始化为可回收状态，不可被再次使用。
         private static final int STATE_CLAIMED = 0;
 
-        //标记为已回收
+        //标记为已回收，可以被使用
         private static final int STATE_AVAILABLE = 1;
 
         private static final AtomicIntegerFieldUpdater<DefaultHandle<?>> STATE_UPDATER;
@@ -293,13 +316,21 @@ public abstract class Recycler<T> {
 
         //通过该对象来进行回收
         private final LocalPool<T> localPool;
+        //持有的对象
         private T value;
 
-        //回收本地池中的对象
+        /**
+         * 回收器操作 委托给 LocalPool 去实现
+         * @param localPool
+         */
         DefaultHandle(LocalPool<T> localPool) {
             this.localPool = localPool;
         }
 
+        /**
+         * 回收对象，回收的对象一定是与当前回收操作类持有的对象是同一个对象
+         * @param object
+         */
         @Override
         public void recycle(Object object) {
             if (object != value) {
@@ -308,19 +339,33 @@ public abstract class Recycler<T> {
             localPool.release(this);
         }
 
+        /**
+         * 设置回收器 管理的对象
+         * @return
+         */
         T get() {
             return value;
         }
 
+        /**
+         * 设置回收器管理的对象
+         * @param value
+         */
         void set(T value) {
             this.value = value;
         }
 
+        /**
+         * 标记为 被使用
+         */
         void toClaimed() {
             assert state == STATE_AVAILABLE;
             state = STATE_CLAIMED;
         }
 
+        /**
+         * 标记为可使用
+         */
         void toAvailable() {
             int prev = STATE_UPDATER.getAndSet(this, STATE_AVAILABLE);
             if (prev == STATE_AVAILABLE) {
@@ -330,7 +375,9 @@ public abstract class Recycler<T> {
     }
 
     /**
-     * 本地池, 主要是管理 DefaultHandle 的创建和
+     * 本地池, 主要是管理 DefaultHandle 的创建
+     *
+     * MessagePassingQueue 队列的消费实现
      * @param <T>
      */
     private static final class LocalPool<T> implements MessagePassingQueue.Consumer<DefaultHandle<T>> {
@@ -344,7 +391,11 @@ public abstract class Recycler<T> {
          */
         private final int chunkSize;
 
+        /**
+         * 该队列中 回收器的对象 都是可以被使用的状态
+         */
         private final ArrayDeque<DefaultHandle<T>> batch;
+
         private volatile Thread owner;
         /**
          * 消息传递队列，多生产者，单消费者
@@ -384,27 +435,42 @@ public abstract class Recycler<T> {
             if (handles == null) {
                 return null;
             }
+            //如果可用为空
             if (batch.isEmpty()) {
+                //进行消费
                 handles.drain(this, chunkSize);
             }
+            //再次获取一个回收handle.
             DefaultHandle<T> handle = batch.pollFirst();
+            //获取到的handle不为空
             if (null != handle) {
+                //标记handle中对象状态为被使用
                 handle.toClaimed();
             }
+            //从队列中返回handle
             return handle;
         }
 
+        /**
+         * 回收池中一个对象
+         * @param handle
+         */
         void release(DefaultHandle<T> handle) {
+            //回收器中对象的状态更改为可用
             handle.toAvailable();
             Thread owner = this.owner;
             if (owner != null && Thread.currentThread() == owner && batch.size() < chunkSize) {
+                //放入到 可用队列中
                 accept(handle);
             } else if (owner != null && owner.getState() == Thread.State.TERMINATED) {
+                //如果线程状态异常，清理资源，GC
                 this.owner = null;
                 pooledHandles = null;
             } else {
+                // 添加到 MessagePassingQueue 中
                 MessagePassingQueue<DefaultHandle<T>> handles = pooledHandles;
                 if (handles != null) {
+                    //添加到消费队列中
                     handles.relaxedOffer(handle);
                 }
             }
@@ -419,6 +485,10 @@ public abstract class Recycler<T> {
             return null;
         }
 
+        /**
+         * 可以处理 回收操作
+         * @param e not {@code null}
+         */
         @Override
         public void accept(DefaultHandle<T> e) {
             batch.addLast(e);

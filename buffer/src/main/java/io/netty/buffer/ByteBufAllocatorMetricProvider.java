@@ -15,6 +15,13 @@
  */
 package io.netty.buffer;
 
+/**
+ *
+ *
+ * 子类
+ * @see PooledByteBufAllocator
+ * @see UnpooledByteBufAllocator
+ */
 public interface ByteBufAllocatorMetricProvider {
 
     /**

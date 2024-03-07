@@ -34,7 +34,8 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  * Big endian Java heap buffer implementation. It is recommended to use
  * {@link UnpooledByteBufAllocator#heapBuffer(int, int)}, {@link Unpooled#buffer(int)} and
  * {@link Unpooled#wrappedBuffer(byte[])} instead of calling the constructor explicitly.
- *
+ * 
+ * 核心初始化底层存储方法 {@link #allocateArray(int)}，在构造方法中执行。
  *
  * @see UnpooledUnsafeHeapByteBuf
  * @see io.netty.buffer.UnpooledByteBufAllocator.InstrumentedUnpooledHeapByteBuf

@@ -583,6 +583,7 @@ final class PlatformDependent0 {
         return ALLOCATE_ARRAY_METHOD != null;
     }
 
+
     static byte[] allocateUninitializedArray(int size) {
         try {
             return (byte[]) ALLOCATE_ARRAY_METHOD.invoke(INTERNAL_UNSAFE, byte.class, size);

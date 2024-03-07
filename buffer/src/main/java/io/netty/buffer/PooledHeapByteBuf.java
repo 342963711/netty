@@ -256,6 +256,7 @@ class PooledHeapByteBuf extends PooledByteBuf<byte[]> {
 
     @Override
     protected final ByteBuffer newInternalNioBuffer(byte[] memory) {
+        //包装 为ByteBuffer
         return ByteBuffer.wrap(memory);
     }
 }

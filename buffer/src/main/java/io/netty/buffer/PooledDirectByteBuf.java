@@ -57,8 +57,24 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
         super(recyclerHandle, maxCapacity);
     }
 
+    /**
+     * 创建一个新的Nio 缓冲区
+     * @param memory {@link #memory}
+     * @return
+     */
     @Override
     protected ByteBuffer newInternalNioBuffer(ByteBuffer memory) {
+        /**
+         * 创建一个共享此缓冲区内容的新字节缓冲区。
+         *
+         * 新缓冲区的内容将是该缓冲区的属性。
+         *
+         * 对该缓冲区内容的更改将在新缓冲区中可见，反之亦然；两个缓冲区的位置、限制和标记值将是独立的。
+         *
+         * 新缓冲区的容量、限制、位置和标记值将与此缓冲区的值相同。
+         *
+         * 当且仅当此缓冲区为直接缓冲区时，新缓冲区将为直接缓冲区；当且仅当此缓冲区是只读缓冲区时，它将为只读缓冲区。
+         */
         return memory.duplicate();
     }
 

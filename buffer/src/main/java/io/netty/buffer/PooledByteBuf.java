@@ -28,9 +28,10 @@ import java.nio.channels.ScatteringByteChannel;
 
 /**
  * 内存的除了UnpooledDirectByteBuf 非池化的另外一种类型，池化字节缓冲区的抽象基础类
- * 该类的实现类，初始化基本都是通过静态方法来初始化，统一交给{@link PoolArena} 来进行池化管理
+ * 该类的实现类，初始化基本都是通过静态方法来初始化，
+ * 统一交给{@link PoolArena} 来进行池化管理
  *
- * 该类优化了底层{@link #tmpNioBuf}的操作不便
+ * 该类优化了底层{@link #tmpNioBuf}的操作不便, 构建 抽象方法：newInternalNioBuffer，由底层实现类进行实现
  * @param <T>
  *
  * @see PooledDirectByteBuf
@@ -153,7 +154,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
     /**
      * Method must be called before reuse this {@link PooledByteBufAllocator}
-     * 在重用内存分配前必须调用
+     * 在重用内存分配前必须调用，重置池化字节缓冲
      */
     final void reuse(int maxCapacity) {
         maxCapacity(maxCapacity);
