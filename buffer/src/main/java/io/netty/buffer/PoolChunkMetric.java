@@ -17,6 +17,7 @@ package io.netty.buffer;
 
 /**
  * Metrics for a chunk.
+ * chunk的监控指标
  */
 public interface PoolChunkMetric {
 

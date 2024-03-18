@@ -22,13 +22,13 @@ import java.util.List;
  * Expose metrics for an arena.
  *
  * @see PoolArena
- * 为一个活动场所 暴露指标
+ * 为一个 PoolArena 暴露指标
  */
 public interface PoolArenaMetric extends SizeClassesMetric {
 
     /**
      * Returns the number of thread caches backed by this arena.
-     * 返回支持的线程缓存数
+     * 返回 arena 支持的 线程缓存数量
      */
     int numThreadCaches();
 

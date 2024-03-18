@@ -30,10 +30,9 @@ import java.nio.ByteBuffer;
 /**
  * 该类主要是维护 PoolChunk 的 使用率，根据不同的使用率将 PoolChunk 进行漂移管理
  * 主要分为
- * 1.PoolChunk 所属的 PoolChunkList
- *
  * 2.PoolChunk的分配调用
  * 3.PoolChunk的释放调用
+ * 4.PoolChunk的初始话交给PoolArena。之后交给本类来进行管理
  * @param <T>
  */
 final class PoolChunkList<T> implements PoolChunkListMetric {
@@ -42,22 +41,28 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
      * 该块列表所属于的 池化区域
      */
     private final PoolArena<T> arena;
-    /**
-     * 下一个块列
-     */
-    private final PoolChunkList<T> nextList;
+
     //限制的最小利用率
     private final int minUsage;
     //限制的最大利用率
     private final int maxUsage;
     //可分配的最大容量
     private final int maxCapacity;
+    //池块 头节点
     private PoolChunk<T> head;
+
+    //最小空闲阈值
     private final int freeMinThreshold;
+    //最大空闲阈值
     private final int freeMaxThreshold;
 
     // This is only update once when create the linked like list of PoolChunkList in PoolArena constructor.
     private PoolChunkList<T> prevList;
+
+    /**
+     * 下一个块列
+     */
+    private final PoolChunkList<T> nextList;
 
     // TODO: Test if adding padding helps under contention
     //private long pad0, pad1, pad2, pad3, pad4, pad5, pad6, pad7;
@@ -68,6 +73,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         this.nextList = nextList;
         this.minUsage = minUsage;
         this.maxUsage = maxUsage;
+        //计算可用最大容量，根据最小使用量，因为，这个块链中的缓冲块，都肯定超过 最小使用量后，才会被保存到这个链表中
         maxCapacity = calculateMaxCapacity(minUsage, chunkSize);
 
         // the thresholds are aligned with PoolChunk.usage() logic:

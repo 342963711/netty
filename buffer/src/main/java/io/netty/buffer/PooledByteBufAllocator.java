@@ -37,12 +37,13 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 池化 内存分配的入口。
- * 包括
- * 1.对{@link PoolArena} 的初始化
  *
- * 2.对{@link PoolThreadLocalCache} 池化 本地线程缓存
+ * 核心功能：也是实现抽象类的两个方法
+ * {@link #newHeapBuffer(int, int),#newDirectBuffer(int, int)}}
  *
- * 3.
+ *
+ * 1.PoolArena 对象创建
+ * 2.调用 PoolArena进行分配heapArena.allocate(cache, initialCapacity, maxCapacity);
  */
 public class PooledByteBufAllocator extends AbstractByteBufAllocator implements ByteBufAllocatorMetricProvider {
 
@@ -83,7 +84,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     //默认情况下使用1023，因为我们使用ArrayDeque作为后备存储，然后它将分配1024个元素的内部阵列。
     //否则，我们将分配2048，而只使用1024，这是浪费。
     static final int DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK;
-
+    //最小页限制
     private static final int MIN_PAGE_SIZE = 4096;
     //2^30 MAX_CHUNK_SIZE=Integer.MIN_VALUE>>>1; 无符号右移
     private static final int MAX_CHUNK_SIZE = (int) (((long) Integer.MAX_VALUE + 1) / 2);
@@ -213,6 +214,9 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         }
     }
 
+    /**
+     * 默认的池化字节缓冲 分配器
+     */
     public static final PooledByteBufAllocator DEFAULT =
             new PooledByteBufAllocator(PlatformDependent.directBufferPreferred());
 
@@ -224,8 +228,10 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     private final int smallCacheSize;
     //64
     private final int normalCacheSize;
+
     private final List<PoolArenaMetric> heapArenaMetrics;
     private final List<PoolArenaMetric> directArenaMetrics;
+    //线程局部变量。
     private final PoolThreadLocalCache threadCache;
     //4194304 (4MB)-> DEFAULT_PAGE_SIZE<<DEFAULT_MAX_ORDER
     private final int chunkSize;
@@ -331,7 +337,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
             // Ensure page size is a whole multiple of the alignment, or bump it to the next whole multiple.
             pageSize = (int) PlatformDependent.align(pageSize, directMemoryCacheAlignment);
         }
-
+        //maxOrder 相当于页面的倍数
         chunkSize = validateAndCalculateChunkSize(pageSize, maxOrder);
 
         checkPositiveOrZero(nHeapArena, "nHeapArena");
@@ -346,9 +352,9 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
             throw new IllegalArgumentException("directMemoryCacheAlignment: "
                     + directMemoryCacheAlignment + " (expected: power of two)");
         }
-
+        //计算页大小位移数量
         int pageShifts = validateAndCalculatePageShifts(pageSize, directMemoryCacheAlignment);
-
+        //
         if (nHeapArena > 0) {
             heapArenas = newArenaArray(nHeapArena);
             List<PoolArenaMetric> metrics = new ArrayList<PoolArenaMetric>(heapArenas.length);
@@ -404,6 +410,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         return Integer.SIZE - 1 - Integer.numberOfLeadingZeros(pageSize);
     }
 
+
     /**
      * 计算页面做移动数量
      * @param pageSize
@@ -444,6 +451,12 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         return toLeakAwareBuffer(buf);
     }
 
+    /**
+     * 执行分配 ByteBuf
+     * @param initialCapacity 初始化容量，客户端需要的容量
+     * @param maxCapacity 限制的最大容量。默认值：Integer.MAX_VALUE
+     * @return
+     */
     @Override
     protected ByteBuf newDirectBuffer(int initialCapacity, int maxCapacity) {
         PoolThreadCache cache = threadCache.get();
@@ -451,6 +464,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         PoolArena<ByteBuffer> directArena = cache.directArena;
 
         final ByteBuf buf;
+        //这里需要执行在特定的线程中执行
         if (directArena != null) {
             buf = directArena.allocate(cache, initialCapacity, maxCapacity);
         } else {
@@ -558,6 +572,10 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         threadCache.remove();
     }
 
+    /**
+     * 线程局部变量。存储的是
+     * PoolThreadCache
+     */
     private final class PoolThreadLocalCache extends FastThreadLocal<PoolThreadCache> {
         private final boolean useCacheForAllThreads;
 
@@ -855,5 +873,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     public static void main(String[] args) {
         int i = validateAndCalculateChunkSize(8192, 9);
         System.out.println("------size:"+i);
+
+        System.out.println(Integer.SIZE-1-Integer.numberOfLeadingZeros(8192));
     }
 }

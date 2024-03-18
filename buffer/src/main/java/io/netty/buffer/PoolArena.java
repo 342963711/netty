@@ -46,6 +46,7 @@ import static java.lang.Math.max;
  * 内存分配的核心类：
  * @see
  *
+ *
  * 1：该类核心方法是 处理分配 {@link #allocate(PoolThreadCache, int, int)}, 该方法的访问区域是 default，
  * 分配方法的调用是交给 {@link PooledByteBufAllocator} 来进行调用的
  * 2：内存管理，重点newChunk(int, int, int, int)} 方法
@@ -198,18 +199,23 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
      * 1.被{@link PooledByteBufAllocator}调用
      * 核心执行，执行分配，
      * @param cache
-     * @param reqCapacity
-     * @param maxCapacity
+     * @param reqCapacity 请求内存大小
+     * @param maxCapacity 默认最大容量：默认情况是Integer.MAX_VALUE
      * @return 返回分配的 PooledByteBuf
      */
     PooledByteBuf<T> allocate(PoolThreadCache cache, int reqCapacity, int maxCapacity) {
-        //创建一个 池化字节缓冲区，池化字节缓冲区还未初始化
+        //创建一个 池化字节缓冲区，池化字节缓冲区还未初始化,从ObjectPool中获取一个对象
         PooledByteBuf<T> buf = newByteBuf(maxCapacity);
-        //执行具体的分配，并且执行字节缓冲区的初始化
         allocate(cache, buf, reqCapacity);
         return buf;
     }
 
+    /**
+     * 根据请求容量 使用不同的分配方式
+     * @param cache
+     * @param buf
+     * @param reqCapacity 请求容量
+     */
     private void allocate(PoolThreadCache cache, PooledByteBuf<T> buf, final int reqCapacity) {
         final int sizeIdx = size2SizeIdx(reqCapacity);
         //判断是否小于最大子页索引
@@ -247,7 +253,7 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
         try {
             final PoolSubpage<T> s = head.next;
             needsNormalAllocation = s == head;
-            ////如果 页节点已经初始化
+            //如果 页节点已经初始化
             if (!needsNormalAllocation) {
                 assert s.doNotDestroy && s.elemSize == sizeIdx2size(sizeIdx) : "doNotDestroy=" +
                         s.doNotDestroy + ", elemSize=" + s.elemSize + ", sizeIdx=" + sizeIdx;
@@ -289,7 +295,8 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
     }
 
     /**
-     *
+     * 1.分配正常大小
+     * 2.初始化内存块 poolChunk
      * @param buf 分配出来的字节缓冲区
      * @param reqCapacity 请求容量
      * @param sizeIdx 请求容量对应的表格索引

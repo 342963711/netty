@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
  *
  * byte[] 数组的操作  由{@link HeapByteBufUtil} 来提供支持
  *
- * @see PooledUnsafeHeapByteBuf
+ * @see PooledUnsafeHeapByteBuf 这两个类创建byte[] 数组的方式不同。
  *
  */
 class PooledHeapByteBuf extends PooledByteBuf<byte[]> {

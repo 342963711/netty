@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <a href="https://www.facebook.com/notes/facebook-engineering/scalable-memory-allocation-using-jemalloc/480222803919">
  * Scalable memory allocation using jemalloc</a>.
  *
+ * 放到线程局部变量中。
  * 充当线程缓冲，与jemalloc 类似，都包含thread cache的特性。
  */
 final class PoolThreadCache {
@@ -163,6 +164,7 @@ final class PoolThreadCache {
 
     /**
      * Try to allocate a small buffer out of the cache. Returns {@code true} if successful {@code false} otherwise
+     * 尝试从cache中分配一个小缓冲区
      */
     boolean allocateSmall(PoolArena<?> area, PooledByteBuf<?> buf, int reqCapacity, int sizeIdx) {
         return allocate(cacheForSmall(area, sizeIdx), buf, reqCapacity);
@@ -369,6 +371,12 @@ final class PoolThreadCache {
         }
     }
 
+    /**
+     * 内存区域缓存
+     * @see NormalMemoryRegionCache
+     * @see SubPageMemoryRegionCache
+     * @param <T>
+     */
     private abstract static class MemoryRegionCache<T> {
         private final int size;
         private final Queue<Entry<T>> queue;

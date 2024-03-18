@@ -39,6 +39,9 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     //默认初始化容量 256 byte
     static final int DEFAULT_INITIAL_CAPACITY = 256;
 
+    /**
+     * 默认最大容量
+     */
     static final int DEFAULT_MAX_CAPACITY = Integer.MAX_VALUE;
 
     //默认最大组件
