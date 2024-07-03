@@ -121,6 +121,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         this.name = ObjectUtil.checkNotNull(name, "name");
         this.pipeline = pipeline;
         this.executor = executor;
+        //对包含的channelHandler 进行编码
         this.executionMask = mask(handlerClass);
         // Its ordered if its driven by the EventLoop or the given Executor is an instanceof OrderedEventExecutor.
         // 如果它由EventLoop驱动，或者给定的Executor是OrderedEventExecutor的实例，则它是有序的。
@@ -444,6 +445,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
 
     /**
      * 为 pipeline 提供的静态辅助方法，用于触发到ctx 级别的链路调用，也用于本身的合适的ctx 发起 的链路调用，
+     * 这里控制 ctx 向下一个 ctx 的链路过度。因为每个ctx中包含有handler.所以也就是实现了过滤器
      * @param next 给定的ctx
      * @param msg
      */
@@ -462,12 +464,19 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         }
     }
 
+    /**
+     * 这里会被 context 的下一个类来调用。也就控制着 实现了 过滤器链 的设计模式
+     *
+     * @param msg
+     */
     private void invokeChannelRead(Object msg) {
+        //判断是否可以调用
         if (invokeHandler()) {
             try {
                 // DON'T CHANGE
                 // Duplex handlers implements both out/in interfaces causing a scalability issue
                 // see https://bugs.openjdk.org/browse/JDK-8180450
+
                 final ChannelHandler handler = handler();
                 final DefaultChannelPipeline.HeadContext headContext = pipeline.head;
                 if (handler == headContext) {

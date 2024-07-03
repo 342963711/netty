@@ -53,7 +53,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * This ensures that when we request for memory segments of size > pageSize the normalizedCapacity
  * equals the next nearest size in {@link SizeClasses}.
  *
- * 为了简单期间，所有大小都根据 PoolArena#size2SizeIdx(int)方法标准化。
+ * 为了简单，所有大小都根据 PoolArena#size2SizeIdx(int)方法标准化。
  * 这确保了当我们请求大小大于pageSize内存段时，normalizedCapacity（标准化容量）等于SizeClasses中下一个最近的大小
  *
  *  A chunk has the following layout:
@@ -210,13 +210,19 @@ final class PoolChunk<T> implements PoolChunkMetric {
     /**
      * store the first page and last page of each avail run
      * 存储每次可用运行的第一页和最后一页
+     *
+     * key runOffset
+     * value : handle
      */
     private final LongLongHashMap runsAvailMap;
 
     /**
      * manage all avail runs
-     * 管理所有可用运行,有序队列
-     * {@link SizeClasses#nPSizes} 是isMultiPageSize 的总数
+     * 管理所有可用运行,有序队列 [0...nPages]
+     * {@link SizeClasses#nPSizes} 是isMultiPageSize为true 的总数 = runsAvail.length
+     * 0 1pages [递增队列]
+     *
+     * 1 2pages [递增队列]
      */
     private final LongPriorityQueue[] runsAvail;
 
@@ -284,7 +290,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
      * @param base ByteBuffer
      * @param memory ByteBuffer
      * @param pageSize 8192
-     * @param pageShifts 13
+     * @param pageShifts 13  用于快速计算
      * @param chunkSize 4MB
      * @param maxPageIdx 32(在PoolArena中计算出来的nPSizes 字段值，也就是二维表中，总的页面数量)
      */
@@ -298,24 +304,25 @@ final class PoolChunk<T> implements PoolChunkMetric {
         this.pageShifts = pageShifts;
         this.chunkSize = chunkSize;
         freeBytes = chunkSize;
-        //根据默认值 来创建 每种 类型的页面对应的 队列（总计32种类型的页面）
+        //根据默认值 来创建 每种 类型的页面对应的 队列（pageIdx2SizeTab.length）
         runsAvail = newRunsAvailqueueArray(maxPageIdx);
         runsAvailLock = new ReentrantLock();
         runsAvailMap = new LongLongHashMap(-1);
-        //创建页面，总块的大小/页面大小[4MB/8KB]=512
+        //创建页面，总块的大小/页面大小
         subpages = new PoolSubpage[chunkSize >> pageShifts];
 
         //insert initial run, offset = 0, pages = chunkSize / pageSize
         // 插入初始运行，偏移量=0，pages=chunkSize/pageSize
         int pages = chunkSize >> pageShifts;
         long initHandle = (long) pages << SIZE_SHIFT;
+        //初始化 可运行 数据到队列中。
         insertAvailRun(0, pages, initHandle);
 
         cachedNioBuffers = new ArrayDeque<ByteBuffer>(8);
     }
 
     /** Creates a special chunk that is not pooled.
-     * 创建 一个 非池化的特殊块，
+     * 创建 一个 非池化的特殊块。也就是不存在内存画布，只维护  base和 memory.也就是真实的底层存储
      * */
     PoolChunk(PoolArena<T> arena, Object base, T memory, int size) {
         unpooled = true;
@@ -341,16 +348,18 @@ final class PoolChunk<T> implements PoolChunkMetric {
     }
 
     /**
+     * 添加 可用的 运行 到 runsAvail 和 runsAvailMap中
      * 插入可用运行,在对象初始化，释放内存，分配大内存需要切割时调用
      * @param runOffset 运行偏移量，高15位
-     * @param pages  本次插入的运行页面数量，高30位的 低15位
+     * @param pages  本次插入的运行页面数量，高30位的 低15位 （pages 表示 页面大小的 倍数）
      * @param handle 根据 pages 和  runOffset 计算 出来的 对应的 位标识数值
      */
     private void insertAvailRun(int runOffset, int pages, long handle) {
         //这里是512 倍大小的页面，其实就是请求4MB,大小对应的 pageIdx。也就是31（也就是根据 需要的页面数量 从 二维表中计算 pageIdx）
         int pageIdxFloor = arena.pages2pageIdxFloor(pages);
-        //查到到 该页 索引对应的队列
+        //对应页面数量的 队列
         LongPriorityQueue queue = runsAvail[pageIdxFloor];
+        //该队列中保存的handle 表示的 size 位，的值都是 pages
         queue.offer(handle);
 
         //insert first page of run
@@ -363,6 +372,11 @@ final class PoolChunk<T> implements PoolChunkMetric {
         }
     }
 
+    /**
+     * 保存到runsAvailMap .map中的值都是可用于分配的。通过偏移量，查找 handle,找到对应的handle 就知道还有多少页。
+     * @param runOffset
+     * @param handle
+     */
     private void insertAvailRun0(int runOffset, long handle) {
         long pre = runsAvailMap.put(runOffset, handle);
         assert pre == -1;
@@ -374,18 +388,31 @@ final class PoolChunk<T> implements PoolChunkMetric {
         removeAvailRun0(handle);
     }
 
+    /**
+     * （从runsAvailMa中）删除可用 的运行
+     * @param handle
+     */
     private void removeAvailRun0(long handle) {
+        //获取 运行偏移量
         int runOffset = runOffset(handle);
+        //获取 对应运行偏移量 对应的页面数量
         int pages = runPages(handle);
+        // 删除运行的第一个页面
         //remove first page of run
         runsAvailMap.remove(runOffset);
         //如果 pages >1 表示的是 需要申请连续的块，
         if (pages > 1) {
-            //remove last page of run //删除运行的最后一页
+            //remove last page of run //删除运行的最后一页（因为天剑的时候，也是添加第一个页面，添加最后一个页面）
             runsAvailMap.remove(lastPage(runOffset, pages));
         }
     }
 
+    /**
+     * 计算最后一个页
+     * @param runOffset
+     * @param pages
+     * @return
+     */
     private static int lastPage(int runOffset, int pages) {
         return runOffset + pages - 1;
     }
@@ -473,11 +500,12 @@ final class PoolChunk<T> implements PoolChunkMetric {
      * 如果该可用运行句柄 表示的页数>本次运行需要的业务，则从新计算下次可用运行，并添加到runsAvail 中
      *
      *
-     * @param runSize 运行大小
+     * @param runSize 运行大小【满足二维表格中的 isMultiPageSize==1】
      * @return 返回 运行大小 对应的运行句柄
      */
     private long allocateRun(int runSize) {
         int pages = runSize >> pageShifts;
+        //查找页面大小倍数 对应的 查找表索引
         int pageIdx = arena.pages2pageIdx(pages);
 
         runsAvailLock.lock();
@@ -488,20 +516,21 @@ final class PoolChunk<T> implements PoolChunkMetric {
             if (queueIdx == -1) {
                 return -1;
             }
-            //get run with min offset in this queue
+            //get run with min offset in this queue【在队里中获取最小的运行偏移量】
             LongPriorityQueue queue = runsAvail[queueIdx];
             long handle = queue.poll();
 
             assert handle != LongPriorityQueue.NO_VALUE && !isUsed(handle) : "invalid handle: " + handle;
-
+            // 删除 handle 对应 的run(从runsAvailMap中删除)
             removeAvailRun0(handle);
 
             if (handle != -1) {
-                //重新标记下次可用运行，并根据pages（需要页数）计算本次运行句柄
+                //并根据pages（需要页数）计算本次运行句柄。
                 handle = splitLargeRun(handle, pages);
             }
             //计算运行句柄 对应的 内存大小
             int pinnedSize = runSize(pageShifts, handle);
+            //空闲字节减少
             freeBytes -= pinnedSize;
             return handle;
         } finally {
@@ -510,7 +539,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
     }
 
     /**
-     * 计算 sizeIdx 对应 的 elemSize 与 pageSize 的最小公倍数
+     * 计算出 能满足请求容量的最小标准大小（elemSize）。计算出来runSize 是 pageSize和elemSize的最小公倍数。可以进行多次分配这种容量大小的请求
      * @param sizeIdx
      * @return
      */
@@ -540,8 +569,13 @@ final class PoolChunk<T> implements PoolChunkMetric {
         return runSize;
     }
 
+    /**
+     * 查找出最小的pageIdx （pageIdx 有对应 运行队列的）
+     * @param pageIdx
+     * @return
+     */
     private int runFirstBestFit(int pageIdx) {
-        //如果 还未进行初始化，直接返回最后一页索引值
+        //如果 还未进行初始化，返回最大页的索引
         if (freeBytes == chunkSize) {
             return arena.nPSizes - 1;
         }
@@ -558,31 +592,36 @@ final class PoolChunk<T> implements PoolChunkMetric {
      * 拆分大的运行，返回对应需要页数的运行句柄
      * @param handle 页面标识 位图标示
      * @param needPages 需要的页面数量
-     * @return
+     * @return 从handle 中分配 出 needPages 后，重新计算的handle
+     *
+     * 1.计算handle 的size 位，isUsed 位
+     * 2.保存 handle 剩余 可用的信息（通过 insertAvailRun 方法）【如果有的话】
+     * 3.返回从 handle 中 分配出 needPages 后的 handle
      */
     private long splitLargeRun(long handle, int needPages) {
         assert needPages > 0;
         //此handle 标识的 页面数量需要大于申请的页面数量
         int totalPages = runPages(handle);
         assert needPages <= totalPages;
-
+        //剩余可用页面
         int remPages = totalPages - needPages;
 
         //剩余页面大于0（remainder）
         if (remPages > 0) {
-            //获取到 运行 偏移量
+            //获取到 运行 现在的开始偏移量
             int runOffset = runOffset(handle);
 
             // keep track of trailing unused pages for later use
-            // 跟踪尾随未使用的页面以备日后使用
+            // 跟踪尾随未使用的页面以备日后使用（当前运行偏移量+将要被使用的，作为开始偏移量，结束偏移量保持不变）
             int availOffset = runOffset + needPages;
             long availRun = toRunHandle(availOffset, remPages, 0);
+            // 保存 availRun 可用运行
             insertAvailRun(availOffset, remPages, availRun);
 
-            // not avail，返回本次运行句柄，并标记为使用
+            // not avail，返回 本次 需要needPages 后 的 运行，并标记为正在使用。
             return toRunHandle(runOffset, needPages, 1);
         }
-
+        //剩余页面不大于0，直接标记为使用
         //mark it as used
         handle |= 1L << IS_USED_SHIFT;
         return handle;
@@ -858,7 +897,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
     }
 
     /**
-     * 计算 该 handle 对应的 标识页面数量的 值，也就是 高30位中的低15位
+     * 计算 该 handle 对应的 标识页面数量的 值，也就是 高30位中的低15位 。也就是页面数量
      * @param handle
      * @return
      */

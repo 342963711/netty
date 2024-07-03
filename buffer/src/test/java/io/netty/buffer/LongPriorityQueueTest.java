@@ -153,10 +153,19 @@ class LongPriorityQueueTest {
 
     @Test
     public void priorityQueInfo(){
-        LongPriorityQueue pq = new LongPriorityQueue();
 
-        pq.offer(100);
-        pq.offer(99);
-        pq.offer(101);
+        LongPriorityQueue longPriorityQueue = new LongPriorityQueue();
+
+        longPriorityQueue.offer(1);
+
+        longPriorityQueue.offer(10);
+
+        longPriorityQueue.offer(11);
+
+        long poll = longPriorityQueue.poll();
+        System.out.println(poll);
+//        pq.offer(100);
+//        pq.offer(99);
+//        pq.offer(101);
     }
 }

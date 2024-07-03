@@ -51,7 +51,7 @@ import java.util.concurrent.RejectedExecutionException;
  * AbstractChannel 具体实现的参考类参考下面的
  *
  * @see AbstractServerChannel  服务端的抽象通道类（没什么使用，只是为了本地channel来进行的实现，不进行实际通信）
- * @see io.netty.channel.nio.AbstractNioChannel  NIO 抽象通道类
+ * @see io.netty.channel.nio.AbstractNioChannel  NIO 抽象通道类（重要类）
  *
  * //以下可以进行参考
  * @see io.netty.channel.epoll.AbstractEpollChannel

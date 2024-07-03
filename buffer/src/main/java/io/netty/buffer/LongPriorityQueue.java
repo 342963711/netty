@@ -30,6 +30,10 @@ final class LongPriorityQueue {
     private long[] array = new long[9];
     private int size;
 
+    /**
+     * 保证添加的元素，在数组索引上是递增的
+     * @param handle
+     */
     public void offer(long handle) {
         if (handle == NO_VALUE) {
             throw new IllegalArgumentException("The NO_VALUE (" + NO_VALUE + ") cannot be added to the queue.");
@@ -43,6 +47,11 @@ final class LongPriorityQueue {
         lift(size);
     }
 
+
+    /**
+     * 删除元素
+     * @param value
+     */
     public void remove(long value) {
         for (int i = 1; i <= size; i++) {
             if (array[i] == value) {
@@ -79,11 +88,12 @@ final class LongPriorityQueue {
 
 
     /**
-     * 按照 升序排序
+     * 保证 index 之前的索引位上的元素 是递增的
      * @param index
      */
     private void lift(int index) {
         int parentIndex;
+        //保证低索引 对应值是递增的
         while (index > 1 && subord(parentIndex = index >> 1, index)) {
             swap(index, parentIndex);
             index = parentIndex;
@@ -96,6 +106,7 @@ final class LongPriorityQueue {
             if (child < size && subord(child, child + 1)) {
                 child++;
             }
+            //
             if (!subord(index, child)) {
                 break;
             }
@@ -104,6 +115,10 @@ final class LongPriorityQueue {
         }
     }
 
+    /**
+     * 值越大，优先级越低，需要移位
+     * a索引对应的值，大于b索引对应的值，返回true
+      */
     private boolean subord(int a, int b) {
         return array[a] > array[b];
     }

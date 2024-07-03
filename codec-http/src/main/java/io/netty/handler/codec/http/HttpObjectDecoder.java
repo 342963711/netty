@@ -160,7 +160,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * {@link ChannelPipeline}.  However, please note that your server might not
  * be as memory efficient as without the aggregator.
  *
- * 如果为了方便起见，您不想自己处理｛@link HttpContent｝s，请在｛@linkChannelPipeline｝中的解码器后面插入｛@LinkHttpObjectAggregator｝。
+ * 如果为了方便起见，您不想自己处理｛@link HttpContent｝s，请在{@link ChannelPipeline}中的解码器后面插入
+ * {@link HttpObjectAggregator}。
  * 但是，请注意，您的服务器可能不像没有聚合器那样具有内存效率。
  *
  * <h3>Extensibility</h3>

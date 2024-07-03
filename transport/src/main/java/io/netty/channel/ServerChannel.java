@@ -28,7 +28,7 @@ import io.netty.channel.socket.ServerSocketChannel;
  * @see io.netty.channel.epoll.AbstractEpollServerChannel
  * @see io.netty.channel.kqueue.AbstractKQueueServerChannel
  *
- * @see AbstractServerChannel
+ * @see AbstractServerChannel （仅测试）
  *
  *
  * @see ServerSocketChannel

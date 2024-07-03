@@ -313,8 +313,8 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
      * @param preferDirect true/false
      * @param nHeapArena 16  创建的堆类型 缓冲域 的数量
      * @param nDirectArena 16  创建的直接内存类型 缓冲域 的数量
-     * @param pageSize 8192
-     * @param maxOrder 9
+     * @param pageSize 8192  根据 页 大小会计算出 pageShift
+     * @param maxOrder 9     根据 maxOrder 和 pageSize 计算出 chunkSize 的大小
      * @param smallCacheSize  256
      * @param normalCacheSize 64
      * @param useCacheForAllThreads false
@@ -415,9 +415,10 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
      * 计算页面做移动数量
      * @param pageSize
      * @param maxOrder
-     * @return
+     * @return 返回块大小 不能超过 poolChunk可以表示 页的最大数
      */
     private static int validateAndCalculateChunkSize(int pageSize, int maxOrder) {
+        //因为 页面数 在 poolChunk 中 用15位标识，所以不能大于
         if (maxOrder > 14) {
             throw new IllegalArgumentException("maxOrder: " + maxOrder + " (expected: 0-14)");
         }

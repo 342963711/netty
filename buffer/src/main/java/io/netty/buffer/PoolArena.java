@@ -138,7 +138,7 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
      * @param parent
      * @param pageSize 8192
      * @param pageShifts 8
-     * @param chunkSize 4MB
+     * @param chunkSize 4MB  ，内存画布大小，由分配器通过参数来进行控制
      * @param cacheAlignment 0
      */
     protected PoolArena(PooledByteBufAllocator parent, int pageSize,
@@ -265,7 +265,7 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
         } finally {
             head.unlock();
         }
-
+        //子页节点还没初始化，需要进行正常分配
         if (needsNormalAllocation) {
             lock();
             try {
@@ -297,7 +297,7 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
     /**
      * 1.分配正常大小
      * 2.初始化内存块 poolChunk
-     * @param buf 分配出来的字节缓冲区
+     * @param buf 分配出来的字节缓冲区（只是对象，还没初始化）
      * @param reqCapacity 请求容量
      * @param sizeIdx 请求容量对应的表格索引
      * @param threadCache 线程缓冲
@@ -314,6 +314,7 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
         //如果已经存在的chunk 都无法进行分配，则创建新的chunk块，新的chunk 完成分配后，添加到初始列表中
         // Add a new chunk.
         // 8192,32(isMultiPageSize 为true的数量，也就是页面倍数的个数),13,4194304(4MB)
+        // 每个PoolChunk 都表示 大小为 chunkSize 的真实内存大小
         PoolChunk<T> c = newChunk(pageSize, nPSizes, pageShifts, chunkSize);
         boolean success = c.allocate(buf, reqCapacity, sizeIdx, threadCache);
         assert success;
@@ -385,6 +386,7 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
 
     /**
      * 获取索引表 中 对应的子页的头结点
+     * //因为子页在二维表中是连续的
      * @param sizeIdx
      * @return
      */
@@ -632,7 +634,7 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
     }
 
     /**
-     *
+     * 分配底层存储，并由poolChunk 来进行管理
      * @param pageSize 8192
      * @param maxPageIdx 32
      * @param pageShifts 13
@@ -642,6 +644,11 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
     protected abstract PoolChunk<T> newChunk(int pageSize, int maxPageIdx, int pageShifts, int chunkSize);
 
 
+    /**
+     * 创建非 池块的内存
+     * @param capacity
+     * @return
+     */
     protected abstract PoolChunk<T> newUnpooledChunk(int capacity);
 
     /**
@@ -815,7 +822,9 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
         protected PoolChunk<ByteBuffer> newChunk(int pageSize, int maxPageIdx,
             int pageShifts, int chunkSize) {
             if (directMemoryCacheAlignment == 0) {
+                // 分配内存为 chunkSize 的真实大小
                 ByteBuffer memory = allocateDirect(chunkSize);
+                // 将内存交给 poolChunk 来管理
                 return new PoolChunk<ByteBuffer>(this, memory, memory, pageSize, pageShifts,
                         chunkSize, maxPageIdx);
             }

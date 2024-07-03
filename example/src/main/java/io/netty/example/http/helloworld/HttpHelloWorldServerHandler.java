@@ -23,6 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -56,12 +57,10 @@ public class HttpHelloWorldServerHandler extends SimpleChannelInboundHandler<Htt
     public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
         if (msg instanceof HttpRequest) {
             HttpRequest req = (HttpRequest) msg;
-            DecoderResult decoderResult = msg.decoderResult();
-            if(msg instanceof FullHttpRequest){
-                FullHttpRequest fullHttpRequest = (FullHttpRequest)msg;
-                ByteBuf content = fullHttpRequest.content();
-                String s = content.toString(Charset.forName("utf-8"));
-                LOGGER.info("接受到的内容:{}",s);
+            if(msg instanceof DefaultHttpRequest){
+                DefaultHttpRequest fullHttpRequest = (DefaultHttpRequest)msg;
+                String uri = fullHttpRequest.getUri();
+                LOGGER.info("请求路径:{}",uri);
             }
             HttpHeaders headers = req.headers();
             LOGGER.info("headers:{}",headers.toString());

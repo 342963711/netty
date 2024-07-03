@@ -74,6 +74,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     volatile EventLoopGroup group;
 
     //channel工厂
+    /**
+     * @see ReflectiveChannelFactory 
+     * @see #channel(Class) 
+     */
     @SuppressWarnings("deprecation")
     private volatile ChannelFactory<? extends C> channelFactory;
 

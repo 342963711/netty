@@ -99,9 +99,9 @@ import java.net.SocketAddress;
  * 即文件句柄。
  *
  *
- * @see AbstractChannel
+ * @see AbstractChannel （重要实现类）
  * @see ServerChannel
- * @see DatagramChannel
+ * @see DatagramChannel （UDP协议包）
  * @see io.netty.channel.socket.DuplexChannel
  * @see io.netty.channel.unix.DomainDatagramChannel
  * @see io.netty.channel.unix.UnixChannel

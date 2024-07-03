@@ -155,8 +155,8 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
     }
 
     /**
-     * 执行接受链接channel
-     * @param buf
+     * 接受客户端链接，并添加到
+     * @param buf 接受底层接受到的对象
      * @return
      * @throws Exception
      */
@@ -204,6 +204,13 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * ServerSocketChannel不用支持该操作
+     * @param msg
+     * @param in
+     * @return
+     * @throws Exception
+     */
     @Override
     protected boolean doWriteMessage(Object msg, ChannelOutboundBuffer in) throws Exception {
         throw new UnsupportedOperationException();

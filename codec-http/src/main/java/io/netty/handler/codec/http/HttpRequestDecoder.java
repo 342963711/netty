@@ -21,8 +21,10 @@ import io.netty.util.AsciiString;
 
 /**
  * Decodes {@link ByteBuf}s into {@link HttpRequest}s and {@link HttpContent}s.
+ * 将ByteBuf 解码到 HttpRequest 和 HttpContent对象中
  *
  * <h3>Parameters that prevents excessive memory consumption</h3>
+ * 以下是防止过度消耗内存的参数
  * <table border="1">
  * <tr>
  * <th>Name</th><th>Meaning</th>
@@ -48,10 +50,17 @@ import io.netty.util.AsciiString;
  *     length of the chunk exceeds this value.  If you prefer not to handle
  *     {@link HttpContent}s in your handler, insert {@link HttpObjectAggregator}
  *     after this decoder in the {@link ChannelPipeline}.</td>
+ *
+ *     内容或者每个块的最大长度。如果内容长度超过这个值，则解码请求的传输编码将转换为分块。并且将内容拆分为多个块。
+ *     如果HTTP请求的传输编码已经“分块”，则如果块的长度超过此值，则每个块将被拆分为更小的块。
+ *     如果您不希望在处理程序中处理{@link HttpContent}s，
+ *     请在{@link ChannelPipeline}中的解码器之后插入{@link HttpObjectAggregator}
  * </tr>
  * </table>
  *
  * <h3>Parameters that control parsing behavior</h3>
+ * 控制解析行为的参数
+ *
  * <table border="1">
  * <tr>
  * <th>Name</th><th>Default value</th><th>Meaning</th>

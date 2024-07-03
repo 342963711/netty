@@ -97,7 +97,7 @@ import static io.netty.buffer.PoolThreadCache.*;
  */
 abstract class SizeClasses implements SizeClassesMetric {
 
-    //定量的对数
+    //定量的对数(基础大小)
     static final int LOG2_QUANTUM = 4;
 
     //每组的数量的对数
@@ -266,7 +266,7 @@ abstract class SizeClasses implements SizeClassesMetric {
 
         //generate lookup tables，生成查找表[保存每个条目的 对应大小]
         sizeIdx2sizeTab = newIdx2SizeTab(sizeClasses, nSizes, directMemoryCacheAlignment);
-        //求条目中是页大小的 条目大小
+        //查找 isMultiPageSize 是为true. 的条目的 映射表（index,size(isMultiPageSize==true)）
         pageIdx2sizeTab = newPageIdx2sizeTab(sizeClasses, nSizes, nPSizes, directMemoryCacheAlignment);
         //size大小到索引的 映射表
         size2idxTab = newSize2idxTab(lookupMaxSize, sizeClasses);
@@ -523,7 +523,7 @@ abstract class SizeClasses implements SizeClassesMetric {
 
     /**
      * 计算页面 对应到 的页面表的索引
-     * @param pages multiples of pageSizes
+     * @param pages multiples of pageSizes 页面大小的倍数
      *
      * @return
      */

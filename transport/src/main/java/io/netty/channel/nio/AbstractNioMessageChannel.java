@@ -85,6 +85,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
             try {
                 try {
                     do {
+                        //对NioServerSocketChannel 实现类说，获取到的就是 SocketChannel。
                         int localRead = doReadMessages(readBuf);
                         if (localRead == 0) {
                             break;
@@ -103,7 +104,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 int size = readBuf.size();
                 for (int i = 0; i < size; i ++) {
                     readPending = false;
-                    //如何将创建出来的SocketChannel进行管理
+                    //将 SocketChannel 交给 handler 来处理
                     pipeline.fireChannelRead(readBuf.get(i));
                 }
                 readBuf.clear();
@@ -209,6 +210,8 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
 
     /**
      * Read messages into the given array and return the amount which was read.
+     *
+     * 将读取的对象放到 buf 中，并返回读取的对象个数，该方法只交给内部类 NioMessageUnsafe 来进行调用
      */
     protected abstract int doReadMessages(List<Object> buf) throws Exception;
 

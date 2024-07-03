@@ -30,11 +30,15 @@ import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
 import io.netty.handler.codec.socksx.v5.Socks5CommandType;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthRequest;
 import io.netty.handler.codec.socksx.v5.Socks5PasswordAuthStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ChannelHandler.Sharable
 public final class SocksServerHandler extends SimpleChannelInboundHandler<SocksMessage> {
 
     public static final SocksServerHandler INSTANCE = new SocksServerHandler();
+
+    private Logger logger = LoggerFactory.getLogger(SocksServerHandler.class);
 
     private SocksServerHandler() { }
 
@@ -43,6 +47,7 @@ public final class SocksServerHandler extends SimpleChannelInboundHandler<SocksM
         switch (socksRequest.version()) {
             case SOCKS4a:
                 Socks4CommandRequest socksV4CmdRequest = (Socks4CommandRequest) socksRequest;
+                logger.info("socket4的请求信息:{}",socksV4CmdRequest);
                 if (socksV4CmdRequest.type() == Socks4CommandType.CONNECT) {
                     ctx.pipeline().addLast(new SocksServerConnectHandler());
                     ctx.pipeline().remove(this);
@@ -52,6 +57,7 @@ public final class SocksServerHandler extends SimpleChannelInboundHandler<SocksM
                 }
                 break;
             case SOCKS5:
+                logger.info("socket5的信息:{}",socksRequest);
                 if (socksRequest instanceof Socks5InitialRequest) {
                     // auth support example
                     //ctx.pipeline().addFirst(new Socks5PasswordAuthRequestDecoder());

@@ -75,7 +75,7 @@ public class ResourceLeakDetectorTest {
                 }
 
                 private boolean closeResources(boolean checkClosed) {
-                    for (; ;) {
+                    for (; ; ) {
                         LeakAwareResource r = resources.poll();
                         if (r == null) {
                             return false;
@@ -282,30 +282,34 @@ public class ResourceLeakDetectorTest {
         }
     }
 
+
+    //1.创建资源
     public static class MyResource {
         private byte[] array = new byte[1024];
+
+        //2.设置资源创建资源泄露探测器
+        static ResourceLeakDetector<MyResource> myResourceResourceLeakDetector =
+                ResourceLeakDetectorFactory.instance().newResourceLeakDetector(MyResource.class, 1);
     }
 
-    static ResourceLeakDetector<MyResource> myResourceResourceLeakDetector =
-            ResourceLeakDetectorFactory.instance().newResourceLeakDetector(MyResource.class, 1);
 
     public void useResource() {
         MyResource myResource = new MyResource();
-        ResourceLeakTracker<MyResource> track = myResourceResourceLeakDetector.track(myResource);
+        //分配内存的时候进行追踪
+        ResourceLeakTracker<MyResource> track = MyResource.myResourceResourceLeakDetector.track(myResource);
     }
 
     @Test
     public void testResourceDetect() throws InterruptedException {
         useResource();
-        int i = 0;
-        do {
-            System.gc();
-            Thread.sleep(500);
-            MyResource myResource = new MyResource();
-            ResourceLeakTracker<MyResource> track = myResourceResourceLeakDetector.track(myResource);
-            track.record("hello");
-            track.close(myResource);
-            i++;
-        } while (i <= 1);
+        //触发GC
+        System.gc();
+        Thread.sleep(500);
+        //再次创建资源并追踪
+        MyResource myResource = new MyResource();
+        ResourceLeakTracker<MyResource> track = MyResource.myResourceResourceLeakDetector.track(myResource);
+        track.record("hello");
+        track.close(myResource);
+
     }
 }

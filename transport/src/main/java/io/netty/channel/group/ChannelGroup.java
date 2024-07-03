@@ -39,10 +39,21 @@ import java.util.Set;
  * added {@link Channel}.  A {@link Channel} can belong to more than one
  * {@link ChannelGroup}.
  *
+ * 一个线程安全的｛@link Set｝，它包含打开的｛@link Channel｝，并在它们上提供各种批量操作.
+ * 使用 ChannelGroup 你可以将channel 划分到 一个有意义的组（比如：按照服务、按照状态）
+ * 一个关闭的channel 可以自动从组中删除，因此，你不需要考虑添加channel的生命周期。
+ * 一个channel 可以属于一个或者多个channelGroup.
+ *
+ *
+ *
+ *
  * <h3>Broadcast a message to multiple {@link Channel}s</h3>
+ * 广播一个消息到多个 channel 通道中
+ *
  * <p>
  * If you need to broadcast a message to more than one {@link Channel}, you can
  * add the {@link Channel}s associated with the recipients and call {@link ChannelGroup#write(Object)}:
+ *
  * <pre>
  * <strong>{@link ChannelGroup} recipients =
  *         new {@link DefaultChannelGroup}({@link GlobalEventExecutor}.INSTANCE);</strong>
@@ -55,6 +66,7 @@ import java.util.Set;
  * </pre>
  *
  * <h3>Simplify shutdown process with {@link ChannelGroup}</h3>
+ * 使用｛@link ChannelGroup｝简化关闭过程
  * <p>
  * If both {@link ServerChannel}s and non-{@link ServerChannel}s exist in the
  * same {@link ChannelGroup}, any requested I/O operations on the group are

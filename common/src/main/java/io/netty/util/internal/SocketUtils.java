@@ -111,6 +111,12 @@ public final class SocketUtils {
         }
     }
 
+    /**
+     * jdk ServerSocketChannel 接受客户端链接
+     * @param serverSocketChannel
+     * @return
+     * @throws IOException
+     */
     public static SocketChannel accept(final ServerSocketChannel serverSocketChannel) throws IOException {
         try {
             return AccessController.doPrivileged(new PrivilegedExceptionAction<SocketChannel>() {

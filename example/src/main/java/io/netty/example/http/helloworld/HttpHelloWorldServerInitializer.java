@@ -20,6 +20,9 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.compression.CompressionOptions;
 import io.netty.handler.codec.http.HttpContentCompressor;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
 import io.netty.handler.logging.LogLevel;
@@ -43,13 +46,17 @@ public class HttpHelloWorldServerInitializer extends ChannelInitializer<SocketCh
         p.addLast(new LoggingHandler(LogLevel.INFO));
         //在SocketChannel 被注册前，channel的过滤链路被初始化为
         //p.head->HttpServerCodec->HttpContentCompressor->HttpServerExpectContinueHandler->HttpHelloWorldServerHandler->p.tail
-        p.addLast(new HttpServerCodec()); //请求进行解码，对响应进行编码
+//        p.addLast(new HttpServerCodec()); //请求进行解码，对响应进行编码
+        //因为不想单独处理httpMessage 和httpContent
+        p.addLast("decoder", new HttpRequestDecoder());
+        p.addLast("encoder", new HttpResponseEncoder());
+        p.addLast("aggregator",new HttpObjectAggregator (1048576));
         p.addLast(new HttpContentCompressor((CompressionOptions[]) null));
         p.addLast(new HttpServerExpectContinueHandler());
         //如果请求是按照上面说的进行解码处理，到了HttpHelloWorldServerHandler执行了write事件
         //那么整个链路的执行逻辑是怎么样的？？
         // write 是 out 事件，链表处理out 事件的时候是从前找,处理链表如下
         //- HttpHelloWorldServerHandler.write->HttpServerExpectContinueHandler->HttpContentCompressor->HttpServerCodec->head->unsafe.write
-        p.addLast(new HttpHelloWorldServerHandler());
+        p.addLast(new HttpProxy());
     }
 }

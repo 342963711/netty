@@ -62,7 +62,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
     /**
      * 使用位图来标记 状态
      * 16表示的是元素大小
-     * runSize/64/16=（除以16表示总共可以容纳的元素个数，按照每行64个元素，总计需要的行数）
+     * runSize/64/16=（按照每行64个元素，每一位表示基础大小16字节，总计需要的行数）
      * 构建二维表 n*64
      * {@link #bitmapLength}
      * 0000000000000000000000000000000000000000000000000000000000000000
@@ -135,6 +135,8 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         this.runSize = runSize;
         this.elemSize = elemSize;
         //bitmap.length=8;  /64/16
+        // todo ,这里可能有那问题。如果分配的元素大于16，分配一个内存，需要连续的几个bit位，增加复杂度，应该是按照 elemSize 来计算宿主长度。
+        // 存在一种情况，如果runSize 是 elemSize的倍数。但是/64<0 .还是会出现异常，runSize 最好是64 和 elemSize的最小公倍数
         bitmap = new long[runSize >>> 6 + LOG2_QUANTUM];
 
         doNotDestroy = true;
@@ -144,8 +146,13 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
             nextAvail = 0;
             //这里将 本页中 可以容纳元素的总量，除以 64 来计算 整个bitmap 数组的长度。 如果有余数，则位图长度继续+1. 这里位图 是 lang 类型的数字。 每个long 按照位来说。
             //在二维表中。也就是每行可以表示64个对象。除以64也就是总共的行数。以此来计算该页面是否被全部使用
+            // 这里计算位图的组数长度计算方式不一致
+            // 1.runSize 按照64位，且每一位表示16字节来计算。数组长度
+            // 2.按照runSize/elemSize来  计算出来的元素个数，除以 64 来计算 数组长度。并且当元素个数不是64的倍数的时候，数组长度+1。
+            // 应该是个bug。bitmap可能会越界
             bitmapLength = maxNumElems >>> 6;
             if ((maxNumElems & 63) != 0) {
+                // TODO: 2024/3/18 bug
                 bitmapLength ++;
             }
         }
