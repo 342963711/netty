@@ -26,6 +26,7 @@ import io.netty.channel.DefaultChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ReflectiveChannelFactory;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -296,8 +297,15 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         return doBind(ObjectUtil.checkNotNull(localAddress, "localAddress"));
     }
 
+    /**
+     * 执行绑定操作
+     * @param localAddress
+     * @return
+     */
     private ChannelFuture doBind(final SocketAddress localAddress) {
+        //初始化一个本地的channel
         final ChannelFuture regFuture = initAndRegister();
+        //返回注册的channel
         final Channel channel = regFuture.channel();
         if (regFuture.cause() != null) {
             return regFuture;
@@ -336,6 +344,13 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
+            //io.netty.channel.ReflectiveChannelFactory.
+            // 创建具体的通道类
+            /**
+             * 根据指定的channel类型 。例如
+             * @see NioServerSocketChannel
+             * @see io.netty.channel.socket.nio.NioSocketChannel
+             */
             channel = channelFactory.newChannel();
             // 进行通道初始化
             init(channel);
@@ -374,6 +389,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * 模板方法，主要是对Channel 进行初始化。主要是设置channelPipeline 中的过滤器，channelHandler
+     *
      * @param channel
      * @throws Exception
      */

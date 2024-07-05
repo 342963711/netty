@@ -29,7 +29,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 有简单 名字规则的 ThreadFactory 实现
  */
 public class DefaultThreadFactory implements ThreadFactory {
-
+    //线程池标记。
+    //1-> 默认是
+    /**
+     * {@link GlobalEventExecutor.INSTANCE}
+     */
     private static final AtomicInteger poolId = new AtomicInteger();
 
     private final AtomicInteger nextId = new AtomicInteger();

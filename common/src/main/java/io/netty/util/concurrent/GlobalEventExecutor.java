@@ -60,6 +60,9 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor im
         SCHEDULE_QUIET_PERIOD_INTERVAL = TimeUnit.SECONDS.toNanos(quietPeriod);
     }
 
+    /**
+     * {@link MultithreadEventExecutorGroup.terminationFuture}
+     */
     public static final GlobalEventExecutor INSTANCE = new GlobalEventExecutor();
     /**
      * 任务队列

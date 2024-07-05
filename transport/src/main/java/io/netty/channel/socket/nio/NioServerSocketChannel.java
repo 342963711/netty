@@ -54,15 +54,18 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     //读取数 元数据配置
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
+    //sun.nio.ch.KQueueSelectorProvider 默认的路由选择器
     private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioServerSocketChannel.class);
 
+    //大于等于 jdk15 才有 值。
     private static final Method OPEN_SERVER_SOCKET_CHANNEL_WITH_FAMILY =
             SelectorProviderUtil.findOpenMethod("openServerSocketChannel");
 
     private static ServerSocketChannel newChannel(SelectorProvider provider, InternetProtocolFamily family) {
         try {
+            //sun.nio.ch.ServerSocketChannelImpl
             ServerSocketChannel channel =
                     SelectorProviderUtil.newChannel(OPEN_SERVER_SOCKET_CHANNEL_WITH_FAMILY, provider, family);
             return channel == null ? provider.openServerSocketChannel() : channel;
@@ -96,6 +99,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     /**
      * Create a new instance using the given {@link ServerSocketChannel}.
+     * 通过给定的jdk的 ServerSocketChannel 实例来创建  NioServerSocketChannel 实例
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
         super(null, channel, SelectionKey.OP_ACCEPT);

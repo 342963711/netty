@@ -40,6 +40,11 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
         }
     }
 
+    /**
+     * 判断 val 是否是2的幂次方
+     * @param val
+     * @return
+     */
     private static boolean isPowerOfTwo(int val) {
         return (val & -val) == val;
     }
@@ -51,7 +56,7 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
         PowerOfTwoEventExecutorChooser(EventExecutor[] executors) {
             this.executors = executors;
         }
-
+        //如果是2的幂次方。则使用轮流，使用 executors
         @Override
         public EventExecutor next() {
             return executors[idx.getAndIncrement() & executors.length - 1];
@@ -69,6 +74,7 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
             this.executors = executors;
         }
 
+        //都是使用轮流，只是计算方式不一样
         @Override
         public EventExecutor next() {
             return executors[(int) Math.abs(idx.getAndIncrement() % executors.length)];

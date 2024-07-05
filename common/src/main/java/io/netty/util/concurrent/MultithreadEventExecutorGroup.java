@@ -64,6 +64,11 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the Executor to use, or {@code null} if the default should be used.
      * @param args              arguments which will passed to each {@link #newChild(Executor, Object...)} call
+     *
+     *                          默认情况下的 args 的参数类型
+     *                          sun.nio.ch.KQueueSelectorProvider
+     *                          io.netty.channel.DefaultSelectStrategyFactory
+     *                          io.netty.util.concurrent.RejectedExecutionHandlers$1
      */
     protected MultithreadEventExecutorGroup(int nThreads, Executor executor, Object... args) {
         this(nThreads, executor, DefaultEventExecutorChooserFactory.INSTANCE, args);
@@ -73,24 +78,31 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      * Create a new instance.
      *
      * @param nThreads          the number of threads that will be used by this instance.
+     *                          当前实例将使用的线程数
      * @param executor          the Executor to use, or {@code null} if the default should be used.
      *                          使用指定的处理器，如果为null的话，将使用默认值，也就是ThreadPerTaskExecutor
-     * @param chooserFactory    the {@link EventExecutorChooserFactory} to use.
+     *                          默认值 是null
+     *
+     * @param chooserFactory    the {@link EventExecutorChooserFactory} to use. 使用默认实现类
+     *
      * @param args              arguments which will passed to each {@link #newChild(Executor, Object...)} call
+     *
      */
     protected MultithreadEventExecutorGroup(int nThreads, Executor executor,
                                             EventExecutorChooserFactory chooserFactory, Object... args) {
         checkPositive(nThreads, "nThreads");
 
         if (executor == null) {
+            //executor 中的线程工厂类的前缀是从ID=2 开始的。 1，是本类中GlobalEventExecutor.INSTANCE 来使用的
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
-
+        //按照线程数来创建对应数量的 EventExecutor 数组。
         children = new EventExecutor[nThreads];
 
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
+                // 进行 EventExecutor 数组的初始化
                 children[i] = newChild(executor, args);
                 success = true;
             } catch (Exception e) {

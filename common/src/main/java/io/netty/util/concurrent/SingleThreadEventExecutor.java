@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  *
  * {@link ThreadPerTaskExecutor} 用于执行任务的默认执行器 {@link SingleThreadEventExecutor#executor} ，可以在初始化对象的时候由具体实现通过参数传递进来。
  *
- * {@link SingleThreadEventExecutor#execute(Runnable, boolean)} 核心方法，底层需要具体实现的是 {@link SingleThreadEventExecutor#run()}
+ * {@link SingleThreadEventExecutor#execute(Runnable)} 核心方法，底层需要具体实现的是 {@link SingleThreadEventExecutor#run()}
  *
  *
  *
@@ -195,7 +195,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         super(parent);
         this.addTaskWakesUp = addTaskWakesUp;
         this.maxPendingTasks = DEFAULT_MAX_PENDING_EXECUTOR_TASKS;
-        //对当前执行环境进行包装并且存储到本地线程变量
+        //将当前对象this放到 executor的 runnable 的 本地线程变量中
         this.executor = ThreadExecutorMap.apply(executor, this);
         this.taskQueue = ObjectUtil.checkNotNull(taskQueue, "taskQueue");
         this.rejectedExecutionHandler = ObjectUtil.checkNotNull(rejectedHandler, "rejectedHandler");

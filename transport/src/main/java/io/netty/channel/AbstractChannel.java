@@ -58,6 +58,8 @@ import java.util.concurrent.RejectedExecutionException;
  * @see io.netty.channel.kqueue.AbstractKQueueChannel
  * @see io.netty.channel.oio.AbstractOioChannel
  * @see io.netty.channel.local.LocalChannel
+ * nio 的核心抽象类，可以查看nio包，针对nio 的具体处理（重点研究对象）
+ * @see io.netty.channel.nio.AbstractNioChannel
  *
  *
  */
@@ -74,7 +76,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     private final ChannelId id;
     //内部操作unsafe 类
     private final Unsafe unsafe;
-    //channel 管道
+    //channel 管道（拦截处理链）
     private final DefaultChannelPipeline pipeline;
 
 
@@ -89,7 +91,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     //表示 此channel 注册到的 eventLoop
     private volatile EventLoop eventLoop;
 
-    //注册
+    //注册状态
     private volatile boolean registered;
 
     //关闭初始化
@@ -473,7 +475,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      * {@link Unsafe} implementation which sub-classes must extend and use.
      * Unsafe 的一个子类必须继承和使用的一个实现类
      * 子类只 需要实现 {@link #connect(SocketAddress, SocketAddress, ChannelPromise)} 方法
-     *
+     * 负责具体的IO事件处理
      */
     protected abstract class AbstractUnsafe implements Unsafe {
         //channel 出站 缓冲池
