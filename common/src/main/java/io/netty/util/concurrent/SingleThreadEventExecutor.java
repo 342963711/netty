@@ -52,9 +52,11 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * 单线程事件处理器
  * ，将 execute() 方法委托给 真正的执行器 executor。并抽象出 一个 run 方法
  *
- * {@link ThreadPerTaskExecutor} 用于执行任务的默认执行器 {@link SingleThreadEventExecutor#executor} ，可以在初始化对象的时候由具体实现通过参数传递进来。
+ * {@link ThreadPerTaskExecutor} 用于执行任务的默认执行器 {@link SingleThreadEventExecutor#executor} ，
+ * 可以在初始化对象的时候由具体实现通过参数传递进来。
  *
- * {@link SingleThreadEventExecutor#execute(Runnable)} 核心方法，底层需要具体实现的是 {@link SingleThreadEventExecutor#run()}
+ * {@link SingleThreadEventExecutor#execute(Runnable)} 核心方法，
+ * 底层需要具体实现的是 {@link SingleThreadEventExecutor#run()}
  *
  *
  *
@@ -70,10 +72,15 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     private static final InternalLogger logger =
             InternalLoggerFactory.getInstance(SingleThreadEventExecutor.class);
     //现成运行状态
+    //未运行
     private static final int ST_NOT_STARTED = 1;
+    //正在运行
     private static final int ST_STARTED = 2;
+    //停止中
     private static final int ST_SHUTTING_DOWN = 3;
+    //已经停止
     private static final int ST_SHUTDOWN = 4;
+    //线程中断
     private static final int ST_TERMINATED = 5;
 
     private static final Runnable NOOP_TASK = new Runnable() {
@@ -103,6 +110,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     private volatile Thread thread;
     @SuppressWarnings("unused")
     private volatile ThreadProperties threadProperties;
+    // 真实的执行器
     private final Executor executor;
     private volatile boolean interrupted;
 
@@ -584,7 +592,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     /**
      * Run the tasks in the {@link #taskQueue}
-     *
+     * 消费在 队列中的 所有任务。因此run 方法的实现应该是个 while(true){...// 消费队列中的任务}
+     * 如果run结束。则表示该线程的状态需要改变。
      */
     protected abstract void run();
 
@@ -884,8 +893,11 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     }
 
     private void execute(Runnable task, boolean immediate) {
+
         boolean inEventLoop = inEventLoop();
+        //任务添加到队列中
         addTask(task);
+
         if (!inEventLoop) {
             startThread();
             if (isShutdown()) {
@@ -1038,6 +1050,11 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         return false;
     }
 
+
+    /**
+     * 开始启动线程，也就是只有一个线程来处理任务。
+     * 同事，提供一个抽象方法 {@link #run()} 方法交给子类来实现
+     */
     private void doStartThread() {
         assert thread == null;
         executor.execute(new Runnable() {
@@ -1051,6 +1068,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                 boolean success = false;
                 updateLastExecutionTime();
                 try {
+                    //
                     SingleThreadEventExecutor.this.run();
                     success = true;
                 } catch (Throwable t) {
@@ -1121,6 +1139,10 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         });
     }
 
+    /**
+     * 排空任务
+     * @return 返回用户任务数量
+     */
     final int drainTasks() {
         int numTasks = 0;
         for (;;) {
@@ -1130,6 +1152,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
             }
             // WAKEUP_TASK should be just discarded as these are added internally.
             // The important bit is that we not have any user tasks left.
+            // 返回的是用户的任务数，因此需要跳过WAKEUP_TASK
             if (WAKEUP_TASK != runnable) {
                 numTasks++;
             }

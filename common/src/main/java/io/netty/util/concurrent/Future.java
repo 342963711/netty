@@ -23,7 +23,8 @@ import java.util.concurrent.TimeUnit;
  * The result of an asynchronous operation.
  *
  * 异步操作的结果，基于future ，扩展了future 能力，
- * 1.jdk 中 future的基本能力就是 M 线程等待获取另外一个线程的结果。主要分为三部分，一个只获取操作结果，一个是取消（中断），一个是结束
+ * 1.jdk 中 future的基本能力就是 M 线程等待获取另外一个线程的结果。主要分为三部分，1.获取操作结果，2.获取运行状态，3.取消（中断）,
+ *
  * 2.除了等待外，增加了监听。当两外一个线程执行完毕后，会回调已经添加的到该Future的监听者
  * @see AbstractFuture
  * @see Promise

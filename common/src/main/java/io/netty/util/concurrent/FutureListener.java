@@ -24,5 +24,7 @@ package io.netty.util.concurrent;
  *     public void operationComplete(Future f) { .. }
  * });
  * </pre>
+ *
+ * 一个子类 监听器，监听方法的参数 为 事件源。也就是Future.
  */
 public interface FutureListener<V> extends GenericFutureListener<Future<V>> { }

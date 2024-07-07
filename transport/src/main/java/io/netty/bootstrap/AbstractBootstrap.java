@@ -71,7 +71,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     @SuppressWarnings("unchecked")
     private static final Map.Entry<AttributeKey<?>, Object>[] EMPTY_ATTRIBUTE_ARRAY = new Map.Entry[0];
 
-    //事件循环组
+    //事件循环组（用户处理 NioServerSocketChannel的 事件循环组）
     volatile EventLoopGroup group;
 
     //channel工厂
@@ -352,7 +352,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
              * @see io.netty.channel.socket.nio.NioSocketChannel
              */
             channel = channelFactory.newChannel();
-            // 进行通道初始化
+            // 进行通道初始化,当前未执行任务。因为通道还没注册到EventLoop
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
@@ -365,7 +365,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
 
-        //使用 异步事件线程 去执行通道注册，并返回异步结果
+        //使用 异步事件线程 去执行通道注册，并返回异步结果,将通道注册到EventLoop中。
         ChannelFuture regFuture = config().group().register(channel);
         if (regFuture.cause() != null) {
             if (channel.isRegistered()) {

@@ -527,7 +527,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
                 return;
             }
         }
-        //异步处理
+        //异步处理（安全处理）
         safeExecute(executor, new Runnable() {
             @Override
             public void run() {

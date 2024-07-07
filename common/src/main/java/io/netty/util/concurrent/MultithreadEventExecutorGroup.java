@@ -32,10 +32,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * EventExecutorGroup 实现的抽象基类，该实现同时用多个线程处理任务
  *
- * 多线程事件处理器组，提供了多线程 事件处理器组方法模板，并且子类需要实现 {@link #newChild(Executor, Object...)}, {@link #execute(Runnable)} 方法的实现是
+ * 多线程事件处理器组，提供了多线程 事件处理器组方法模板，并且子类需要实现
+ * {@link #newChild(Executor, Object...)},
+ * {@link #execute(Runnable)} 方法的实现是
  *
  *
  * @see DefaultEventExecutorGroup 多线程处理器组 默认实现
+ *
  * @see io.netty.channel.MultithreadEventLoopGroup  多线程事件循环 扩展实现
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
@@ -94,15 +97,15 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
         if (executor == null) {
             //executor 中的线程工厂类的前缀是从ID=2 开始的。 1，是本类中GlobalEventExecutor.INSTANCE 来使用的
+            //默认的executor 可以理解为 线程池创建线程执行每一个任务，负责线程的创建和任务的执行。（创建的线程有统一的线程池名字，后面是线程的数量）
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
         //按照线程数来创建对应数量的 EventExecutor 数组。
         children = new EventExecutor[nThreads];
-
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
-                // 进行 EventExecutor 数组的初始化
+                // 进行 EventExecutor 数组的初始化，也就是将创建的executor交给EventExecutor包装，
                 children[i] = newChild(executor, args);
                 success = true;
             } catch (Exception e) {

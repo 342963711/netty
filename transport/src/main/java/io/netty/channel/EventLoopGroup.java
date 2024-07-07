@@ -38,7 +38,7 @@ public interface EventLoopGroup extends EventExecutorGroup {
      * Register a {@link Channel} with this {@link EventLoop}. The returned {@link ChannelFuture}
      * will get notified once the registration was complete.
      *
-     * 用 EventLoop 注册Channel, 注册完成后，返回的ChannelFuture 将收到通知
+     * 用 EventLoop 注册Channel, 注册完成后，返回的ChannelFuture 将收到通知。
      */
     ChannelFuture register(Channel channel);
 

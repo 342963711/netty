@@ -56,6 +56,14 @@ public class DefaultEventExecutorGroup extends MultithreadEventExecutorGroup {
         super(nThreads, threadFactory, maxPendingTasks, rejectedHandler);
     }
 
+    /**
+     * 根据 executor 创建组中 EventExecutor.
+     * @param executor 负责创建线程，并且去执行
+     * @param args
+     * @return EventExecutor DefaultEventExecutorGroup 包装的类，用于负责执行具体的任务。group 更多的是用来管理
+     * 多个EventExecutor 对象。
+     * @throws Exception
+     */
     @Override
     protected EventExecutor newChild(Executor executor, Object... args) throws Exception {
         return new DefaultEventExecutor(this, executor, (Integer) args[0], (RejectedExecutionHandler) args[1]);

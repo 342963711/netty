@@ -38,8 +38,11 @@ import java.util.concurrent.TimeUnit;
  *
  * @see AbstractEventExecutorGroup 是 简单对 EventExecutorGroup的基本实现抽象类,
  * 将方法调用委托给 {@link EventExecutorGroup#next()}方法返回的 EventExecutor 去具体执行
+ *
  * @see EventExecutor 是被EventExecutorGroup管理的类对象
- * @see io.netty.channel.EventLoopGroup
+ *
+ *
+ * @see io.netty.channel.EventLoopGroup (事件组，需要借助EventExecutorGroup 来处理事件)
  */
 public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<EventExecutor> {
 
