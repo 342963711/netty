@@ -310,15 +310,16 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         if (regFuture.cause() != null) {
             return regFuture;
         }
-
+        //获取注册状态
         if (regFuture.isDone()) {
             // At this point we know that the registration was complete and successful.
-            // 注册完成并且成功
+            // 注册完成并且成功,重新创建一个future.
             ChannelPromise promise = channel.newPromise();
             doBind0(regFuture, channel, localAddress, promise);
             return promise;
         } else {
             // Registration future is almost always fulfilled already, but just in case it's not.
+            // 虽然注册基本总是完成的。这里是处理其他情况
             final PendingRegistrationPromise promise = new PendingRegistrationPromise(channel);
             regFuture.addListener(new ChannelFutureListener() {
                 @Override
@@ -330,6 +331,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
                         promise.setFailure(cause);
                     } else {
                         // Registration was successful, so set the correct executor to use.
+                        // 注册成功，要设置使用的正确执行器。
                         // See https://github.com/netty/netty/issues/2586
                         promise.registered();
 
@@ -337,6 +339,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
                     }
                 }
             });
+            // 最终返回都是 绑定的处理结果。
             return promise;
         }
     }
@@ -366,6 +369,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
 
         //使用 异步事件线程 去执行通道注册，并返回异步结果,将通道注册到EventLoop中。
+        // 使用EventLoopGroup 来注册channel，并返回channelFuture
         ChannelFuture regFuture = config().group().register(channel);
         if (regFuture.cause() != null) {
             if (channel.isRegistered()) {

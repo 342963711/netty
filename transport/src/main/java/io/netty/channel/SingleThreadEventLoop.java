@@ -97,9 +97,15 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
 
     @Override
     public ChannelFuture register(Channel channel) {
+        //也就是NioEventLoop 既要处理i/o事件，也要通知 DefaultChannelPromise 设置的结果
         return register(new DefaultChannelPromise(channel, this));
     }
 
+    /**
+     * 将channel 包装为channelPromise进行 异步注册
+     * @param promise 返回 异步处理
+     * @return
+     */
     @Override
     public ChannelFuture register(final ChannelPromise promise) {
         ObjectUtil.checkNotNull(promise, "promise");

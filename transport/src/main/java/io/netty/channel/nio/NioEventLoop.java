@@ -15,13 +15,7 @@
  */
 package io.netty.channel.nio;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelException;
-import io.netty.channel.EventLoop;
-import io.netty.channel.EventLoopException;
-import io.netty.channel.EventLoopTaskQueueFactory;
-import io.netty.channel.SelectStrategy;
-import io.netty.channel.SingleThreadEventLoop;
+import io.netty.channel.*;
 import io.netty.util.IntSupplier;
 import io.netty.util.concurrent.RejectedExecutionHandler;
 import io.netty.util.internal.ObjectUtil;
@@ -56,7 +50,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>
  * ｛@link SingleThreadEventLoop｝实现，该实现将｛@linkChannel｝注册到｛@Link Selector｝，并且在事件循环中对这些进行多路复用也是如此。
  * <p>
+ *
  * 核心方法 {@link #run()}
+ *
+ * 在创建 NioEventLoopGroup 实例的时候，这个类就会初始化完毕
  */
 public final class NioEventLoop extends SingleThreadEventLoop {
 
@@ -314,6 +311,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * Registers an arbitrary {@link SelectableChannel}, not necessarily created by Netty, to the {@link Selector}
      * of this event loop.  Once the specified {@link SelectableChannel} is registered, the specified {@code task} will
      * be executed by this event loop when the {@link SelectableChannel} is ready.
+     *
+     *
      */
     public void register(final SelectableChannel ch, final int interestOps, final NioTask<?> task) {
         ObjectUtil.checkNotNull(ch, "ch");
@@ -349,6 +348,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    /**
+     * 将jdk的通道进行注册多路复用器上
+     * @param ch
+     * @param interestOps
+     * @param task
+     */
     private void register0(SelectableChannel ch, int interestOps, NioTask<?> task) {
         try {
             ch.register(unwrappedSelector, interestOps, task);
@@ -537,7 +542,10 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
 
     /**
+     * 也就是当NioEventLoop 执行 {@link #execute(Runnable)}后，会调用该方法。所以要保证
+     * {@link #register(ChannelPromise)} 方法在之前执行。
      * 当给该 事件 处理器 放任务的时候，run 方法开始执行。
+     *
      */
     @Override
     protected void run() {
@@ -600,7 +608,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                             processSelectedKeys();
                         }
                     } finally {
-                        // Ensure we always run tasks. //确保我们始终运行任务。如果I/O率 为 100，每次处理完key,去报执行任务
+                        // Ensure we always run tasks.
+                        // 确保我们始终运行任务。如果I/O率 为 100，每次处理完key,去报执行任务。
+                        // 至少一个任务执行完毕后，才会返回true
                         ranTasks = runAllTasks();
                     }
                 } else if (strategy > 0) { //如果I/O率不等于100 并且 有准备好的I/O事件

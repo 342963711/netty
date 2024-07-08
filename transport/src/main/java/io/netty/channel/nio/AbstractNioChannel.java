@@ -425,7 +425,9 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         for (; ; ) {
             try {
                 //这里将通道 注册到 eventLoop 中的多路复用器，eventLoop 通过反射获取到IO事件，在EventLoop中触发读取数据事件
+                // 这里调用jdk NIO 的注册，将可路由通道注册到多路复用器上
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
+                //结束
                 return;
             } catch (CancelledKeyException e) {
                 if (!selected) {

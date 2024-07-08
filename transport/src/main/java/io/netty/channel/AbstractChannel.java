@@ -521,24 +521,25 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         public final void register(EventLoop eventLoop, final ChannelPromise promise) {
             ObjectUtil.checkNotNull(eventLoop, "eventLoop");
             if (isRegistered()) {
+                //ChannelPromise 任务用于通知监听者，执行失败
                 promise.setFailure(new IllegalStateException("registered to an event loop already"));
                 return;
             }
             if (!isCompatible(eventLoop)) {
+                //ChannelPromise 同坐监听者注册失败
                 promise.setFailure(
                         new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
                 return;
             }
-
+            //同步事件循环器中
             AbstractChannel.this.eventLoop = eventLoop;
-
             //如果当前线程是事件循环线程。则执行执行注册。 这里保证 注册操作 在异步任务中执行， 避免并发注册可能引发的问题，
             // 同时也是开始 开始EventLoop 处理开始一直处理任务，将注册作为任务提交到EventLoop中执行
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
                 try {
-                    //否则，交给事件循环线程去处理
+                    //如果事件处理器还没开始。就提交任务开始注册
                     eventLoop.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -570,7 +571,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
-                //由底层执行注册，对于NIO来说，是将channel注册到复用器上。
+                //由底层执行注册，对于NIO来说，是将channel注册到复用器上。（也就是将此channel包装的jdk Channel 注册到多路复用器上）
                 doRegister();
                 neverRegistered = false;
                 registered = true;
