@@ -391,6 +391,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      * Create a new {@link AbstractUnsafe} instance which will be used for the life-time of the {@link Channel}
      *
      * 返回一个新的 AbstractUnsafe 实例。该实例将在channel 生命周期内使用
+     *
      */
     protected abstract AbstractUnsafe newUnsafe();
 

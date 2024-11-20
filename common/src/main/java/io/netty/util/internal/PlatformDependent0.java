@@ -101,7 +101,7 @@ final class PlatformDependent0 {
             unsafe = null;
             internalUnsafe = null;
         } else {
-            //分配1字节 直接内存，用于查找内存地址
+            //分配1字节 直接内存，用于查找内存地址，包含 cleaner
             direct = ByteBuffer.allocateDirect(1);
 
             // attempt to access field Unsafe#theUnsafe
@@ -339,7 +339,9 @@ final class PlatformDependent0 {
                     UNSAFE.freeMemory(address);
                 }
             }
+            //这里表示 DirectByteBuffer(address, cap) 这个构造函数可用
             DIRECT_BUFFER_CONSTRUCTOR = directBufferConstructor;
+            // 表示 java.nio.Buffer.address: available
             ADDRESS_FIELD_OFFSET = objectFieldOffset(addressField);
             BYTE_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
             INT_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(int[].class);
@@ -503,6 +505,10 @@ final class PlatformDependent0 {
         return EXPLICIT_NO_UNSAFE_CAUSE != null;
     }
 
+    /**
+     * 明确 unsafe 是否设置不可用
+     * @return unsafe 不可用抛出不可用的异常
+     */
     private static Throwable explicitNoUnsafeCause0() {
         final boolean noUnsafe = SystemPropertyUtil.getBoolean("io.netty.noUnsafe", false);
         logger.debug("-Dio.netty.noUnsafe: {}", noUnsafe);
@@ -558,6 +564,7 @@ final class PlatformDependent0 {
         return newDirectBuffer(UNSAFE.reallocateMemory(directBufferAddress(buffer), capacity), capacity);
     }
 
+
     static ByteBuffer allocateDirectNoCleaner(int capacity) {
         // Calling malloc with capacity of 0 may return a null ptr or a memory address that can be used.
         // Just use 1 to make it safe to use in all cases:
@@ -594,6 +601,7 @@ final class PlatformDependent0 {
         }
     }
 
+    /*使用反射创建 ByteBuffer*/
     static ByteBuffer newDirectBuffer(long address, int capacity) {
         ObjectUtil.checkPositiveOrZero(capacity, "capacity");
 

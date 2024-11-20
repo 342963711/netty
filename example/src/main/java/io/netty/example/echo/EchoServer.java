@@ -64,7 +64,6 @@ public final class EchoServer {
 
             // Start the server.
             ChannelFuture f = b.bind(PORT).sync();
-
             // Wait until the server socket is closed.
             f.channel().closeFuture().sync();
         } finally {

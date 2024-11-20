@@ -823,6 +823,7 @@ public final class PlatformDependent {
     /**
      * Reallocate a new {@link ByteBuffer} with the given {@code capacity}. {@link ByteBuffer}s reallocated with
      * this method <strong>MUST</strong> be deallocated via {@link #freeDirectNoCleaner(ByteBuffer)}.
+     *
      */
     public static ByteBuffer reallocateDirectNoCleaner(ByteBuffer buffer, int capacity) {
         assert USE_DIRECT_BUFFER_NO_CLEANER;

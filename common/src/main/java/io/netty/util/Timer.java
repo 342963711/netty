@@ -33,6 +33,8 @@ public interface Timer {
      * Schedules the specified {@link TimerTask} for one-time execution after
      * the specified delay.
      *
+     * 调度任务，并返回任务的句柄
+     *
      * @return a handle which is associated with the specified task
      *
      * @throws IllegalStateException       if this timer has been {@linkplain #stop() stopped} already

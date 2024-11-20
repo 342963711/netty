@@ -56,7 +56,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
     //最大空闲阈值
     private final int freeMaxThreshold;
 
-    // This is only update once when create the linked like list of PoolChunkList in PoolArena constructor.
+    // This is only update once when create the linked like list of PoolChunkList in PoolArena constructor.,
     private PoolChunkList<T> prevList;
 
     /**
@@ -167,6 +167,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
 
     boolean free(PoolChunk<T> chunk, long handle, int normCapacity, ByteBuffer nioBuffer) {
         chunk.free(handle, normCapacity, nioBuffer);
+        //释放内存后，判断空闲空间大于空闲阈值。则从当前链表删除
         if (chunk.freeBytes > freeMaxThreshold) {
             remove(chunk);
             // Move the PoolChunk down the PoolChunkList linked-list.
@@ -196,6 +197,9 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         if (prevList == null) {
             // There is no previous PoolChunkList so return false which result in having the PoolChunk destroyed and
             // all memory associated with the PoolChunk will be released.
+
+            // 没有之前的PoolChunkList，
+            // 因此返回false，这将导致PoolChunk被销毁，与PoolChunk相关的所有内存都将被释放。
             assert chunk.usage() == 0;
             return false;
         }
@@ -232,6 +236,10 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         }
     }
 
+    /**
+     * 将poolChunk 从当前链表中移除
+     * @param cur
+     */
     private void remove(PoolChunk<T> cur) {
         if (cur == head) {
             head = cur.next;

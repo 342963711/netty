@@ -308,8 +308,8 @@ public class ResourceLeakDetectorTest {
         //再次创建资源并追踪
         MyResource myResource = new MyResource();
         ResourceLeakTracker<MyResource> track = MyResource.myResourceResourceLeakDetector.track(myResource);
-        track.record("hello");
-        track.close(myResource);
+//        track.record("hello");
+//        track.close(myResource);
 
     }
 }

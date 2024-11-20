@@ -864,6 +864,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             // to a spin loop
             // 还要检查0的readOps，以解决可能导致旋转循环的JDK错误
             if ((readyOps & (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT)) != 0 || readyOps == 0) {
+                // 核心触发数据读取
                 unsafe.read();
             }
         } catch (CancelledKeyException ignored) {

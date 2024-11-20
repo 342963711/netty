@@ -38,6 +38,9 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
  *
  *
  * 底层存储初始化的核心方法{@link #allocateDirect(int)}.在构造方法中执行
+ * 创建ByteBuffer的方式不同
+ * 1.ByteBuffer.allocateDirect(initialCapacity);
+ * 2.反射 (ByteBuffer) DIRECT_BUFFER_CONSTRUCTOR.newInstance(address, capacity);
  * @see UnpooledUnsafeDirectByteBuf
  * @see io.netty.buffer.UnpooledByteBufAllocator.InstrumentedUnpooledDirectByteBuf
  *
@@ -75,6 +78,7 @@ public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
 
     /**
      * Creates a new direct buffer by wrapping the specified initial buffer.
+     * 通过包装指定的初始缓冲区来创建新的直接缓冲区
      *
      * @param maxCapacity the maximum capacity of the underlying direct buffer
      */

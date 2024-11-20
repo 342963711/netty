@@ -29,7 +29,7 @@ import java.net.SocketAddress;
  * 引起 ChannelPipeline 中下一个 {@link ChannelOutboundHandler} 中对应方法的调用。 与{@link ChannelInboundInvoker} 类似
  *
  *
- *
+ * 子类实现
  * @see Channel
  * @see ChannelHandlerContext
  * @see ChannelPipeline

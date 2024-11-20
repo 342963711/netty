@@ -27,7 +27,7 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 
 /**
- * 内存的除了UnpooledDirectByteBuf 非池化的另外一种类型，池化字节缓冲区的抽象基础类
+ * 除了UnpooledDirectByteBuf 非池化的另外一种类型，池化字节缓冲区的抽象基础类
  * 该类的实现类，初始化基本都是通过静态方法来初始化，
  * 统一交给{@link PoolArena} 来进行池化管理
  *

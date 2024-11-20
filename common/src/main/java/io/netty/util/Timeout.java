@@ -18,6 +18,9 @@ package io.netty.util;
 /**
  * A handle associated with a {@link TimerTask} that is returned by a
  * {@link Timer}.
+ * 由 {@link Timer} 创建的 与 {@link TimerTask}绑定的句柄，
+ *
+ * 主要是处理返回 任务的处理状态 & 操作取消任务
  */
 public interface Timeout {
 

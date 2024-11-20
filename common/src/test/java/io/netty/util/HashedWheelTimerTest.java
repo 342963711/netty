@@ -280,6 +280,31 @@ public class HashedWheelTimerTest {
         timer.stop();
     }
 
+    @Test
+    public void testFlow(){
+        final HashedWheelTimer timer = new HashedWheelTimer(10L,TimeUnit.SECONDS,4);
+        timer.newTimeout(t->{
+            System.out.println("start...");
+        }, 100, TimeUnit.MILLISECONDS);
+
+        try {
+            Thread.sleep(TimeUnit.SECONDS.toMillis(60));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("end");
+        timer.newTimeout(t->{
+            System.out.println("second...");
+        }, 100, TimeUnit.SECONDS);
+
+        try {
+            Thread.sleep(TimeUnit.SECONDS.toMillis(60));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static TimerTask createNoOpTimerTask() {
         return new TimerTask() {
             @Override

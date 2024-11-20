@@ -36,6 +36,9 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  * {@link Unpooled#wrappedBuffer(byte[])} instead of calling the constructor explicitly.
  * 
  * 核心初始化底层存储方法 {@link #allocateArray(int)}，在构造方法中执行。
+ * 创建byte[] 的方式不同
+ * 1.new byte[initialCapacity];
+ * 2.{@link io.netty.util.internal.PlatformDependent0#allocateUninitializedArray(int size)}
  *
  * @see UnpooledUnsafeHeapByteBuf
  * @see io.netty.buffer.UnpooledByteBufAllocator.InstrumentedUnpooledHeapByteBuf

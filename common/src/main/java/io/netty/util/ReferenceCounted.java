@@ -77,8 +77,10 @@ public interface ReferenceCounted {
     /**
      * Decreases the reference count by {@code 1} and deallocates this object if the reference count reaches at
      * {@code 0}.
+     * 将引用计数减少1，释放这个对象，如果引用计数为0。
      *
      * @return {@code true} if and only if the reference count became {@code 0} and this object has been deallocated
+     * 当且仅当引用计数为0并对象被释放后，返回true
      */
     boolean release();
 

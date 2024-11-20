@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * 页-> 页是可以分配的最小内存块单位
  * 运行 -> 是页面集合
- * 块-> 块 是run 的集合
+ * 块-> 块 是运行 的集合
  * chunkSize = maxPages*pageSize
  *
  * To begin we allocate a byte array of size = chunkSize
@@ -203,7 +203,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
     final T memory;
 
     /**
-     * 是否池化，主要是针对
+     * 是否池化，主要是针对大内存
      */
     final boolean unpooled;
 

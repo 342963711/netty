@@ -23,6 +23,7 @@ import io.netty.util.internal.SystemPropertyUtil;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -919,4 +920,59 @@ public class PooledByteBufAllocatorTest extends AbstractByteBufAllocatorTest<Poo
         }
         return totalUsed;
     }
+
+
+    /**
+     * 可以看到线程总共申请了400M的内存大小
+     */
+    @Test
+    public void testUnpooledByte() {
+        int bufSize = 1024 * 1024;
+        UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
+        allocator.heapBuffer(bufSize, bufSize).release();
+        com.sun.management.ThreadMXBean threadMXBean = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        long allocBefore = threadMXBean.getThreadAllocatedBytes(Thread.currentThread().getId());
+        for (int i = 0; i < 100; ++i) {
+            ByteBuf byteBuf = allocator.heapBuffer(bufSize, bufSize);
+            assertTrue(byteBuf.release());
+        }
+        long allocAfter = threadMXBean.getThreadAllocatedBytes(Thread.currentThread().getId());
+        System.out.printf("allocated MB: %.3f%n", (allocAfter - allocBefore) / 1024.0 / 1024.0);
+    }
+
+
+
+    @Test
+    public void shouldReuseChunk() {
+        int bufSize = 1024 * 1024;
+        PooledByteBufAllocator allocator = new PooledByteBufAllocator(false);
+        allocator.heapBuffer(bufSize, bufSize).release();
+        com.sun.management.ThreadMXBean threadMXBean = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        long allocBefore = threadMXBean.getThreadAllocatedBytes(Thread.currentThread().getId());
+        for (int i = 0; i < 100; ++i) {
+            ByteBuf byteBuf = allocator.heapBuffer(bufSize, bufSize);
+            assertTrue(byteBuf.release());
+        }
+        long allocAfter = threadMXBean.getThreadAllocatedBytes(Thread.currentThread().getId());
+        System.out.printf("allocated MB: %.3f%n", (allocAfter - allocBefore) / 1024.0 / 1024.0);
+    }
+
+
+    @Test
+    public void shouldReuseChunk02() {
+        int bufSize = 5*1024 * 1024;
+        PooledByteBufAllocator allocator = new PooledByteBufAllocator(false);
+        allocator.heapBuffer(1024*1024,100*bufSize);
+        com.sun.management.ThreadMXBean threadMXBean = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        long allocBefore = threadMXBean.getThreadAllocatedBytes(Thread.currentThread().getId());
+        long before = allocator.metric().usedHeapMemory();
+        System.out.println("usedHeapMemory:"+before);
+        for (int i = 0; i < 100; ++i) {
+            ByteBuf byteBuf = allocator.heapBuffer(bufSize, 100*bufSize);
+            assertTrue(byteBuf.release());
+        }
+        long allocAfter = threadMXBean.getThreadAllocatedBytes(Thread.currentThread().getId());
+        System.out.printf("allocated MB: %.3f%n", (allocAfter - allocBefore) / 1024.0 / 1024.0);
+    }
+
 }

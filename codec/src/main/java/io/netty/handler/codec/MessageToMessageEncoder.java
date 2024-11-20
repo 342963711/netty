@@ -31,7 +31,7 @@ import java.util.List;
 
 /**
  * {@link ChannelOutboundHandlerAdapter} which encodes from one message to an other message
- * 出栈类型的Channel ，将一个消息编码成两外一个消息
+ * 出栈类型的Channel ，将一个消息编码成另外一个消息
  *
  * For example here is an implementation which decodes an {@link Integer} to an {@link String}.
  * 下面是一个 示例，将Integer 编码成String.

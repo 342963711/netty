@@ -44,6 +44,10 @@ public interface DuplexChannelConfig extends ChannelConfig {
      * Returns {@code true} if and only if the channel should not close itself when its remote
      * peer shuts down output to make the connection half-closed.  If {@code false}, the connection
      * is closed automatically when the remote peer shuts down output.
+     *
+     * 是否允许半关闭。
+     * 当且仅当 远程已经关闭时，本通道不自动关闭。返回：true
+     * 远程对等端关闭输出时，链接会自动关闭：返回：false
      */
     boolean isAllowHalfClosure();
 

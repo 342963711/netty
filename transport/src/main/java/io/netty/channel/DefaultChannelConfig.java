@@ -324,7 +324,7 @@ public class DefaultChannelConfig implements ChannelConfig {
         return this;
     }
 
-    /**
+    /**x
      * Set the {@link RecvByteBufAllocator} which is used for the channel to allocate receive buffers.
      * @param allocator the allocator to set.
      * @param metadata Used to set the {@link ChannelMetadata#defaultMaxMessagesPerRead()} if {@code allocator}

@@ -21,7 +21,9 @@ import java.nio.ByteBuffer;
 
 /**
  * 直接内存中。
- * UnsafeNoCleaner 使用的是反射技术来进行创建。创建的话，没有java.nio.DirectBuffer 中的Cleaner属性不会进行初始化
+ * UnsafeNoCleaner 使用的是反射技术来进行创建。创建的话，
+ * 没有java.nio.DirectBuffer 中的Cleaner属性不会进行初始化
+ * 创建 ByteBuffer 的方式不同
  */
 class UnpooledUnsafeNoCleanerDirectByteBuf extends UnpooledUnsafeDirectByteBuf {
 
@@ -29,6 +31,11 @@ class UnpooledUnsafeNoCleanerDirectByteBuf extends UnpooledUnsafeDirectByteBuf {
         super(alloc, initialCapacity, maxCapacity);
     }
 
+    /**
+     * 反射创建，DirectByteBuffer(address,cap)。
+     * @param initialCapacity
+     * @return
+     */
     @Override
     protected ByteBuffer allocateDirect(int initialCapacity) {
         return PlatformDependent.allocateDirectNoCleaner(initialCapacity);

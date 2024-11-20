@@ -45,10 +45,8 @@ import static java.lang.Math.max;
  *
  * 内存分配的核心类：
  * @see
- *
- *
- * 1：该类核心方法是 处理分配 {@link #allocate(PoolThreadCache, int, int)}, 该方法的访问区域是 default，
- * 分配方法的调用是交给 {@link PooledByteBufAllocator} 来进行调用的
+ * 1：该类核心方法是 处理分配 {@link #allocate(PoolThreadCache, int, int)},
+ *      分配方法的调用是交给 {@link PooledByteBufAllocator} 来进行调用的
  * 2：内存管理，重点newChunk(int, int, int, int)} 方法
  *
  *
@@ -119,7 +117,7 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
 
 
     /**
-     * 此缓冲区域支持的 线程缓存数量
+     * 此缓冲区域支持的 线程缓存数量,用于判断是否用于TLAB
      */
     // Number of thread caches backed by this arena.
     final AtomicInteger numThreadCaches = new AtomicInteger();
@@ -204,8 +202,9 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
      * @return 返回分配的 PooledByteBuf
      */
     PooledByteBuf<T> allocate(PoolThreadCache cache, int reqCapacity, int maxCapacity) {
-        //创建一个 池化字节缓冲区，池化字节缓冲区还未初始化,从ObjectPool中获取一个对象
+        //创建一个 池化字节缓冲区，此时池化字节缓冲区还未初始化
         PooledByteBuf<T> buf = newByteBuf(maxCapacity);
+        //初始化 PoolChunk（也就是开辟内存）
         allocate(cache, buf, reqCapacity);
         return buf;
     }
@@ -373,12 +372,14 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
                         throw new Error();
                 }
             }
+            //调用poolChunkList的free,来释放chunk
             destroyChunk = !chunk.parent.free(chunk, handle, normCapacity, nioBuffer);
         } finally {
             unlock();
         }
         if (destroyChunk) {
             // destroyChunk not need to be called while holding the synchronized lock.
+            // 这里用来销毁chunk
             destroyChunk(chunk);
         }
     }
@@ -394,6 +395,12 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
         return smallSubpagePools[sizeIdx];
     }
 
+    /**
+     * 重新分配
+     * @param buf
+     * @param newCapacity
+     * @param freeOldMemory
+     */
     void reallocate(PooledByteBuf<T> buf, int newCapacity, boolean freeOldMemory) {
         assert newCapacity >= 0 && newCapacity <= buf.maxCapacity();
 
@@ -645,19 +652,33 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
 
 
     /**
-     * 创建非 池块的内存
+     * 创建 非池块的内存
      * @param capacity
      * @return
      */
     protected abstract PoolChunk<T> newUnpooledChunk(int capacity);
 
     /**
-     * 创建指定类型的PooledByteBuf。这里返回的对象是从ObjectPool中进行创建的。
+     * 创建指定类型的PooledByteBuf。
+     * 这里返回的对象是从ObjectPool中进行创建的,也就是使用了对象复用
      * @param maxCapacity
      * @return
      */
     protected abstract PooledByteBuf<T> newByteBuf(int maxCapacity);
+
+    /**
+     * 内存copy
+     * @param src
+     * @param srcOffset
+     * @param dst
+     * @param length
+     */
     protected abstract void memoryCopy(T src, int srcOffset, PooledByteBuf<T> dst, int length);
+
+    /**
+     * 销毁块
+     * @param chunk
+     */
     protected abstract void destroyChunk(PoolChunk<T> chunk);
 
     @Override
@@ -760,6 +781,11 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
                   0);
         }
 
+        /**
+         * 创建字节数组
+         * @param size
+         * @return
+         */
         private static byte[] newByteArray(int size) {
             return PlatformDependent.allocateUninitializedArray(size);
         }
@@ -769,6 +795,14 @@ abstract class PoolArena<T> extends SizeClasses implements PoolArenaMetric {
             return false;
         }
 
+        /**
+         * 创建块对象
+         * @param pageSize 8192
+         * @param maxPageIdx 32
+         * @param pageShifts 13
+         * @param chunkSize 4MB
+         * @return
+         */
         @Override
         protected PoolChunk<byte[]> newChunk(int pageSize, int maxPageIdx, int pageShifts, int chunkSize) {
             return new PoolChunk<byte[]>(
